@@ -9,7 +9,7 @@ import (
 type Service interface {
 	GetAll() ([]domain.Employee, error)
 	Get(id int) (domain.Employee, error)
-	Exists(cardNumberID string) (domain.Employee, error)
+	Exists(cardNumberID string) (string, error)
 	Save(card_number_id, first_name, last_name string, warehouse_id int) (domain.Employee, error)
 	Update(id int, card_number_id, first_name, last_name string, warehouse_id int) (domain.Employee, error)
 	Delete(id int) error
@@ -19,7 +19,7 @@ type service struct {
 }
 
 var (
-	ErrNotFound = errors.New("Employee not found")
+	ErrNotFound = errors.New("Employee não encontrado.")
 )
 
 func NewService(r Repository) Service {
@@ -53,10 +53,10 @@ func (s *service) Update(id int, card_number_id, first_name, last_name string, w
 	return employee, err
 }
 
-func (s *service) Exists(cardNumberID string) (domain.Employee, error) {
-	employee, err := s.repository.Exists(cardNumberID)
+func (s *service) Exists(cardNumberID string) (string, error) {
+	cardNumber, err := s.repository.Exists(cardNumberID)
 
-	return employee, err
+	return cardNumber, err
 }
 
 func (s *service) Get(id int) (domain.Employee, error) {

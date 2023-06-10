@@ -10,7 +10,7 @@ import (
 type Repository interface {
 	GetAll() ([]domain.Employee, error)
 	Get(id int) (domain.Employee, error)
-	Exists(cardNumberID string) (domain.Employee, error)
+	Exists(cardNumberID string) (string, error)
 	Save(card_number_id, first_name, last_name string, warehouse_id int) (domain.Employee, error)
 	Update(id int, card_number_id, first_name, last_name string, warehouse_id int) (domain.Employee, error)
 	Delete(id int) error
@@ -57,14 +57,14 @@ func (r *repository) Exists(ctx context.Context, cardNumberID string) bool {
 	return err == nil
 }
 
-func (r *repository) Save(ctx context.Context, e domain.Employee) (int, error) {
+func (r *repository) Save(ctx context.Context, card_number_id, first_name, last_name string, warehouse_id int) (int, error) {
 	query := "INSERT INTO employees(card_number_id,first_name,last_name,warehouse_id) VALUES (?,?,?,?)"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return 0, err
 	}
 
-	res, err := stmt.Exec(&e.CardNumberID, &e.FirstName, &e.LastName, &e.WarehouseID)
+	res, err := stmt.Exec(card_number_id, first_name, last_name, warehouse_id)
 	if err != nil {
 		return 0, err
 	}
