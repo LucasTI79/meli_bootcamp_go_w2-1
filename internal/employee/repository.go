@@ -7,24 +7,17 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
 
-// Repository encapsulates the storage of a employee.
 type Repository interface {
-	GetAll(ctx context.Context) ([]domain.Employee, error)
-	Get(ctx context.Context, id int) (domain.Employee, error)
-	Exists(ctx context.Context, cardNumberID string) bool
-	Save(ctx context.Context, e domain.Employee) (int, error)
-	Update(ctx context.Context, e domain.Employee) error
-	Delete(ctx context.Context, id int) error
+	GetAll() ([]domain.Employee, error)
+	Get(id int) (domain.Employee, error)
+	Exists(cardNumberID string) (domain.Employee, error)
+	Save(card_number_id, first_name, last_name string, warehouse_id int) (domain.Employee, error)
+	Update(id int, card_number_id, first_name, last_name string, warehouse_id int) (domain.Employee, error)
+	Delete(id int) error
 }
 
 type repository struct {
 	db *sql.DB
-}
-
-func NewRepository(db *sql.DB) Repository {
-	return &repository{
-		db: db,
-	}
 }
 
 func (r *repository) GetAll(ctx context.Context) ([]domain.Employee, error) {

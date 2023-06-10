@@ -3,6 +3,7 @@ package web
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -24,6 +25,20 @@ func Response(c *gin.Context, status int, data interface{}) {
 
 func Success(c *gin.Context, status int, data interface{}) {
 	Response(c, status, response{Data: data})
+}
+
+type Data struct {
+	Code  string      `json:"code"`
+	Data  interface{} `json:"data,omitempty"`
+	Error string      `json:"error,omitempty"`
+}
+
+func NewResponse(code int, data interface{}, err string) Data {
+
+	if code < http.StatusMultipleChoices {
+		return Data{strconv.FormatInt(int64(code), 10), data, ""}
+	}
+	return Data{strconv.FormatInt(int64(code), 10), nil, err}
 }
 
 // NewErrorf creates a new error with the given status code and the message
