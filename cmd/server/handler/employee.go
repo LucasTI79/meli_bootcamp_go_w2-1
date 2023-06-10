@@ -18,6 +18,10 @@ type request struct {
 	Warehouse_id   int    `json:"warehouse_id"`
 }
 
+type requestCardNumber struct {
+	Card_number_id string `json:"card_number_id"`
+}
+
 type Employee struct {
 	service employee.Service
 }
@@ -29,7 +33,20 @@ func NewEmployee(e employee.Service) *Employee {
 }
 
 func (e *Employee) Get() gin.HandlerFunc {
-	return func(c *gin.Context) {}
+	return func(ctx *gin.Context) {
+		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"Error": "ID inválido"})
+			return
+		}
+
+		employeeData, err := e.service.Get(int(id))
+		if err != nil {
+			ctx.JSON(http.StatusNotFound, gin.H{"Error": err.Error()})
+			return
+		}
+		ctx.JSON(http.StatusOK, employeeData)
+	}
 }
 
 func (e *Employee) GetAll() gin.HandlerFunc {
@@ -47,17 +64,23 @@ func (e *Employee) GetAll() gin.HandlerFunc {
 
 func (e *Employee) Exists() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"Error": "ID inválido"})
+		var req requestCardNumber
+		if err := ctx.Bind(&req); err != nil {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"Error": err.Error(),
+			})
 			return
 		}
-		employee, err := e.service.Get(int(id))
+		if req.Card_number_id == "" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"Error": "Necessário adicionar o número do cartão."})
+			return
+		}
+		cardNumberId, err := e.service.Exists(req.Card_number_id)
 		if err != nil {
 			ctx.JSON(http.StatusNotFound, gin.H{"Error": err.Error()})
 			return
 		}
-		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, employee, ""))
+		ctx.JSON(http.StatusOK, cardNumberId)
 	}
 }
 
