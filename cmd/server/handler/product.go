@@ -1,21 +1,27 @@
 package handler
 
 import (
+	"net/http"
+	"strconv"
+
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
 )
 
 type Product struct {
-	// productService product.Service
+	service product.Service
 }
 
-func NewProduct() *Product {
-	return &Product{
-		// productService: w,
-	}
+func NewProduct(service product.Service) *Product {
+	return &Product{service}
 }
 
 func (p *Product) GetAll() gin.HandlerFunc {
-	return func(c *gin.Context) {}
+	return func(c *gin.Context) {
+		products, _ := p.service.GetAll(c)
+		web.Success(c, http.StatusOK, products)
+	}
 }
 
 func (p *Product) Get() gin.HandlerFunc {

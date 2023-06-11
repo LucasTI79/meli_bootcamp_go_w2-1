@@ -3,6 +3,8 @@ package routes
 import (
 	"database/sql"
 
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
 	"github.com/gin-gonic/gin"
 )
 
@@ -43,7 +45,14 @@ func (r *router) buildSellerRoutes() {
 	// r.r.GET("/seller", handler.GetAll)
 }
 
-func (r *router) buildProductRoutes() {}
+func (r *router) buildProductRoutes() {
+	repo := product.NewRepository(r.db)
+	service := product.NewService(repo)
+	handler := handler.NewProduct(service)
+	routerGroup := r.rg.Group("/products")
+	routerGroup.GET("/", handler.GetAll())
+	routerGroup.GET("/:id", handler.Get())
+}
 
 func (r *router) buildSectionRoutes() {}
 
