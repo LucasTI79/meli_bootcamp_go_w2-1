@@ -52,6 +52,7 @@ func (r *router) buildEmployeeRoutes() {
 	r.rg.GET("/employees", handler.GetAll())
 	r.rg.POST("/employee", handler.Save())
 	r.rg.PATCH("/employee/:id", handler.Update())
+	r.rg.GET("/employee/:id", handler.Get())
 	r.rg.GET("/employee/cardNumber", handler.Exists())
 	r.rg.DELETE("/employee/:id", handler.Delete())
 }

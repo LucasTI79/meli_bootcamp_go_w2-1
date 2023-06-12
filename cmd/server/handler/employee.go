@@ -32,7 +32,7 @@ func (e *Employee) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "Error: ID inválido")
+			web.Error(ctx, http.StatusBadRequest, "Error: ID inválido.")
 			return
 		}
 
@@ -49,7 +49,7 @@ func (e *Employee) GetAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		employees, err := e.service.GetAll()
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "Error: Funcionários não encontrados")
+			web.Error(ctx, http.StatusBadRequest, "Error: Funcionários não encontrados.")
 			return
 		}
 		web.Success(ctx, http.StatusOK, employees)
@@ -84,7 +84,7 @@ func (e *Employee) Save() gin.HandlerFunc {
 			return
 		}
 		if req.Card_number_id == "" && req.First_name == "" && req.Last_name == "" && req.Warehouse_id == 0 {
-			web.Error(ctx, http.StatusUnprocessableEntity, "Error: Necessário adicionar todas as informaçõess.")
+			web.Error(ctx, http.StatusUnprocessableEntity, "Error: Necessário adicionar todas as informações.")
 			return
 		}
 		employeeSaved, err := e.service.Save(req.Card_number_id, req.First_name, req.Last_name, req.Warehouse_id)
@@ -125,7 +125,7 @@ func (e *Employee) Update() gin.HandlerFunc {
 				ctx.JSON(http.StatusNotFound, gin.H{"Error": err.Error()})
 				return
 			}
-			web.Success(ctx, http.StatusOK, "")
+			web.Success(ctx, http.StatusOK, "Funcionário atualizado com sucesso!")
 		}
 	}
 }
@@ -143,6 +143,6 @@ func (e *Employee) Delete() gin.HandlerFunc {
 			web.Error(ctx, http.StatusNotFound, "Error")
 			return
 		}
-		web.Success(ctx, http.StatusNoContent, "")
+		web.Success(ctx, http.StatusNoContent, "Funcionário deletado com sucesso.")
 	}
 }
