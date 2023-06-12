@@ -13,6 +13,7 @@ var (
 
 type IService interface{
 	GetAll(c *gin.Context) ([]domain.Buyer, error)
+	Get(c *gin.Context, id int) (domain.Buyer, error)
 	Save(c *gin.Context, b domain.Request) (int, error)
 	
 }
@@ -34,6 +35,15 @@ func (s *service) GetAll(c *gin.Context) ([]domain.Buyer, error) {
 	}
 
 	return buyers, nil
+}
+
+func (s *service) Get(c *gin.Context, id int) (domain.Buyer, error) {
+	buyer, err := s.repository.Get(c, id)
+	if err != nil {
+		return domain.Buyer{}, err
+	}
+
+	return buyer, nil
 }
 
 func (s *service) Save(c *gin.Context, b domain.Request) (int, error) {

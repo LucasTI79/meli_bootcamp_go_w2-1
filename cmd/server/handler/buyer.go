@@ -6,6 +6,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	"strconv"
 )
 
 type Buyer struct {
@@ -19,7 +20,24 @@ func NewBuyer(b buyer.IService) *Buyer {
 }
 
 func (b *Buyer) Get() gin.HandlerFunc {
-	return func(c *gin.Context) {}
+	return func(c *gin.Context) {
+
+		idParam := c.Param("id")
+		id, err := strconv.Atoi(idParam)
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, "ID inválido")
+			return
+		}
+		
+		buyer, err := b.buyerService.Get(c, id)
+		if err != nil {
+			web.Error(c, http.StatusNotFound, "Usuário nao encontrado")
+			return
+		}	
+
+		web.Success(c, http.StatusOK, buyer)
+
+	}
 }
 
 func (b *Buyer) GetAll() gin.HandlerFunc {
@@ -75,7 +93,7 @@ func (b *Buyer) Create() gin.HandlerFunc {
 		buyer.CardNumberID = req.CardNumberID
 		buyer.FirstName = req.FirstName
 		buyer.LastName = req.LastName
-		
+
 		web.Success(c, http.StatusCreated, buyer)
 
 	}
