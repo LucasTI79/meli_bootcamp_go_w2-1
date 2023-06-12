@@ -15,7 +15,7 @@ type IService interface{
 	GetAll(c *gin.Context) ([]domain.Buyer, error)
 	Get(c *gin.Context, id int) (domain.Buyer, error)
 	Save(c *gin.Context, b domain.Request) (int, error)
-	
+	Delete(c *gin.Context, id int) error
 }
 
 type service struct{
@@ -58,5 +58,11 @@ func (s *service) Save(c *gin.Context, b domain.Request) (int, error) {
 	} else {
 		return 0, errors.New("Nao é possível cadastrar um comprador com Card Number repetido.")
 	}
+
+}
+
+func (s *service) Delete(c *gin.Context, id int) error {
+	
+	return s.repository.Delete(c, id)
 
 }

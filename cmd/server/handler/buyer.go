@@ -104,5 +104,20 @@ func (b *Buyer) Update() gin.HandlerFunc {
 }
 
 func (b *Buyer) Delete() gin.HandlerFunc {
-	return func(c *gin.Context) {}
+	return func(c *gin.Context) {
+		idParam := c.Param("id")
+		id, err := strconv.Atoi(idParam)
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, "ID inválido")
+			return
+		}
+		
+		err = b.buyerService.Delete(c, id)
+		if err != nil {
+			web.Error(c, http.StatusNotFound, "O usuário com o ID correspondente nao existe")
+			return
+		}	
+
+		web.Success(c, http.StatusNoContent, "")
+	}
 }
