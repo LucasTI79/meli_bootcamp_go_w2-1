@@ -60,7 +60,7 @@ func (r *repository) Exists(cardNumberID string) (string, error) {
 	row := r.db.QueryRow(query, cardNumberID)
 	err := row.Scan(&cardNumberID)
 	if err != nil {
-		return cardNumberID, err
+		return "", err
 	}
 
 	return cardNumberID, nil

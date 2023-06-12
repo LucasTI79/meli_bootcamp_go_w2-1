@@ -49,6 +49,7 @@ func (r *router) buildEmployeeRoutes() {
 	repository := employee.NewRepository(r.db)
 	service := employee.NewService(repository)
 	handler := handler.NewEmployee(service)
+
 	r.rg.GET("/employees", handler.GetAll())
 	r.rg.POST("/employee", handler.Save())
 	r.rg.PATCH("/employee/:id", handler.Update())

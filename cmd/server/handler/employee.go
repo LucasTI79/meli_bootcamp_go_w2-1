@@ -59,7 +59,7 @@ func (e *Employee) GetAll() gin.HandlerFunc {
 func (e *Employee) Exists() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req request
-		if err := ctx.Bind(&req); err != nil {
+		if err := ctx.ShouldBindJSON(&req); err != nil {
 			web.Error(ctx, http.StatusBadRequest, "Error")
 			return
 		}
@@ -103,29 +103,58 @@ func (e *Employee) Update() gin.HandlerFunc {
 			web.Error(ctx, http.StatusNotFound, "Error: ID inválido, funcionário não encontrado.")
 			return
 		}
-
 		var req request
 		if err := ctx.ShouldBindJSON(&req); err != nil {
 			web.Error(ctx, http.StatusBadRequest, "Error.")
 			return
 		}
 
-		if req.Card_number_id == "" || req.First_name == "" || req.Last_name == "" || req.Warehouse_id == 0 {
-			ctx.JSON(http.StatusBadRequest, gin.H{"Error": "Necessário pelo menos uma informação para atualização."})
-			return
-		}
 		if req.Card_number_id != "" {
-			validateCard, err := e.service.Exists(req.Card_number_id)
+			req.Card_number_id, err = e.service.Exists(req.Card_number_id)
 			if err != nil {
 				web.Error(ctx, http.StatusBadRequest, "Error: Cartão já cadastrado.")
 				return
+			} else {
+				err = e.service.Update(domain.Employee{
+					ID:           (int(id)),
+					CardNumberID: req.Card_number_id})
+				if err != nil {
+					web.Error(ctx, http.StatusNotFound, "Erro ao atualizar número de cartão.")
+					return
+				}
+				web.Success(ctx, http.StatusOK, "Número de cartão atualizado com sucesso!")
 			}
-			err = e.service.Update(domain.Employee{ID: (int(id)), CardNumberID: validateCard, FirstName: req.First_name, LastName: req.Last_name, WarehouseID: req.Warehouse_id})
+		}
+		if req.First_name != "" {
+			err = e.service.Update(domain.Employee{
+				ID:        (int(id)),
+				FirstName: req.First_name})
 			if err != nil {
-				ctx.JSON(http.StatusNotFound, gin.H{"Error": err.Error()})
+				web.Error(ctx, http.StatusNotFound, "Erro ao atualizar nome de funcionáerio.")
 				return
 			}
-			web.Success(ctx, http.StatusOK, "Funcionário atualizado com sucesso!")
+			web.Success(ctx, http.StatusOK, "Nome atualizado com sucesso!")
+		}
+		if req.Last_name != "" {
+			err = e.service.Update(domain.Employee{
+				ID:       (int(id)),
+				LastName: req.Last_name})
+			if err != nil {
+				web.Error(ctx, http.StatusNotFound, "Erro ao atualizar sobrenome de funcionário.")
+				return
+			}
+			web.Success(ctx, http.StatusOK, "Sobrenome atualizado com sucesso!")
+
+		}
+		if req.Warehouse_id != 0 {
+			err = e.service.Update(domain.Employee{
+				ID:          (int(id)),
+				WarehouseID: req.Warehouse_id})
+			if err != nil {
+				web.Error(ctx, http.StatusNotFound, "Erro ao atualizar número de armazém.")
+				return
+			}
+			web.Success(ctx, http.StatusOK, "Armazém atualizado com sucesso!")
 		}
 	}
 }
