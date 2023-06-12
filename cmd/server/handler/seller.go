@@ -45,7 +45,7 @@ func (s *Seller) Get() gin.HandlerFunc {
 			web.Error(c, http.StatusBadRequest, "id received is invalid")
 			return
 		}
-		foundSeller, err := s.sellerService.Get(c, parsedId)
+		foundSeller, err := s.sellerService.Get(c.Request.Context(), parsedId)
 		if err != nil {
 			if errors.Is(err, seller.ErrNotFound) {
 				web.Error(c, http.StatusNotFound, "could not find id %v", parsedId)
@@ -82,7 +82,7 @@ func (s *Seller) Create() gin.HandlerFunc {
 			web.Error(c, http.StatusUnprocessableEntity, "cid is required")
 			return
 		}
-		id, err := s.sellerService.Save(c, req)
+		id, err := s.sellerService.Save(c.Request.Context(), req)
 		if err != nil {
 			if errors.Is(err, seller.ErrAlreadyExists) {
 				web.Error(c, http.StatusConflict, "there is already a seller with cid %v", req.CID)
@@ -97,7 +97,34 @@ func (s *Seller) Create() gin.HandlerFunc {
 }
 
 func (s *Seller) Update() gin.HandlerFunc {
-	return func(c *gin.Context) {}
+	return func(c *gin.Context) {
+		id, _ := c.Params.Get("id")
+		parsedId, err := strconv.Atoi(id)
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, "id received is invalid")
+			return
+		}
+		var req domain.UpdateSeller
+		if err := c.ShouldBindJSON(&req); err != nil {
+			web.Error(c, http.StatusBadRequest, "invalid request body")
+			return
+		}
+		req.ID = parsedId
+		updatedSeller, err := s.sellerService.Update(c.Request.Context(), req)
+		if err != nil {
+			if errors.Is(err, seller.ErrAlreadyExists) {
+				web.Error(c, http.StatusConflict, "cid already registred")
+				return
+			} else if errors.Is(err, seller.ErrNotFound) {
+				web.Error(c, http.StatusNotFound, err.Error())
+				return
+			} else {
+				web.Error(c, http.StatusInternalServerError, "internal server error")
+				return
+			}
+		}
+		web.Success(c, http.StatusOK, updatedSeller)
+	}
 }
 
 func (s *Seller) Delete() gin.HandlerFunc {
@@ -108,7 +135,7 @@ func (s *Seller) Delete() gin.HandlerFunc {
 			web.Error(c, http.StatusBadRequest, "id received is invalid")
 			return
 		}
-		err = s.sellerService.Delete(c, parsedId)
+		err = s.sellerService.Delete(c.Request.Context(), parsedId)
 		if err != nil {
 			if errors.Is(err, seller.ErrNotFound) {
 				web.Error(c, http.StatusNotFound, "could not find seller with id %v", parsedId)

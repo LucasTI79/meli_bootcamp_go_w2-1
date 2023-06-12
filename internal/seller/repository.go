@@ -3,6 +3,8 @@ package seller
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"strings"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
@@ -13,7 +15,7 @@ type Repository interface {
 	Get(ctx context.Context, id int) (domain.Seller, error)
 	Exists(ctx context.Context, cid int) bool
 	Save(ctx context.Context, s domain.CreateSeller) (int, error)
-	Update(ctx context.Context, s domain.Seller) error
+	Update(ctx context.Context, s domain.UpdateSeller) error
 	Delete(ctx context.Context, id int) error
 }
 
@@ -84,8 +86,8 @@ func (r *repository) Save(ctx context.Context, s domain.CreateSeller) (int, erro
 	return int(id), nil
 }
 
-func (r *repository) Update(ctx context.Context, s domain.Seller) error {
-	query := "UPDATE sellers SET cid=?, company_name=?, address=?, telephone=? WHERE id=?"
+func (r *repository) Update(ctx context.Context, s domain.UpdateSeller) error {
+	/* query := "UPDATE sellers SET cid=?, company_name=?, address=?, telephone=? WHERE id=?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return err
@@ -99,6 +101,53 @@ func (r *repository) Update(ctx context.Context, s domain.Seller) error {
 	_, err = res.RowsAffected()
 	if err != nil {
 		return err
+	}
+
+	return nil */
+	query := "UPDATE sellers SET "
+	args := []interface{}{}
+
+	if s.CID != nil {
+		query += "cid=?, "
+		args = append(args, *s.CID)
+	}
+
+	if s.CompanyName != nil {
+		query += "company_name=?, "
+		args = append(args, *s.CompanyName)
+	}
+
+	if s.Address != nil {
+		query += "address=?, "
+		args = append(args, *s.Address)
+	}
+
+	if s.Telephone != nil {
+		query += "telephone=?, "
+		args = append(args, *s.Telephone)
+	}
+
+	query = strings.TrimSuffix(query, ", ")
+
+	query += " WHERE id=?"
+	args = append(args, s.ID)
+
+	fmt.Println(query, args)
+	stmt, err := r.db.Prepare(query)
+	if err != nil {
+		return err
+	}
+
+	res, err := stmt.Exec(args...)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return ErrNotFound
+	}
+	if rowsAffected == 0 {
+		return ErrNotFound
 	}
 
 	return nil
