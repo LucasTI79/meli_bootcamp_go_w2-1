@@ -3,7 +3,6 @@ package web
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -33,16 +32,6 @@ type Data struct {
 	Error string      `json:"error,omitempty"`
 }
 
-func NewResponse(code int, data interface{}, err string) Data {
-
-	if code < http.StatusMultipleChoices {
-		return Data{strconv.FormatInt(int64(code), 10), data, ""}
-	}
-	return Data{strconv.FormatInt(int64(code), 10), nil, err}
-}
-
-// NewErrorf creates a new error with the given status code and the message
-// formatted according to args and format.
 func Error(c *gin.Context, status int, format string, args ...interface{}) {
 	err := errorResponse{
 		Code:    strings.ReplaceAll(strings.ToLower(http.StatusText(status)), " ", "_"),
