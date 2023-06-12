@@ -44,6 +44,7 @@ func (r *router) buildSellerRoutes() {
 	handler := handler.NewSeller(service)
 	r.rg.GET("/sellers", handler.GetAll())
 	r.rg.GET("/sellers/:id", handler.Get())
+	r.rg.POST("/sellers", handler.Create())
 }
 
 func (r *router) buildProductRoutes() {}

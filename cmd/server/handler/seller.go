@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
@@ -12,13 +13,11 @@ import (
 
 type Seller struct {
 	sellerService seller.Service
-	// sellerService seller.Service
 }
 
 func NewSeller(s seller.Service) *Seller {
 	return &Seller{
 		sellerService: s,
-		// sellerService: s,
 	}
 
 }
@@ -56,12 +55,45 @@ func (s *Seller) Get() gin.HandlerFunc {
 				return
 			}
 		}
-		web.Response(c, 200, foundSeller)
+		web.Response(c, http.StatusOK, foundSeller)
 	}
 }
 
 func (s *Seller) Create() gin.HandlerFunc {
-	return func(c *gin.Context) {}
+	return func(c *gin.Context) {
+		var req domain.CreateSeller
+		if err := c.ShouldBindJSON(&req); err != nil {
+			web.Error(c, http.StatusBadRequest, "invalid request body")
+			return
+		}
+		if req.Address == "" {
+			web.Error(c, http.StatusUnprocessableEntity, "address is required")
+			return
+		}
+		if req.CompanyName == "" {
+			web.Error(c, http.StatusUnprocessableEntity, "company name is required")
+			return
+		}
+		if req.Telephone == "" {
+			web.Error(c, http.StatusUnprocessableEntity, "telephone is required")
+			return
+		}
+		if req.CID == 0 {
+			web.Error(c, http.StatusUnprocessableEntity, "cid is required")
+			return
+		}
+		id, err := s.sellerService.Save(c, req)
+		if err != nil {
+			if errors.Is(err, seller.ErrAlreadyExists) {
+				web.Error(c, http.StatusConflict, "there is already a seller with cid %v", req.CID)
+				return
+			} else {
+				web.Error(c, http.StatusInternalServerError, "internal server error")
+				return
+			}
+		}
+		web.Response(c, http.StatusCreated, id)
+	}
 }
 
 func (s *Seller) Update() gin.HandlerFunc {
