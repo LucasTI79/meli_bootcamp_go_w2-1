@@ -8,7 +8,7 @@ import (
 )
 
 // Repository encapsulates the storage of a buyer.
-type Repository interface {
+type IRepository interface {
 	GetAll(ctx context.Context) ([]domain.Buyer, error)
 	Get(ctx context.Context, id int) (domain.Buyer, error)
 	Exists(ctx context.Context, cardNumberID string) bool
@@ -21,7 +21,7 @@ type repository struct {
 	db *sql.DB
 }
 
-func NewRepository(db *sql.DB) Repository {
+func NewRepository(db *sql.DB) IRepository {
 	return &repository{
 		db: db,
 	}
