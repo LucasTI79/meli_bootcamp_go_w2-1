@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
@@ -18,6 +20,7 @@ func NewSeller(s seller.Service) *Seller {
 		sellerService: s,
 		// sellerService: s,
 	}
+
 }
 
 func (s *Seller) GetAll() gin.HandlerFunc {
@@ -36,7 +39,25 @@ func (s *Seller) GetAll() gin.HandlerFunc {
 }
 
 func (s *Seller) Get() gin.HandlerFunc {
-	return func(c *gin.Context) {}
+	return func(c *gin.Context) {
+		id, _ := c.Params.Get("id")
+		parsedId, err := strconv.Atoi(id)
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, "id received is invalid")
+			return
+		}
+		foundSeller, err := s.sellerService.Get(c, parsedId)
+		if err != nil {
+			if errors.Is(err, seller.ErrNotFound) {
+				web.Error(c, http.StatusNotFound, "could not find id %v", parsedId)
+				return
+			} else {
+				web.Error(c, http.StatusInternalServerError, "internal server error")
+				return
+			}
+		}
+		web.Response(c, 200, foundSeller)
+	}
 }
 
 func (s *Seller) Create() gin.HandlerFunc {

@@ -42,7 +42,8 @@ func (r *router) buildSellerRoutes() {
 	repo := seller.NewRepository(r.db)
 	service := seller.NewService(repo)
 	handler := handler.NewSeller(service)
-	r.rg.GET("/seller", handler.GetAll())
+	r.rg.GET("/sellers", handler.GetAll())
+	r.rg.GET("/sellers/:id", handler.Get())
 }
 
 func (r *router) buildProductRoutes() {}
