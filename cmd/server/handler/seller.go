@@ -101,5 +101,23 @@ func (s *Seller) Update() gin.HandlerFunc {
 }
 
 func (s *Seller) Delete() gin.HandlerFunc {
-	return func(c *gin.Context) {}
+	return func(c *gin.Context) {
+		id, _ := c.Params.Get("id")
+		parsedId, err := strconv.Atoi(id)
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, "id received is invalid")
+			return
+		}
+		err = s.sellerService.Delete(c, parsedId)
+		if err != nil {
+			if errors.Is(err, seller.ErrNotFound) {
+				web.Error(c, http.StatusNotFound, "could not find seller with id %v", parsedId)
+				return
+			} else {
+				web.Error(c, http.StatusInternalServerError, "internal server error")
+				return
+			}
+		}
+		web.Response(c, http.StatusNoContent, "")
+	}
 }

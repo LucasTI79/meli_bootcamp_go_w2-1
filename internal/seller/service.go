@@ -17,6 +17,7 @@ type Service interface {
 	GetAll(ctx context.Context) ([]domain.Seller, error)
 	Get(ctx context.Context, id int) (domain.Seller, error)
 	Save(ctx context.Context, seller domain.CreateSeller) (int, error)
+	Delete(ctc context.Context, id int) error
 }
 
 type service struct {
@@ -43,6 +44,13 @@ func (s *service) Save(ctx context.Context, seller domain.CreateSeller) (int, er
 		return 0, err
 	}
 	return id, nil
+}
+func (s *service) Delete(ctx context.Context, id int) error {
+	err := s.repository.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 func NewService(r Repository) Service {
 	return &service{repository: r}
