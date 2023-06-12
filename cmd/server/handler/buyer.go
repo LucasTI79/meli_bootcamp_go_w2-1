@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
 
 type Buyer struct {
@@ -41,7 +42,43 @@ func (b *Buyer) GetAll() gin.HandlerFunc {
 }
 
 func (b *Buyer) Create() gin.HandlerFunc {
-	return func(c *gin.Context) {}
+	return func(c *gin.Context) {
+
+		var req domain.Request
+		err := c.Bind(&req)
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, "Existem erros na formatacao do Json. Nao foi possível realizar o parse.")
+			return	
+		}
+
+		if req.CardNumberID == "" {
+			web.Error(c, http.StatusUnprocessableEntity, "O Card Number do comprador é obrigatório")
+			return
+		}
+		if req.FirstName == "" {
+			web.Error(c, http.StatusUnprocessableEntity, "O Nome do comprador é obrigatório")
+			return
+		}
+		if req.LastName== "" {
+			web.Error(c, http.StatusUnprocessableEntity, "O Sobrenome do comprador é obrigatório")
+			return
+		}
+
+		buyerId, err := b.buyerService.Save(c, req)
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		buyer := domain.Buyer{}
+		buyer.ID = buyerId
+		buyer.CardNumberID = req.CardNumberID
+		buyer.FirstName = req.FirstName
+		buyer.LastName = req.LastName
+		
+		web.Success(c, http.StatusCreated, buyer)
+
+	}
 }
 
 func (b *Buyer) Update() gin.HandlerFunc {

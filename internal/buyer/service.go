@@ -13,6 +13,7 @@ var (
 
 type IService interface{
 	GetAll(c *gin.Context) ([]domain.Buyer, error)
+	Save(c *gin.Context, b domain.Request) (int, error)
 	
 }
 
@@ -33,4 +34,19 @@ func (s *service) GetAll(c *gin.Context) ([]domain.Buyer, error) {
 	}
 
 	return buyers, nil
+}
+
+func (s *service) Save(c *gin.Context, b domain.Request) (int, error) {
+	exists := s.repository.Exists(c, b.CardNumberID)
+
+	if !exists {
+		id, err := s.repository.Save(c, b)
+		if err != nil {
+			return 0, err
+		}
+		return id, nil 
+	} else {
+		return 0, errors.New("Nao é possível cadastrar um comprador com Card Number repetido.")
+	}
+
 }
