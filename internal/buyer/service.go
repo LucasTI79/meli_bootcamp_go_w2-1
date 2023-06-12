@@ -15,7 +15,9 @@ type IService interface{
 	GetAll(c *gin.Context) ([]domain.Buyer, error)
 	Get(c *gin.Context, id int) (domain.Buyer, error)
 	Save(c *gin.Context, b domain.Request) (int, error)
+	Update(c *gin.Context, b domain.Buyer) error
 	Delete(c *gin.Context, id int) error
+	Exists(c *gin.Context, cardNumberID string) bool
 }
 
 type service struct{
@@ -61,8 +63,18 @@ func (s *service) Save(c *gin.Context, b domain.Request) (int, error) {
 
 }
 
+func (s *service) Update(c *gin.Context, b domain.Buyer) error {
+
+	return s.repository.Update(c, b)
+	
+}
+
 func (s *service) Delete(c *gin.Context, id int) error {
 	
 	return s.repository.Delete(c, id)
 
+}
+
+func (s *service) Exists(c *gin.Context, cardNumberID string) bool {
+	return s.repository.Exists(c, cardNumberID)
 }

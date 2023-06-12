@@ -85,13 +85,13 @@ func (r *repository) Save(ctx context.Context, b domain.Request) (int, error) {
 }
 
 func (r *repository) Update(ctx context.Context, b domain.Buyer) error {
-	query := "UPDATE buyers SET first_name=?, last_name=?  WHERE id=?"
+	query := "UPDATE buyers SET card_number_id=?, first_name=?, last_name=?  WHERE id=?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return err
 	}
 
-	res, err := stmt.Exec(&b.FirstName, &b.LastName, &b.ID)
+	res, err := stmt.Exec(&b.CardNumberID, &b.FirstName, &b.LastName, &b.ID)
 	if err != nil {
 		return err
 	}

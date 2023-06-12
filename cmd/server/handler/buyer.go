@@ -100,7 +100,60 @@ func (b *Buyer) Create() gin.HandlerFunc {
 }
 
 func (b *Buyer) Update() gin.HandlerFunc {
-	return func(c *gin.Context) {}
+	return func(c *gin.Context) {
+		idParam := c.Param("id")
+		id, err := strconv.Atoi(idParam)
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, "ID inválido")
+			return
+		}
+
+		var req domain.Request
+		err = c.Bind(&req)
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, "Existem erros na formatacao do Json. Nao foi possível realizar o parse.")
+			return	
+		}
+		
+		if req.CardNumberID == "" && req.FirstName == "" && req.LastName== "" {
+			web.Error(c, http.StatusUnprocessableEntity, "Informe pelo menos um campo para atualizacao")
+			return
+		}
+
+		buyer, err := b.buyerService.Get(c, id)
+		if err != nil {
+			web.Error(c, http.StatusNotFound, "Usuário nao encontrado")
+			return
+		}	
+		
+		if req.CardNumberID != "" {
+			exists := b.buyerService.Exists(c, req.CardNumberID)
+
+			if !exists {
+				buyer.CardNumberID = req.CardNumberID
+			} else {
+				web.Error(c, http.StatusBadRequest, "Nao é possível atualizar um comprador com Card Number repetido.") 
+				return
+			}
+		}
+
+		if req.FirstName != "" {
+			buyer.FirstName = req.FirstName
+		}
+
+		if req.LastName != "" {
+			buyer.LastName = req.LastName
+		}
+
+		err = b.buyerService.Update(c, buyer)
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, err.Error())
+			return
+		}	
+
+		web.Success(c, http.StatusOK, buyer)
+
+	}
 }
 
 func (b *Buyer) Delete() gin.HandlerFunc {
