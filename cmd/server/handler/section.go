@@ -108,13 +108,14 @@ func (s *Section) Save() gin.HandlerFunc {
 		if req.Section_number != 0 {
 			s.service.Exists(req.Section_number)
 		}
-		sectionSaved, err := s.service.Save(req.Section_number, req.Current_temperature, req.Minimum_temperature, req.Current_capacity, req.Minimum_capacity, req.Maximum_capacity,
+		sectionId, err := s.service.Save(req.Section_number, req.Current_temperature, req.Minimum_temperature, req.Current_capacity, req.Minimum_capacity, req.Maximum_capacity,
 			req.Warehouse_id, req.Id_product_type)
 		if err != nil {
 			web.Error(ctx, http.StatusNotFound, "Error")
 			return
 		}
-		web.Success(ctx, http.StatusCreated, sectionSaved)
+		sectionCreated, err := s.service.Get(sectionId)
+		web.Success(ctx, http.StatusCreated, sectionCreated)
 	}
 }
 
