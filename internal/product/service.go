@@ -5,17 +5,15 @@ import (
 	"errors"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
-)
-
-// Errors
-var (
-	ErrNotFound = errors.New("product not found")
+	apperr "github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/errors"
 )
 
 type Service interface {
 	GetAll(context.Context) ([]domain.Product, error)
 	Get(context.Context, int) (domain.Product, error)
 	Create(context.Context, domain.Product) (*domain.Product, error)
+	Update(context.Context, int, domain.ProductOptional) (*domain.Product, error)
+	Delete(context.Context, int) error
 }
 
 type service struct {
@@ -77,4 +75,7 @@ func (s *service) Update(ctx context.Context, id int, product domain.ProductOpti
 	productResponse, _ := s.repository.Get(ctx, id)
 	return &productResponse, nil
 }
+
+func (s *service) Delete(ctx context.Context, id int) error {
+	return s.repository.Delete(ctx, id)
 }
