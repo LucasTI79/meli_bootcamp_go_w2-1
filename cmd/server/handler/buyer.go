@@ -19,6 +19,16 @@ func NewBuyer(b buyer.IService) *Buyer {
 	}
 }
 
+// Get godoc
+// @Summary List buyer based on ID
+// @Description get buyer by ID
+// @Tags Buyers
+// @Accept json
+// @Produce json
+// @Success 200 {object} domain.Buyer "List a specific Buyer according to ID"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Buyer not found"
+// @Router /buyers/:id [get]
 func (b *Buyer) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -40,6 +50,16 @@ func (b *Buyer) Get() gin.HandlerFunc {
 	}
 }
 
+// GetAll godoc
+// @Summary List all buyers
+// @Description getAll buyers
+// @Tags Buyers
+// @Accept json
+// @Produce json
+// @Success 200 {object} domain.Buyer "List of all Buyers"
+// @Failure 204 {object} web.ErrorResponse "Buyer not found"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Router /buyers [get]
 func (b *Buyer) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -59,6 +79,18 @@ func (b *Buyer) GetAll() gin.HandlerFunc {
 	}
 }
 
+// Create godoc
+// @Summary Create new buyer
+// @Description Create a new buyer based on the provided JSON payload
+// @Tags Buyers
+// @Accept json
+// @Produce json
+// @Param buyer body domain.Request true "Buyer to be created"
+// @Success 201 {object} domain.Buyer "Created buyer"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 422 {object} web.ErrorResponse "Json Parse error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Router /buyers [post]
 func (b *Buyer) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -84,7 +116,7 @@ func (b *Buyer) Create() gin.HandlerFunc {
 
 		buyerId, err := b.buyerService.Save(c, req)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, err.Error())
+			web.Error(c, http.StatusConflict, err.Error())
 			return
 		}
 
@@ -99,6 +131,20 @@ func (b *Buyer) Create() gin.HandlerFunc {
 	}
 }
 
+// Update godoc
+// @Summary Update a buyer based on ID
+// @Description Update a specific buyer based on the provided JSON payload
+// @Tags Buyers
+// @Accept json
+// @Produce json
+// @Param buyer body domain.Request true "Buyer to be updated"
+// @Success 200 {object} domain.Buyer "Buyer with updated information"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Buyer not found"
+// @Failure 422 {object} web.ErrorResponse "Json Parse error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /buyers/:id [patch]
 func (b *Buyer) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Param("id")
@@ -132,7 +178,7 @@ func (b *Buyer) Update() gin.HandlerFunc {
 			if !exists {
 				buyer.CardNumberID = req.CardNumberID
 			} else {
-				web.Error(c, http.StatusBadRequest, "Nao é possível atualizar um comprador com Card Number repetido.") 
+				web.Error(c, http.StatusConflict, "Nao é possível atualizar um comprador com Card Number repetido.") 
 				return
 			}
 		}
@@ -147,7 +193,7 @@ func (b *Buyer) Update() gin.HandlerFunc {
 
 		err = b.buyerService.Update(c, buyer)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, err.Error())
+			web.Error(c, http.StatusInternalServerError, err.Error())
 			return
 		}	
 
@@ -156,6 +202,15 @@ func (b *Buyer) Update() gin.HandlerFunc {
 	}
 }
 
+// Delete godoc
+// @Summary Delete a buyer based on ID
+// @Description Delete a specific buyer based on ID
+// @Tags Buyers
+// @Success 204 "No content"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Buyer not found"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /buyers/:id [delete]
 func (b *Buyer) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Param("id")

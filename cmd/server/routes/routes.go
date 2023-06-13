@@ -2,10 +2,13 @@ package routes
 
 import (
 	"database/sql"
-	
-	"github.com/gin-gonic/gin"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
+
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
+	"github.com/gin-gonic/gin"
+	"github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type IRouter interface {
@@ -24,6 +27,9 @@ func NewRouter(eng *gin.Engine, db *sql.DB) IRouter {
 
 func (r *router) MapRoutes() {
 	r.setGroup()
+
+	docs.SwaggerInfo.Host = "http://localhost:8080/"
+	r.rg.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.buildSellerRoutes()
 	r.buildProductRoutes()
