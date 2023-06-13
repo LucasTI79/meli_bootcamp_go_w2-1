@@ -72,6 +72,14 @@ func (s *Section) Save() gin.HandlerFunc {
 			web.Error(ctx, http.StatusUnprocessableEntity, "Error: Necessário adicionar todas as informações.")
 			return
 		}
+		var err error
+		if req.Section_number != 0 {
+			req.Section_number, err = s.service.Exists(req.Section_number)
+			if err != nil {
+				web.Error(ctx, http.StatusBadRequest, "Error: Número de seção já cadastrado.")
+				return
+			}
+		}
 		sectionSaved, err := s.service.Save(req.Section_number, req.Current_temperature, req.Minimum_temperature,
 			req.Current_capacity, req.Maximum_capacity, req.Warehouse_id, req.Id_product_type)
 		if err != nil {
