@@ -55,7 +55,29 @@ func (p *Product) GetAll() gin.HandlerFunc {
 }
 
 func (p *Product) Get() gin.HandlerFunc {
-	return func(c *gin.Context) {}
+	return func(c *gin.Context) {
+		requestId := c.Param("id")
+		id, err := strconv.Atoi(requestId)
+
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, "id '%s' is not valid", requestId)
+			return
+		}
+
+		product, err := p.service.Get(c, id)
+
+		if err != nil {
+			if _, ok := err.(*apperr.ResourceNotFound); ok {
+				web.Error(c, http.StatusNotFound, err.Error())
+				return
+			}
+
+			web.Error(c, http.StatusInternalServerError, apperr.NewInternalServerError().Error())
+			return
+		}
+
+		web.Success(c, http.StatusOK, product)
+	}
 }
 
 func (p *Product) Create() gin.HandlerFunc {
