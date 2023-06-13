@@ -3,6 +3,8 @@ package routes
 import (
 	"database/sql"
 
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/gin-gonic/gin"
 )
 
@@ -35,17 +37,22 @@ func (r *router) setGroup() {
 	r.rg = r.eng.Group("/api/v1")
 }
 
-func (r *router) buildSellerRoutes() {
-	// Example
-	// repo := seller.NewRepository(r.db)
-	// service := seller.NewService(repo)
-	// handler := handler.NewSeller(service)
-	// r.r.GET("/seller", handler.GetAll)
-}
+func (r *router) buildSellerRoutes() {}
 
 func (r *router) buildProductRoutes() {}
 
-func (r *router) buildSectionRoutes() {}
+func (r *router) buildSectionRoutes() {
+	repository := section.NewRepository(r.db)
+	service := section.NewService(repository)
+	handler := handler.NewSection(service)
+
+	r.rg.GET("/sections", handler.GetAll())
+	r.rg.POST("/section", handler.Save())
+	r.rg.PATCH("/section/:id", handler.Update())
+	r.rg.GET("/section/:id", handler.Get())
+	r.rg.GET("/section/sectionNumber", handler.Exists())
+	r.rg.DELETE("/section/:id", handler.Delete())
+}
 
 func (r *router) buildWarehouseRoutes() {}
 
