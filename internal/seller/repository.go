@@ -3,7 +3,6 @@ package seller
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"strings"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
@@ -87,23 +86,6 @@ func (r *repository) Save(ctx context.Context, s domain.CreateSeller) (int, erro
 }
 
 func (r *repository) Update(ctx context.Context, s domain.UpdateSeller) error {
-	/* query := "UPDATE sellers SET cid=?, company_name=?, address=?, telephone=? WHERE id=?"
-	stmt, err := r.db.Prepare(query)
-	if err != nil {
-		return err
-	}
-
-	res, err := stmt.Exec(s.CID, s.CompanyName, s.Address, s.Telephone, s.ID)
-	if err != nil {
-		return err
-	}
-
-	_, err = res.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	return nil */
 	query := "UPDATE sellers SET "
 	args := []interface{}{}
 
@@ -132,7 +114,6 @@ func (r *repository) Update(ctx context.Context, s domain.UpdateSeller) error {
 	query += " WHERE id=?"
 	args = append(args, s.ID)
 
-	fmt.Println(query, args)
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return err
