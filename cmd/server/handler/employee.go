@@ -28,6 +28,17 @@ func NewEmployee(e employee.Service) *Employee {
 	}
 }
 
+// Get godoc
+// @Summary Get a employee
+// @Description Get a employee based on the provided JSON payload
+// @Tags Employees
+// @Accept json
+// @Produce json
+// @Success 200 {object} domain.Employee "Employee"
+// @Failure 400 {object} web.ErrorResponse"Validation error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /employees/:id [get]
 func (e *Employee) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
@@ -45,6 +56,17 @@ func (e *Employee) Get() gin.HandlerFunc {
 	}
 }
 
+// Get All Employee godoc
+// @Summary Get all employee
+// @Description Get employee based on the provided JSON payload
+// @Tags Employees
+// @Accept json
+// @Produce json
+// @Success 200 {object} []domain.Employee "Employee"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /employees [get]
 func (e *Employee) GetAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		employees, err := e.service.GetAll()
@@ -56,6 +78,17 @@ func (e *Employee) GetAll() gin.HandlerFunc {
 	}
 }
 
+// Exists godoc
+// @Summary Exist card number
+// @Description Validate card number
+// @Tags Employees
+// @Accept json
+// @Produce json
+// @Success 204 {object} string "Card number"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /employees/cardNumber [get]
 func (e *Employee) Exists() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req request
@@ -69,13 +102,25 @@ func (e *Employee) Exists() gin.HandlerFunc {
 		}
 		cardNumberId, err := e.service.Exists(req.Card_number_id)
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "Error")
+			web.Error(ctx, http.StatusNoContent, "Não cadastrado.")
 			return
 		}
 		web.Success(ctx, http.StatusOK, cardNumberId)
 	}
 }
 
+// Create godoc
+// @Summary Create a new employee
+// @Description Create a new employee based on the provided JSON payload
+// @Tags Employees
+// @Accept json
+// @Produce json
+// @Param request body domain.Employee true "Employee data"
+// @Success 201 {object} domain.Employee "Created employee"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /employees [post]
 func (e *Employee) Save() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req request
@@ -87,14 +132,6 @@ func (e *Employee) Save() gin.HandlerFunc {
 			web.Error(ctx, http.StatusUnprocessableEntity, "Error: Necessário adicionar todas as informações.")
 			return
 		}
-		var err error
-		if req.Card_number_id != "" {
-			req.Card_number_id, err = e.service.Exists(req.Card_number_id)
-			if err != nil {
-				web.Error(ctx, http.StatusBadRequest, "Error: Número de cartão já cadastrado.")
-				return
-			}
-		}
 		employeeSaved, err := e.service.Save(req.Card_number_id, req.First_name, req.Last_name, req.Warehouse_id)
 		if err != nil {
 			web.Error(ctx, http.StatusNotFound, "Error")
@@ -104,6 +141,18 @@ func (e *Employee) Save() gin.HandlerFunc {
 	}
 }
 
+// Update godoc
+// @Summary Update a employee
+// @Description Update employee based on the provided JSON payload
+// @Tags Employees
+// @Accept json
+// @Produce json
+// @Param request body domain.Employee true "Employee data"
+// @Success 200 {object} domain.Employee "Updated employee"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /employees/:id [patch]
 func (e *Employee) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
@@ -167,6 +216,17 @@ func (e *Employee) Update() gin.HandlerFunc {
 	}
 }
 
+// Delete godoc
+// @Summary Delete employee
+// @Description Delete employee based on the provided JSON payload
+// @Tags Employees
+// @Accept json
+// @Produce json
+// @Success 204
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /employees/:id [delete]
 func (e *Employee) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)

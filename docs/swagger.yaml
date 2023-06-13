@@ -1,0 +1,207 @@
+definitions:
+  github_com_extmatperez_meli_bootcamp_go_w2-1_internal_domain.Employee:
+    properties:
+      card_number_id:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      warehouse_id:
+        type: integer
+    type: object
+  github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+info:
+  contact:
+    name: API Support
+    url: https://developers.mercadolibre.com.ar/support
+  description: This API Handle MELI Products.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: https://developers.mercadolibre.com.ar/es_ar/terminos-y-condiciones
+  version: "1.0"
+paths:
+  /employee:
+    post:
+      consumes:
+      - application/json
+      description: Create a new employee based on the provided JSON payload
+      parameters:
+      - description: Employee data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_internal_domain.Employee'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created employee
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_internal_domain.Employee'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+        "409":
+          description: Conflict error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+      summary: Create a new employee
+      tags:
+      - Employees
+  /employee/cardNumber:
+    get:
+      consumes:
+      - application/json
+      description: Validate card number
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Card number
+          schema:
+            type: string
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+        "409":
+          description: Conflict error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+      summary: Exist card number
+      tags:
+      - Employees
+  /employees:
+    get:
+      consumes:
+      - application/json
+      description: Get employee based on the provided JSON payload
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Employee
+          schema:
+            items:
+              $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_internal_domain.Employee'
+            type: array
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+        "409":
+          description: Conflict error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+      summary: Get all employee
+      tags:
+      - Employees
+  /employees/:id:
+    delete:
+      consumes:
+      - application/json
+      description: Delete employee based on the provided JSON payload
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+        "409":
+          description: Conflict error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+      summary: Delete employee
+      tags:
+      - Employees
+    get:
+      consumes:
+      - application/json
+      description: Get a employee based on the provided JSON payload
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Employee
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_internal_domain.Employee'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+        "409":
+          description: Conflict error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+      summary: Get a employee
+      tags:
+      - Employees
+    patch:
+      consumes:
+      - application/json
+      description: Update employee based on the provided JSON payload
+      parameters:
+      - description: Employee data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_internal_domain.Employee'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated employee
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_internal_domain.Employee'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+        "409":
+          description: Conflict error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_extmatperez_meli_bootcamp_go_w2-1_pkg_web.ErrorResponse'
+      summary: Update a employee
+      tags:
+      - Employees
+swagger: "2.0"

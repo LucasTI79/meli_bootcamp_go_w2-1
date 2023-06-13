@@ -12,7 +12,7 @@ type response struct {
 	Data interface{} `json:"data"`
 }
 
-type errorResponse struct {
+type ErrorResponse struct {
 	Status  int    `json:"-"`
 	Code    string `json:"code"`
 	Message string `json:"message"`
@@ -33,7 +33,7 @@ type Data struct {
 }
 
 func Error(c *gin.Context, status int, format string, args ...interface{}) {
-	err := errorResponse{
+	err := ErrorResponse{
 		Code:    strings.ReplaceAll(strings.ToLower(http.StatusText(status)), " ", "_"),
 		Message: fmt.Sprintf(format, args...),
 		Status:  status,
