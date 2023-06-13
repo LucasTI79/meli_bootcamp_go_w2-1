@@ -131,6 +131,9 @@ func (e *Employee) Save() gin.HandlerFunc {
 			web.Error(ctx, http.StatusUnprocessableEntity, "Error: Necessário adicionar todas as informações.")
 			return
 		}
+		if req.Card_number_id != "" {
+			e.service.Exists(req.Card_number_id)
+		}
 		employeeSaved, err := e.service.Save(req.Card_number_id, req.First_name, req.Last_name, req.Warehouse_id)
 		if err != nil {
 			web.Error(ctx, http.StatusNotFound, "Error")
@@ -179,6 +182,10 @@ func (e *Employee) Update() gin.HandlerFunc {
 			return
 		}
 
+		if req.Card_number_id != "" {
+			e.service.Exists(req.Card_number_id)
+			employee.CardNumberID = req.Card_number_id
+		}
 		if req.First_name != "" {
 			employee.FirstName = req.First_name
 		}
