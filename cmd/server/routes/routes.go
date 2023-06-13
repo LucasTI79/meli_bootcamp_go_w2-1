@@ -30,7 +30,7 @@ func (r *router) MapRoutes() {
 	r.setGroup()
 
 	docs.SwaggerInfo.Title = "Meli Bootcamp API"
-	docs.SwaggerInfo.Description = "An API for handle with MELI resources ecossystem"
+	docs.SwaggerInfo.Description = "An API for handle with MELI resources ecosystem"
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	docs.SwaggerInfo.Host = os.Getenv("HOST")
@@ -60,12 +60,12 @@ func (r *router) buildProductRoutes() {
 	repo := product.NewRepository(r.db)
 	service := product.NewService(repo)
 	handler := handler.NewProduct(service)
-	routerGroup := r.rg.Group("/products")
-	routerGroup.GET("/", handler.GetAll())
-	routerGroup.GET("/:id", handler.Get())
-	routerGroup.POST("/", handler.Create())
-	routerGroup.PATCH("/:id", handler.Update())
-	routerGroup.DELETE("/:id", handler.Delete())
+	productRoutes := r.rg.Group("/products")
+	productRoutes.GET("/", handler.GetAll())
+	productRoutes.GET("/:id", handler.Get())
+	productRoutes.POST("/", handler.Create())
+	productRoutes.PATCH("/:id", handler.Update())
+	productRoutes.DELETE("/:id", handler.Delete())
 }
 
 func (r *router) buildSectionRoutes() {}

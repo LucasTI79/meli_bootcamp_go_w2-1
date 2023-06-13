@@ -11,7 +11,7 @@ type Service interface {
 	GetAll(context.Context) ([]domain.Product, error)
 	Get(context.Context, int) (domain.Product, error)
 	Create(context.Context, domain.Product) (*domain.Product, error)
-	Update(context.Context, int, domain.ProductOptional) (*domain.Product, error)
+	Update(context.Context, int, domain.UpdateProduct) (*domain.Product, error)
 	Delete(context.Context, int) error
 }
 
@@ -47,23 +47,23 @@ func (s *service) Create(ctx context.Context, product domain.Product) (*domain.P
 	return &created, nil
 }
 
-func (s *service) Update(ctx context.Context, id int, product domain.ProductOptional) (*domain.Product, error) {
+func (s *service) Update(ctx context.Context, id int, product domain.UpdateProduct) (*domain.Product, error) {
 	productFound, err := s.repository.Get(ctx, id)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if product.ProductCode.HasValue {
-		productCode := product.ProductCode.Value.(*string)
-		productCodeExists := s.repository.Exists(ctx, *productCode)
+	if product.ProductCode != nil {
+		productCode := *product.ProductCode
+		productCodeExists := s.repository.Exists(ctx, productCode)
 
-		if productCodeExists && *productCode != productFound.ProductCode {
-			return nil, apperr.NewResourceAlreadyExists("product with code '%s' already exists", *productCode)
+		if productCodeExists && productCode != productFound.ProductCode {
+			return nil, apperr.NewResourceAlreadyExists("product with code '%s' already exists", productCode)
 		}
 	}
 
-	productFound = productFound.Overlap(product)
+	productFound.Overlap(product)
 
 	err = s.repository.Update(ctx, productFound)
 

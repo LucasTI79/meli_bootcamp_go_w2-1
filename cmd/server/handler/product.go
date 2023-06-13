@@ -60,19 +60,19 @@ type UpdateProductRequest struct {
 	SellerID       *int     `json:"seller_id"`
 }
 
-func (r UpdateProductRequest) ToProductOptional() domain.ProductOptional {
-	return domain.ProductOptional{
-		Description:    domain.Optional{Value: r.Description, HasValue: r.Description != nil},
-		ExpirationRate: domain.Optional{Value: r.ExpirationRate, HasValue: r.ExpirationRate != nil},
-		FreezingRate:   domain.Optional{Value: r.FreezingRate, HasValue: r.FreezingRate != nil},
-		Height:         domain.Optional{Value: r.Height, HasValue: r.Height != nil},
-		Length:         domain.Optional{Value: r.Length, HasValue: r.Length != nil},
-		Netweight:      domain.Optional{Value: r.Netweight, HasValue: r.Netweight != nil},
-		ProductCode:    domain.Optional{Value: r.ProductCode, HasValue: r.ProductCode != nil},
-		RecomFreezTemp: domain.Optional{Value: r.RecomFreezTemp, HasValue: r.RecomFreezTemp != nil},
-		Width:          domain.Optional{Value: r.Width, HasValue: r.Width != nil},
-		ProductTypeID:  domain.Optional{Value: r.ProductTypeID, HasValue: r.ProductTypeID != nil},
-		SellerID:       domain.Optional{Value: r.SellerID, HasValue: r.SellerID != nil},
+func (r UpdateProductRequest) ToUpdateProduct() domain.UpdateProduct {
+	return domain.UpdateProduct{
+		Description:    r.Description,
+		ExpirationRate: r.ExpirationRate,
+		FreezingRate:   r.FreezingRate,
+		Height:         r.Height,
+		Length:         r.Length,
+		Netweight:      r.Netweight,
+		ProductCode:    r.ProductCode,
+		RecomFreezTemp: r.RecomFreezTemp,
+		Width:          r.Width,
+		ProductTypeID:  r.ProductTypeID,
+		SellerID:       r.SellerID,
 	}
 }
 
@@ -226,7 +226,7 @@ func (p *Product) Update() gin.HandlerFunc {
 			return
 		}
 
-		response, err := p.service.Update(c, id, request.ToProductOptional())
+		response, err := p.service.Update(c, id, request.ToUpdateProduct())
 
 		if err != nil {
 			if _, ok := err.(*apperr.ResourceNotFound); ok {
