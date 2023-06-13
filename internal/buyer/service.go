@@ -8,7 +8,8 @@ import (
 
 // Errors
 var (
-	ErrNotFound = errors.New("buyer not found")
+	ErrNotFound = errors.New("Comprador não encontrado.")
+	ErrAlreadyExists = errors.New("Não é possível cadastrar um comprador com Card Number repetido.")
 )
 
 type IService interface{
@@ -42,7 +43,7 @@ func (s *service) GetAll(c *gin.Context) ([]domain.Buyer, error) {
 func (s *service) Get(c *gin.Context, id int) (domain.Buyer, error) {
 	buyer, err := s.repository.Get(c, id)
 	if err != nil {
-		return domain.Buyer{}, err
+		return domain.Buyer{}, ErrNotFound
 	}
 
 	return buyer, nil
@@ -58,7 +59,7 @@ func (s *service) Save(c *gin.Context, b domain.Request) (int, error) {
 		}
 		return id, nil 
 	} else {
-		return 0, errors.New("Nao é possível cadastrar um comprador com Card Number repetido.")
+		return 0, ErrAlreadyExists
 	}
 
 }
@@ -76,5 +77,6 @@ func (s *service) Delete(c *gin.Context, id int) error {
 }
 
 func (s *service) Exists(c *gin.Context, cardNumberID string) bool {
+	
 	return s.repository.Exists(c, cardNumberID)
 }
