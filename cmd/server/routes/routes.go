@@ -2,10 +2,14 @@ package routes
 
 import (
 	"database/sql"
+	"os"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Router interface {
@@ -24,6 +28,13 @@ func NewRouter(eng *gin.Engine, db *sql.DB) Router {
 
 func (r *router) MapRoutes() {
 	r.setGroup()
+
+	docs.SwaggerInfo.Title = "Meli Bootcamp API"
+	docs.SwaggerInfo.Description = "An API for handle with MELI resources ecossystem"
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.BasePath = "/api/v1"
+	docs.SwaggerInfo.Host = os.Getenv("HOST")
+	r.rg.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.buildSellerRoutes()
 	r.buildProductRoutes()

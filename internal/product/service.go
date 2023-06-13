@@ -2,7 +2,6 @@ package product
 
 import (
 	"context"
-	"errors"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	apperr "github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/errors"

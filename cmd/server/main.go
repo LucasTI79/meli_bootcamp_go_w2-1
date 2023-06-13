@@ -3,14 +3,21 @@ package main
 import (
 	"database/sql"
 
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/routes"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/routes"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	// NO MODIFICAR
 	db, err := sql.Open("mysql", "meli_sprint_user:Meli_Sprint#123@/melisprint")
+	if err != nil {
+		panic(err)
+	}
+
+	err = godotenv.Load("../../.env")
+
 	if err != nil {
 		panic(err)
 	}

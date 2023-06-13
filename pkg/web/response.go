@@ -14,7 +14,7 @@ type response struct {
 	Data interface{} `json:"data"`
 }
 
-type errorResponse struct {
+type ErrorResponse struct {
 	Status   int      `json:"-"`
 	Code     string   `json:"code"`
 	Messages []string `json:"message"`
@@ -31,7 +31,7 @@ func Success(c *gin.Context, status int, data interface{}) {
 // NewErrorf creates a new error with the given status code and the message
 // formatted according to args and format.
 func Error(c *gin.Context, status int, format string, args ...interface{}) {
-	err := errorResponse{
+	err := ErrorResponse{
 		Code: strings.ReplaceAll(strings.ToLower(http.StatusText(status)), " ", "_"),
 		Messages: []string{
 			fmt.Sprintf(format, args...),
@@ -55,7 +55,7 @@ func ValidationError(c *gin.Context, err error) {
 		errorMessages = append(errorMessages, fmt.Sprintf("the field '%s' must be a '%s'", marshallingError.Field, marshallingError.Type.String()))
 	}
 
-	response := errorResponse{
+	response := ErrorResponse{
 		Code:     strings.ReplaceAll(strings.ToLower(http.StatusText(status)), " ", "_"),
 		Messages: errorMessages,
 		Status:   status,

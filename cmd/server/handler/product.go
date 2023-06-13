@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
+	apperr "github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/errors"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
 )
@@ -92,13 +94,39 @@ func NewProduct(service product.Service) *Product {
 	return &Product{service}
 }
 
+// Create godoc
+// @Summary List products
+// @Description List all products
+// @Tags Products
+// @Accept json
+// @Produce json
+// @Success 200 {object} []domain.Product "List of products"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /products [get]
 func (p *Product) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		products, _ := p.service.GetAll(c)
+		products, err := p.service.GetAll(c)
+
+		if err != nil {
+			web.Error(c, http.StatusInternalServerError, apperr.NewInternalServerError().Error())
+		}
+
 		web.Success(c, http.StatusOK, products)
 	}
 }
 
+// Get godoc
+// @Summary Get a product by id
+// @Description Get a product based on the provided id
+// @Tags Products
+// @Accept json
+// @Produce json
+// @Param id path int true "Product Id"
+// @Success 200 {object} []domain.Product "Created product"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /products/{id} [get]
 func (p *Product) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		requestId := c.Param("id")
@@ -125,6 +153,18 @@ func (p *Product) Get() gin.HandlerFunc {
 	}
 }
 
+// Create godoc
+// @Summary Create a new product
+// @Description Create a new product based on the provided JSON payload
+// @Tags Products
+// @Accept json
+// @Produce json
+// @Param request body CreateProductRequest true "Product data"
+// @Success 201 {object} domain.Product "Created product"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /products [post]
 func (p *Product) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var request CreateProductRequest
@@ -150,6 +190,21 @@ func (p *Product) Create() gin.HandlerFunc {
 	}
 }
 
+// Update godoc
+// @Summary Update a product
+// @Description Update an existent product based on the provided JSON payload
+// @Tags Products
+// @Accept json
+// @Produce json
+// @Param id path int true "Product id"
+// @Param request body UpdateProductRequest true "Product data"
+// @Success 200 {object} domain.Product "Updated product"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /products/{id} [patch]
 func (p *Product) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		requestId := c.Param("id")
@@ -190,6 +245,18 @@ func (p *Product) Update() gin.HandlerFunc {
 	}
 }
 
+// Delete godoc
+// @Summary Delete a product
+// @Description Delete a product based on the provided JSON payload
+// @Tags Products
+// @Accept json
+// @Produce json
+// @Param id path int true "Product id"
+// @Success 204
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /products/{id} [delete]
 func (p *Product) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		requestId := c.Param("id")
