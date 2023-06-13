@@ -25,11 +25,11 @@ func NewBuyer(b buyer.IService) *Buyer {
 // @Tags Buyers
 // @Accept json
 // @Produce json
+// @Param id path int true "ID do comprador"
 // @Success 200 {object} domain.Buyer "List a specific Buyer according to ID"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Buyer not found"
-// @Router /buyers/{id} [get]
-// @param id path int true "ID do comprador"
+// @Router /api/v1/buyers/{id} [get]
 func (b *Buyer) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -60,7 +60,7 @@ func (b *Buyer) Get() gin.HandlerFunc {
 // @Success 200 {object} domain.Buyer "List of all Buyers"
 // @Failure 204 {object} web.ErrorResponse "Buyer not found"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Router /buyers [get]
+// @Router /api/v1/buyers [get]
 func (b *Buyer) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -91,7 +91,7 @@ func (b *Buyer) GetAll() gin.HandlerFunc {
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 422 {object} web.ErrorResponse "Json Parse error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
-// @Router /buyers [post]
+// @Router /api/v1/buyers [post]
 func (b *Buyer) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -146,7 +146,7 @@ func (b *Buyer) Create() gin.HandlerFunc {
 // @Failure 422 {object} web.ErrorResponse "Json Parse error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /buyers/{id} [patch]
+// @Router /api/v1/buyers/{id} [patch]
 func (b *Buyer) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Param("id")
@@ -208,11 +208,12 @@ func (b *Buyer) Update() gin.HandlerFunc {
 // @Summary Delete a buyer based on ID
 // @Description Delete a specific buyer based on ID
 // @Tags Buyers
+// @Param id path int true "ID do comprador"
 // @Success 204 "No content"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Buyer not found"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /buyers/:id [delete]
+// @Router /api/v1/buyers/{id} [delete]
 func (b *Buyer) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Param("id")

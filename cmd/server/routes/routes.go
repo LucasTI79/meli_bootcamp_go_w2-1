@@ -28,7 +28,7 @@ func NewRouter(eng *gin.Engine, db *sql.DB) IRouter {
 func (r *router) MapRoutes() {
 	r.setGroup()
 
-	docs.SwaggerInfo.Host = "http://localhost:8080/"
+	docs.SwaggerInfo.Host = "localhost:8080/"
 	r.rg.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.buildSellerRoutes()
