@@ -3,7 +3,12 @@ package routes
 import (
 	"database/sql"
 
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/swag/example/basic/docs"
 )
 
 type Router interface {
@@ -22,6 +27,9 @@ func NewRouter(eng *gin.Engine, db *sql.DB) Router {
 
 func (r *router) MapRoutes() {
 	r.setGroup()
+
+	docs.SwaggerInfo.Host = "localhost:8080/"
+	r.rg.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.buildSellerRoutes()
 	r.buildProductRoutes()
@@ -47,7 +55,19 @@ func (r *router) buildProductRoutes() {}
 
 func (r *router) buildSectionRoutes() {}
 
-func (r *router) buildWarehouseRoutes() {}
+func (r *router) buildWarehouseRoutes() {
+
+	warehouseRepo := warehouse.NewWarehouseRepository(r.db)
+	warehouseService := warehouse.NewWarehouseService(warehouseRepo)
+	warehouseHandler := handler.NewWarehouse(warehouseService)
+
+	r.rg.GET("/warehouses", warehouseHandler.GetAll())
+	r.rg.GET("/warehouses/:id", warehouseHandler.GetByID())
+	r.rg.POST("/warehouses", warehouseHandler.Create())
+	r.rg.PUT("/warehouses", warehouseHandler.Update())
+	r.rg.PATCH("/warehouses/:id", warehouseHandler.UpdateByID())
+	r.rg.DELETE("/warehouses/:id", warehouseHandler.Delete())
+}
 
 func (r *router) buildEmployeeRoutes() {}
 

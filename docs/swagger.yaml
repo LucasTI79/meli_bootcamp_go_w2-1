@@ -1,0 +1,235 @@
+definitions:
+  domain.Warehouse:
+    properties:
+      address:
+        type: string
+      id:
+        type: integer
+      minimum_capacity:
+        type: integer
+      minimum_temperature:
+        type: integer
+      telephone:
+        type: string
+      warehouse_code:
+        type: string
+    type: object
+  handler.WarehouseData:
+    properties:
+      address:
+        type: string
+      id:
+        type: integer
+      minimum_capacity:
+        type: integer
+      minimum_temperature:
+        type: number
+      telephone:
+        type: string
+      warehouse_code:
+        type: string
+    type: object
+  web.ErrorResponse:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+info:
+  contact:
+    name: API Support
+    url: https://developers.mercadolibre.com.ar/support
+  description: This API Handle MELI Products.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: https://developers.mercadolibre.com.ar/es_ar/terminos-y-condiciones
+  title: MELI Bootcamp API
+  version: "1.0"
+paths:
+  /warehouses:
+    get:
+      consumes:
+      - application/json
+      description: Get all warehouses
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Warehouse'
+            type: array
+        "500":
+          description: Failed to get the warehouses
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      summary: Get all warehouses
+      tags:
+      - Warehouses
+    post:
+      consumes:
+      - application/json
+      description: Create a new warehouse
+      parameters:
+      - description: Authentication token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: Warehouse data to store
+        in: body
+        name: warehouseData
+        required: true
+        schema:
+          $ref: '#/definitions/handler.WarehouseData'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Warehouse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      summary: Create a warehouse
+      tags:
+      - Warehouses
+    put:
+      consumes:
+      - application/json
+      description: This endpoint allows updating the information of an existing warehouse
+      parameters:
+      - description: Authentication token
+        in: header
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Warehouse updated successfully
+          schema:
+            $ref: '#/definitions/domain.Warehouse'
+        "400":
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Failed to update warehouse
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      summary: Update a warehouse
+      tags:
+      - Warehouses
+  /warehouses/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: This endpoint allows deleting a warehouse by its ID
+      parameters:
+      - description: Warehouse ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/domain.Warehouse'
+        "400":
+          description: Invalid ID
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "404":
+          description: Warehouse not found
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Failed to delete warehouse
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      summary: Delete a warehouse by ID
+      tags:
+      - Warehouses
+    get:
+      consumes:
+      - application/json
+      description: This endpoint retrieves the information of a warehouse by its ID
+      parameters:
+      - description: Warehouse ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Warehouse'
+        "400":
+          description: Invalid warehouse ID
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "404":
+          description: Warehouse not found
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      summary: Get warehouse by ID
+      tags:
+      - Warehouses
+    patch:
+      consumes:
+      - application/json
+      description: This endpoint allows updating the information of an existing warehouse
+        identified by its ID
+      parameters:
+      - description: Authentication token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: Warehouse ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated warehouse data
+        in: body
+        name: warehouse
+        required: true
+        schema:
+          $ref: '#/definitions/handler.WarehouseData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated warehouse
+          schema:
+            $ref: '#/definitions/handler.WarehouseData'
+        "400":
+          description: Invalid data provided
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "404":
+          description: Warehouse not found
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Failed to update warehouse
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      summary: Update a warehouse by ID
+      tags:
+      - Warehouses
+swagger: "2.0"
