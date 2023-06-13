@@ -240,17 +240,19 @@ func (s *Section) Exists() gin.HandlerFunc {
 // @Router /sections/:id [delete]
 func (s *Section) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+		idParam := ctx.Param("id")
+		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "Error: ID inválido.")
+			web.Error(ctx, http.StatusBadRequest, "ID inválido.")
 			return
 		}
 
-		err = s.service.Delete(int(id))
+		err = s.service.Delete(id)
 		if err != nil {
-			web.Error(ctx, http.StatusNotFound, "Error")
+			web.Error(ctx, http.StatusNotFound, "Seção não encontrada.")
 			return
 		}
-		web.Success(ctx, http.StatusNoContent, "Seção deletada com sucesso.")
+
+		web.Success(ctx, http.StatusNoContent, "")
 	}
 }
