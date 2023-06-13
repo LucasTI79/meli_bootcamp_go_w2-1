@@ -10,7 +10,7 @@ type Repository interface {
 	GetAll() ([]domain.Section, error)
 	Get(id int) (domain.Section, error)
 	Exists(sectionNumber int) (int, error)
-	Save(section_number, current_temperature, minimum_temperature, current_capacity, maximum_capacity, warehouse_id, id_product_type int) (int, error)
+	Save(section_number, current_temperature, minimum_temperature, current_capacity, minimum_capacity, maximum_capacity, warehouse_id, id_product_type int) (int, error)
 	Update(domain.Section) error
 	Delete(id int) error
 }
@@ -66,14 +66,14 @@ func (r *repository) Exists(sectionNumber int) (int, error) {
 	return sectionNumber, nil
 }
 
-func (r *repository) Save(section_number, current_temperature, minimum_temperature, current_capacity, maximum_capacity, warehouse_id, id_product_type int) (int, error) {
+func (r *repository) Save(section_number, current_temperature, minimum_temperature, current_capacity, minimum_capacity, maximum_capacity, warehouse_id, id_product_type int) (int, error) {
 	query := "INSERT INTO sections (section_number, current_temperature, minimum_temperature, current_capacity, minimum_capacity, maximum_capacity, warehouse_id, id_product_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return 0, err
 	}
 
-	res, err := stmt.Exec(section_number, current_temperature, minimum_temperature, current_capacity, maximum_capacity, warehouse_id, id_product_type)
+	res, err := stmt.Exec(section_number, current_temperature, minimum_temperature, current_capacity, minimum_capacity, maximum_capacity, warehouse_id, id_product_type)
 	if err != nil {
 		return 0, err
 	}

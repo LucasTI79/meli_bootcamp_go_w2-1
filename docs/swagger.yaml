@@ -1,0 +1,214 @@
+definitions:
+  domain.Section:
+    properties:
+      current_capacity:
+        type: integer
+      current_temperature:
+        type: integer
+      id:
+        type: integer
+      maximum_capacity:
+        type: integer
+      minimum_capacity:
+        type: integer
+      minimum_temperature:
+        type: integer
+      product_type_id:
+        type: integer
+      section_number:
+        type: integer
+      warehouse_id:
+        type: integer
+    type: object
+  web.ErrorResponse:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+info:
+  contact:
+    name: API Support
+    url: https://developers.mercadolibre.com.ar/support
+  description: This API Handle MELI Products.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: https://developers.mercadolibre.com.ar/es_ar/terminos-y-condiciones
+  version: "1.0"
+paths:
+  /sections:
+    get:
+      consumes:
+      - application/json
+      description: Get sections based on the provided JSON payload
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Section
+          schema:
+            items:
+              $ref: '#/definitions/domain.Section'
+            type: array
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "409":
+          description: Conflict error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      summary: Get all sections
+      tags:
+      - Sections
+    post:
+      consumes:
+      - application/json
+      description: Create a new section based on the provided JSON payload
+      parameters:
+      - description: Section data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Section'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created section
+          schema:
+            $ref: '#/definitions/domain.Section'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "409":
+          description: Conflict error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      summary: Create a new section
+      tags:
+      - Sections
+  /sections/:id:
+    delete:
+      consumes:
+      - application/json
+      description: Delete section based on the provided JSON payload
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "409":
+          description: Conflict error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      summary: Delete section
+      tags:
+      - Sections
+    get:
+      consumes:
+      - application/json
+      description: Get a section based on the provided JSON payload
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Section
+          schema:
+            $ref: '#/definitions/domain.Section'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "409":
+          description: Conflict error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      summary: Get a section
+      tags:
+      - Sections
+    patch:
+      consumes:
+      - application/json
+      description: Update section based on the provided JSON payload
+      parameters:
+      - description: Section data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Section'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated section
+          schema:
+            $ref: '#/definitions/domain.Section'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "409":
+          description: Conflict error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      summary: Update a section
+      tags:
+      - Sections
+  /sections/sectionNumber:
+    get:
+      consumes:
+      - application/json
+      description: Validate section number
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Section number
+          schema:
+            type: string
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "409":
+          description: Conflict error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      summary: Exist section number
+      tags:
+      - Sections
+swagger: "2.0"
