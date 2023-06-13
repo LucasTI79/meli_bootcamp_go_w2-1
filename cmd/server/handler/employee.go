@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
@@ -154,65 +153,51 @@ func (e *Employee) Save() gin.HandlerFunc {
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /employees/:id [patch]
 func (e *Employee) Update() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+	return func(c *gin.Context) {
+		idParam := c.Param("id")
+		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			web.Error(ctx, http.StatusNotFound, "Error: ID inválido, funcionário não encontrado.")
+			web.Error(c, http.StatusBadRequest, "ID inválido.")
 			return
 		}
+
 		var req request
-		if err := ctx.ShouldBindJSON(&req); err != nil {
-			web.Error(ctx, http.StatusBadRequest, "Error.")
+		err = c.Bind(&req)
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, "Error.")
 			return
 		}
 
-		if req.Card_number_id != "" {
-			req.Card_number_id, err = e.service.Exists(req.Card_number_id)
-			if err != nil {
-				web.Error(ctx, http.StatusBadRequest, "Error: Cartão já cadastrado.")
-				return
-			} else {
-				err = e.service.Update(domain.Employee{
-					ID:           (int(id)),
-					CardNumberID: req.Card_number_id})
-				if err != nil {
-					web.Error(ctx, http.StatusNotFound, "Erro ao atualizar número de cartão.")
-					return
-				}
-				web.Success(ctx, http.StatusOK, "Número de cartão atualizado com sucesso!")
-			}
+		if req.Card_number_id == "" && req.First_name == "" && req.Last_name == "" && req.Warehouse_id == 0 {
+			web.Error(c, http.StatusUnprocessableEntity, "Informe pelo menos um campo para concluir a atualização.")
+			return
 		}
-		if req.First_name != "" {
-			err = e.service.Update(domain.Employee{
-				ID:        (int(id)),
-				FirstName: req.First_name})
-			if err != nil {
-				web.Error(ctx, http.StatusNotFound, "Erro ao atualizar nome de funcionáerio.")
-				return
-			}
-			web.Success(ctx, http.StatusOK, "Nome atualizado com sucesso!")
-		}
-		if req.Last_name != "" {
-			err = e.service.Update(domain.Employee{
-				ID:       (int(id)),
-				LastName: req.Last_name})
-			if err != nil {
-				web.Error(ctx, http.StatusNotFound, "Erro ao atualizar sobrenome de funcionário.")
-				return
-			}
-			web.Success(ctx, http.StatusOK, "Sobrenome atualizado com sucesso!")
 
+		employee, err := e.service.Get(id)
+		if err != nil {
+			web.Error(c, http.StatusNotFound, "Funcionário não encontrado.")
+			return
 		}
+
+		if req.First_name != "" {
+			employee.FirstName = req.First_name
+		}
+
+		if req.Last_name != "" {
+			employee.LastName = req.Last_name
+		}
+
 		if req.Warehouse_id != 0 {
-			err = e.service.Update(domain.Employee{
-				ID:          (int(id)),
-				WarehouseID: req.Warehouse_id})
-			if err != nil {
-				web.Error(ctx, http.StatusNotFound, "Erro ao atualizar número de armazém.")
-				return
-			}
-			web.Success(ctx, http.StatusOK, "Armazém atualizado com sucesso!")
+			employee.WarehouseID = req.Warehouse_id
 		}
+
+		err = e.service.Update(employee)
+		if err != nil {
+			web.Error(c, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		web.Success(c, http.StatusOK, employee)
 	}
 }
 
