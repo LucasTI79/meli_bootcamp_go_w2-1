@@ -4,8 +4,11 @@ import (
 	"database/sql"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Router interface {
@@ -24,6 +27,8 @@ func NewRouter(eng *gin.Engine, db *sql.DB) Router {
 
 func (r *router) MapRoutes() {
 	r.setGroup()
+	docs.SwaggerInfo.Host = "http://localhost:8080/"
+	r.rg.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.buildSellerRoutes()
 	r.buildProductRoutes()
@@ -47,11 +52,11 @@ func (r *router) buildSectionRoutes() {
 	handler := handler.NewSection(service)
 
 	r.rg.GET("/sections", handler.GetAll())
-	r.rg.POST("/section", handler.Save())
-	r.rg.PATCH("/section/:id", handler.Update())
-	r.rg.GET("/section/:id", handler.Get())
-	r.rg.GET("/section/sectionNumber", handler.Exists())
-	r.rg.DELETE("/section/:id", handler.Delete())
+	r.rg.POST("/sections", handler.Save())
+	r.rg.PATCH("/sections/:id", handler.Update())
+	r.rg.GET("/sections/:id", handler.Get())
+	r.rg.GET("/sections/sectionNumber", handler.Exists())
+	r.rg.DELETE("/sections/:id", handler.Delete())
 }
 
 func (r *router) buildWarehouseRoutes() {}

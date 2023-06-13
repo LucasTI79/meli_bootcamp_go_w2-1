@@ -32,6 +32,17 @@ func NewSection(s section.Service) *Section {
 	}
 }
 
+// Get All Sections godoc
+// @Summary Get all sections
+// @Description Get sections based on the provided JSON payload
+// @Tags Sections
+// @Accept json
+// @Produce json
+// @Success 200 {object} []domain.Section "Section"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /sections [get]
 func (s *Section) GetAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		sections, err := s.service.GetAll()
@@ -43,6 +54,17 @@ func (s *Section) GetAll() gin.HandlerFunc {
 	}
 }
 
+// Get godoc
+// @Summary Get a section
+// @Description Get a section based on the provided JSON payload
+// @Tags Sections
+// @Accept json
+// @Produce json
+// @Success 200 {object} domain.Section "Section"
+// @Failure 400 {object} web.ErrorResponse"Validation error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /sections/:id [get]
 func (s *Section) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
@@ -60,6 +82,18 @@ func (s *Section) Get() gin.HandlerFunc {
 	}
 }
 
+// Create godoc
+// @Summary Create a new section
+// @Description Create a new section based on the provided JSON payload
+// @Tags Sections
+// @Accept json
+// @Produce json
+// @Param request body domain.Section true "Section data"
+// @Success 201 {object} domain.Section "Created section"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /sections [post]
 func (s *Section) Save() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req request
@@ -72,16 +106,8 @@ func (s *Section) Save() gin.HandlerFunc {
 			web.Error(ctx, http.StatusUnprocessableEntity, "Error: Necessário adicionar todas as informações.")
 			return
 		}
-		var err error
-		if req.Section_number != 0 {
-			req.Section_number, err = s.service.Exists(req.Section_number)
-			if err != nil {
-				web.Error(ctx, http.StatusBadRequest, "Error: Número de seção já cadastrado.")
-				return
-			}
-		}
-		sectionSaved, err := s.service.Save(req.Section_number, req.Current_temperature, req.Minimum_temperature,
-			req.Current_capacity, req.Maximum_capacity, req.Warehouse_id, req.Id_product_type)
+		sectionSaved, err := s.service.Save(req.Section_number, req.Current_temperature, req.Minimum_temperature, req.Current_capacity, req.Minimum_capacity, req.Maximum_capacity,
+			req.Warehouse_id, req.Id_product_type)
 		if err != nil {
 			web.Error(ctx, http.StatusNotFound, "Error")
 			return
@@ -90,6 +116,18 @@ func (s *Section) Save() gin.HandlerFunc {
 	}
 }
 
+// Update godoc
+// @Summary Update a section
+// @Description Update section based on the provided JSON payload
+// @Tags Sections
+// @Accept json
+// @Produce json
+// @Param request body domain.Section true "Section data"
+// @Success 200 {object} domain.Section "Updated section"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /sections/:id [patch]
 func (s *Section) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
@@ -193,6 +231,17 @@ func (s *Section) Update() gin.HandlerFunc {
 	}
 }
 
+// Exists godoc
+// @Summary Exist section number
+// @Description Validate section number
+// @Tags Sections
+// @Accept json
+// @Produce json
+// @Success 204 {object} string "Section number"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /sections/sectionNumber [get]
 func (s *Section) Exists() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req request
@@ -206,13 +255,24 @@ func (s *Section) Exists() gin.HandlerFunc {
 		}
 		sectionNumber, err := s.service.Exists(req.Section_number)
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "Error")
+			web.Error(ctx, http.StatusNoContent, "Seção não cadastrada.")
 			return
 		}
 		web.Success(ctx, http.StatusOK, sectionNumber)
 	}
 }
 
+// Delete godoc
+// @Summary Delete section
+// @Description Delete section based on the provided JSON payload
+// @Tags Sections
+// @Accept json
+// @Produce json
+// @Success 204
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /sections/:id [delete]
 func (s *Section) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
