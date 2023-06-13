@@ -14,6 +14,7 @@ var (
 
 type Service interface {
 	GetAll(context.Context) ([]domain.Product, error)
+	Create(context.Context, domain.Product) (*domain.Product, error)
 }
 
 type service struct {
@@ -25,6 +26,19 @@ func NewService(repository Repository) Service {
 }
 
 func (s *service) GetAll(ctx context.Context) ([]domain.Product, error) {
-	products, err := s.repository.GetAll(ctx)
-	return products, err
+func (s *service) Create(ctx context.Context, product domain.Product) (*domain.Product, error) {
+	if s.repository.Exists(ctx, product.ProductCode) {
+		return nil, apperr.NewResourceAlreadyExists("product with code %s already exists", product.ProductCode)
+	}
+
+	id, err := s.repository.Save(ctx, product)
+
+	if err != nil {
+		return nil, err
+	}
+
+	created, err := s.repository.Get(ctx, id)
+
+	return &created, nil
+}
 }

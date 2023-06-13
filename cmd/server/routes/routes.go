@@ -52,6 +52,7 @@ func (r *router) buildProductRoutes() {
 	routerGroup := r.rg.Group("/products")
 	routerGroup.GET("/", handler.GetAll())
 	routerGroup.GET("/:id", handler.Get())
+	routerGroup.POST("/", handler.Create())
 }
 
 func (r *router) buildSectionRoutes() {}
