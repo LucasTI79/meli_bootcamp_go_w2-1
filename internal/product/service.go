@@ -49,4 +49,32 @@ func (s *service) Create(ctx context.Context, product domain.Product) (*domain.P
 
 	return &created, nil
 }
+
+func (s *service) Update(ctx context.Context, id int, product domain.ProductOptional) (*domain.Product, error) {
+	productFound, err := s.repository.Get(ctx, id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if product.ProductCode.HasValue {
+		productCode := product.ProductCode.Value.(*string)
+		productCodeExists := s.repository.Exists(ctx, *productCode)
+
+		if productCodeExists && *productCode != productFound.ProductCode {
+			return nil, apperr.NewResourceAlreadyExists("product with code '%s' already exists", *productCode)
+		}
+	}
+
+	productFound = productFound.Overlap(product)
+
+	err = s.repository.Update(ctx, productFound)
+
+	if err != nil {
+		return nil, err
+	}
+
+	productResponse, _ := s.repository.Get(ctx, id)
+	return &productResponse, nil
+}
 }

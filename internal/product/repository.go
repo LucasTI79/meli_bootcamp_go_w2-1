@@ -3,8 +3,10 @@ package product
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	apperr "github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/errors"
 )
 
 // Repository encapsulates the storage of a Product.
@@ -127,7 +129,7 @@ func (r *repository) Delete(ctx context.Context, id int) error {
 	}
 
 	if affect < 1 {
-		return ErrNotFound
+		return apperr.NewResourceNotFound("product not found with id %d", id)
 	}
 
 	return nil

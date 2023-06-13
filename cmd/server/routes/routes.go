@@ -53,6 +53,7 @@ func (r *router) buildProductRoutes() {
 	routerGroup.GET("/", handler.GetAll())
 	routerGroup.GET("/:id", handler.Get())
 	routerGroup.POST("/", handler.Create())
+	routerGroup.PATCH("/:id", handler.Update())
 }
 
 func (r *router) buildSectionRoutes() {}
