@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
@@ -130,104 +129,66 @@ func (s *Section) Save() gin.HandlerFunc {
 // @Router /sections/:id [patch]
 func (s *Section) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+		idParam := ctx.Param("id")
+		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			web.Error(ctx, http.StatusNotFound, "Error: ID inválido, seção não encontrada.")
+			web.Error(ctx, http.StatusBadRequest, "ID inválido.")
 			return
 		}
+
 		var req request
-		if err := ctx.ShouldBindJSON(&req); err != nil {
+		err = ctx.Bind(&req)
+		if err != nil {
 			web.Error(ctx, http.StatusBadRequest, "Error.")
 			return
 		}
 
+		if req.Section_number == 0 && req.Current_temperature == 0 && req.Minimum_temperature == 0 && req.Current_capacity == 0 && req.Minimum_capacity == 0 && req.Maximum_capacity == 0 &&
+			req.Warehouse_id == 0 && req.Id_product_type == 0 {
+
+			web.Error(ctx, http.StatusUnprocessableEntity, "Informe pelo menos um campo para concluir a atualização.")
+			return
+		}
+
+		section, err := s.service.Get(id)
+		if err != nil {
+			web.Error(ctx, http.StatusNotFound, "Seção não encontrada.")
+			return
+		}
+
 		if req.Section_number != 0 {
-			req.Section_number, err = s.service.Exists(req.Section_number)
-			if err != nil {
-				web.Error(ctx, http.StatusBadRequest, "Error: Número de seção já cadastrado.")
-				return
-			} else {
-				err = s.service.Update(domain.Section{
-					ID:            (int(id)),
-					SectionNumber: req.Section_number})
-				if err != nil {
-					web.Error(ctx, http.StatusNotFound, "Erro ao atualizar número de seção.")
-					return
-				}
-				web.Success(ctx, http.StatusOK, "Número de seção atualizado com sucesso!")
-			}
+			s.service.Exists(req.Section_number)
+			section.SectionNumber = req.Section_number
 		}
 		if req.Current_temperature != 0 {
-			err = s.service.Update(domain.Section{
-				ID:                 (int(id)),
-				CurrentTemperature: req.Current_temperature})
-			if err != nil {
-				web.Error(ctx, http.StatusNotFound, "Erro ao atualizar temperatura atual.")
-				return
-			}
-			web.Success(ctx, http.StatusOK, "Temperatura atual atualizada com sucesso!")
+			section.CurrentTemperature = req.Current_temperature
 		}
 		if req.Minimum_temperature != 0 {
-			err = s.service.Update(domain.Section{
-				ID:                 (int(id)),
-				MinimumTemperature: req.Minimum_temperature})
-			if err != nil {
-				web.Error(ctx, http.StatusNotFound, "Erro ao atualizar temperatura miníma.")
-				return
-			}
-			web.Success(ctx, http.StatusOK, "Temperatura atualiza com sucesso!")
-
+			section.MinimumTemperature = req.Minimum_temperature
 		}
 		if req.Current_capacity != 0 {
-			err = s.service.Update(domain.Section{
-				ID:              (int(id)),
-				CurrentCapacity: req.Current_capacity})
-			if err != nil {
-				web.Error(ctx, http.StatusNotFound, "Erro ao atualizar capacidade atual.")
-				return
-			}
-			web.Success(ctx, http.StatusOK, "Capacidade atual atualizada com sucesso!")
+			section.CurrentCapacity = req.Current_capacity
 		}
 		if req.Minimum_capacity != 0 {
-			err = s.service.Update(domain.Section{
-				ID:              (int(id)),
-				MinimumCapacity: req.Minimum_capacity})
-			if err != nil {
-				web.Error(ctx, http.StatusNotFound, "Erro ao atualizar capacidade miníma.")
-				return
-			}
-			web.Success(ctx, http.StatusOK, "Capacidade atualizada com sucesso!")
+			section.MinimumCapacity = req.Minimum_capacity
 		}
 		if req.Maximum_capacity != 0 {
-			err = s.service.Update(domain.Section{
-				ID:              (int(id)),
-				MaximumCapacity: req.Maximum_capacity})
-			if err != nil {
-				web.Error(ctx, http.StatusNotFound, "Erro ao atualizar capacidade máxima.")
-				return
-			}
-			web.Success(ctx, http.StatusOK, "Capacidade atualizada com sucesso!")
+			section.MaximumCapacity = req.Maximum_capacity
 		}
 		if req.Warehouse_id != 0 {
-			err = s.service.Update(domain.Section{
-				ID:          (int(id)),
-				WarehouseID: req.Warehouse_id})
-			if err != nil {
-				web.Error(ctx, http.StatusNotFound, "Erro ao atualizar número de armazém.")
-				return
-			}
-			web.Success(ctx, http.StatusOK, "Número de armazém atualizado com sucesso!")
+			section.WarehouseID = req.Warehouse_id
 		}
 		if req.Id_product_type != 0 {
-			err = s.service.Update(domain.Section{
-				ID:            (int(id)),
-				ProductTypeID: req.Id_product_type})
-			if err != nil {
-				web.Error(ctx, http.StatusNotFound, "Erro ao atualizar tipo de produto.")
-				return
-			}
-			web.Success(ctx, http.StatusOK, "Tipo de produto atualizado com sucesso!")
+			section.ProductTypeID = req.Id_product_type
 		}
+
+		err = s.service.Update(section)
+		if err != nil {
+			web.Error(ctx, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		web.Success(ctx, http.StatusOK, section)
 	}
 }
 
