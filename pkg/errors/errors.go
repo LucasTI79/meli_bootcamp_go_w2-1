@@ -41,7 +41,7 @@ func NewResourceAlreadyExists(message string, args ...interface{}) error {
 	return &ResourceAlreadyExists{message: fmt.Sprintf(message, args...)}
 }
 
-// Resource Already Exists
+// Required Field
 type RequiredField struct {
 	message string
 }
