@@ -8,11 +8,11 @@ import (
 )
 
 // Repository encapsulates the storage of a buyer.
-type Repository interface {
+type IRepository interface {
 	GetAll(ctx context.Context) ([]domain.Buyer, error)
 	Get(ctx context.Context, id int) (domain.Buyer, error)
 	Exists(ctx context.Context, cardNumberID string) bool
-	Save(ctx context.Context, b domain.Buyer) (int, error)
+	Save(ctx context.Context, b domain.Request) (int, error)
 	Update(ctx context.Context, b domain.Buyer) error
 	Delete(ctx context.Context, id int) error
 }
@@ -21,7 +21,7 @@ type repository struct {
 	db *sql.DB
 }
 
-func NewRepository(db *sql.DB) Repository {
+func NewRepository(db *sql.DB) IRepository {
 	return &repository{
 		db: db,
 	}
@@ -34,7 +34,7 @@ func (r *repository) GetAll(ctx context.Context) ([]domain.Buyer, error) {
 		return nil, err
 	}
 
-	var buyers []domain.Buyer
+	buyers := make([]domain.Buyer, 0)
 
 	for rows.Next() {
 		b := domain.Buyer{}
@@ -64,7 +64,7 @@ func (r *repository) Exists(ctx context.Context, cardNumberID string) bool {
 	return err == nil
 }
 
-func (r *repository) Save(ctx context.Context, b domain.Buyer) (int, error) {
+func (r *repository) Save(ctx context.Context, b domain.Request) (int, error) {
 	query := "INSERT INTO buyers(card_number_id,first_name,last_name) VALUES (?,?,?)"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -85,13 +85,13 @@ func (r *repository) Save(ctx context.Context, b domain.Buyer) (int, error) {
 }
 
 func (r *repository) Update(ctx context.Context, b domain.Buyer) error {
-	query := "UPDATE buyers SET first_name=?, last_name=?  WHERE id=?"
+	query := "UPDATE buyers SET card_number_id=?, first_name=?, last_name=?  WHERE id=?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return err
 	}
 
-	res, err := stmt.Exec(&b.FirstName, &b.LastName, &b.ID)
+	res, err := stmt.Exec(&b.CardNumberID, &b.FirstName, &b.LastName, &b.ID)
 	if err != nil {
 		return err
 	}

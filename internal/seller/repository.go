@@ -3,6 +3,7 @@ package seller
 import (
 	"context"
 	"database/sql"
+	"strings"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
@@ -12,8 +13,8 @@ type Repository interface {
 	GetAll(ctx context.Context) ([]domain.Seller, error)
 	Get(ctx context.Context, id int) (domain.Seller, error)
 	Exists(ctx context.Context, cid int) bool
-	Save(ctx context.Context, s domain.Seller) (int, error)
-	Update(ctx context.Context, s domain.Seller) error
+	Save(ctx context.Context, s domain.CreateSeller) (int, error)
+	Update(ctx context.Context, s domain.UpdateSeller) error
 	Delete(ctx context.Context, id int) error
 }
 
@@ -34,7 +35,7 @@ func (r *repository) GetAll(ctx context.Context) ([]domain.Seller, error) {
 		return nil, err
 	}
 
-	var sellers []domain.Seller
+	sellers := make([]domain.Seller, 0)
 
 	for rows.Next() {
 		s := domain.Seller{}
@@ -64,7 +65,7 @@ func (r *repository) Exists(ctx context.Context, cid int) bool {
 	return err == nil
 }
 
-func (r *repository) Save(ctx context.Context, s domain.Seller) (int, error) {
+func (r *repository) Save(ctx context.Context, s domain.CreateSeller) (int, error) {
 	query := "INSERT INTO sellers (cid, company_name, address, telephone) VALUES (?, ?, ?, ?)"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -84,21 +85,50 @@ func (r *repository) Save(ctx context.Context, s domain.Seller) (int, error) {
 	return int(id), nil
 }
 
-func (r *repository) Update(ctx context.Context, s domain.Seller) error {
-	query := "UPDATE sellers SET cid=?, company_name=?, address=?, telephone=? WHERE id=?"
+func (r *repository) Update(ctx context.Context, s domain.UpdateSeller) error {
+	query := "UPDATE sellers SET "
+	args := []interface{}{}
+
+	if s.CID != nil {
+		query += "cid=?, "
+		args = append(args, *s.CID)
+	}
+
+	if s.CompanyName != nil {
+		query += "company_name=?, "
+		args = append(args, *s.CompanyName)
+	}
+
+	if s.Address != nil {
+		query += "address=?, "
+		args = append(args, *s.Address)
+	}
+
+	if s.Telephone != nil {
+		query += "telephone=?, "
+		args = append(args, *s.Telephone)
+	}
+
+	query = strings.TrimSuffix(query, ", ")
+
+	query += " WHERE id=?"
+	args = append(args, s.ID)
+
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return err
 	}
 
-	res, err := stmt.Exec(s.CID, s.CompanyName, s.Address, s.Telephone, s.ID)
+	res, err := stmt.Exec(args...)
 	if err != nil {
 		return err
 	}
-
-	_, err = res.RowsAffected()
+	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return err
+		return ErrNotFound
+	}
+	if rowsAffected == 0 {
+		return ErrNotFound
 	}
 
 	return nil
