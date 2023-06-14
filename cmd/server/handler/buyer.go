@@ -66,12 +66,12 @@ func (b *Buyer) GetAll() gin.HandlerFunc {
 
 		buyers, err := b.buyerService.GetAll(c.Request.Context())
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, err.Error())
+			web.Error(c, http.StatusInternalServerError, err.Error())
 			return
 		}
 
 		if len(buyers) == 0 {
-			web.Success(c, http.StatusNoContent, "Não há compradores cadastrados")
+			web.Success(c, http.StatusNoContent, nil)
 			return
 		}
 
@@ -121,13 +121,13 @@ func (b *Buyer) Create() gin.HandlerFunc {
 			return
 		}
 
-		buyer := domain.Buyer{}
-		buyer.ID = buyerId
-		buyer.CardNumberID = req.CardNumberID
-		buyer.FirstName = req.FirstName
-		buyer.LastName = req.LastName
+		createdBuyer, err := b.buyerService.Get(c.Request.Context(), buyerId)
+		if err != nil {
+			web.Error(c, http.StatusInternalServerError, err.Error())
+			return
+		}
 
-		web.Success(c, http.StatusCreated, buyer)
+		web.Success(c, http.StatusCreated, createdBuyer)
 
 	}
 }
