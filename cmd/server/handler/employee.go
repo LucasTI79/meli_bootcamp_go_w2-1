@@ -34,13 +34,14 @@ func NewEmployee(e employee.Service) *Employee {
 // @Accept json
 // @Produce json
 // @Success 200 {object} domain.Employee "Employee"
-// @Failure 400 {object} web.ErrorResponse"Validation error"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /employees/:id [get]
+// @Router /employees/{id} [get]
 func (e *Employee) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+		idParam := ctx.Param("id")
+		id, err := strconv.Atoi(idParam)
 		if err != nil {
 			web.Error(ctx, http.StatusBadRequest, "Error: ID inválido.")
 			return
@@ -62,7 +63,6 @@ func (e *Employee) Get() gin.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Success 200 {object} []domain.Employee "Employee"
-// @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /employees [get]
@@ -70,7 +70,7 @@ func (e *Employee) GetAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		employees, err := e.service.GetAll()
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "Error: Funcionários não encontrados.")
+			web.Error(ctx, http.StatusInternalServerError, "Um erro interno ocorreu.")
 			return
 		}
 		web.Success(ctx, http.StatusOK, employees)
@@ -155,7 +155,7 @@ func (e *Employee) Save() gin.HandlerFunc {
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /employees/:id [patch]
+// @Router /employees/{id} [patch]
 func (e *Employee) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Param("id")
@@ -217,9 +217,8 @@ func (e *Employee) Update() gin.HandlerFunc {
 // @Produce json
 // @Success 204
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 409 {object} web.ErrorResponse "Conflict error"
-// @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /employees/:id [delete]
+// @Failure 404 {object} web.ErrorResponse "NotFound error"
+// @Router /employees/{id} [delete]
 func (e *Employee) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
@@ -233,6 +232,6 @@ func (e *Employee) Delete() gin.HandlerFunc {
 			web.Error(ctx, http.StatusNotFound, "Error")
 			return
 		}
-		web.Success(ctx, http.StatusNoContent, "Funcionário deletado com sucesso.")
+		web.Success(ctx, http.StatusNoContent, nil)
 	}
 }
