@@ -6,6 +6,7 @@ import (
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
 	"github.com/gin-gonic/gin"
@@ -13,7 +14,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-type Router interface {
+type IRouter interface {
 	MapRoutes()
 }
 
@@ -23,7 +24,7 @@ type router struct {
 	db  *sql.DB
 }
 
-func NewRouter(eng *gin.Engine, db *sql.DB) Router {
+func NewRouter(eng *gin.Engine, db *sql.DB) IRouter {
 	return &router{eng: eng, db: db}
 }
 
@@ -77,4 +78,15 @@ func (r *router) buildWarehouseRoutes() {}
 
 func (r *router) buildEmployeeRoutes() {}
 
-func (r *router) buildBuyerRoutes() {}
+func (r *router) buildBuyerRoutes() {
+
+	repo := buyer.NewRepository(r.db)
+	service := buyer.NewService(repo)
+	handler := handler.NewBuyer(service)
+
+	r.rg.GET("/buyers", handler.GetAll())
+	r.rg.GET("/buyers/:id", handler.Get())
+	r.rg.POST("/buyers", handler.Create())
+	r.rg.PATCH("/buyers/:id", handler.Update())
+	r.rg.DELETE("/buyers/:id", handler.Delete())
+}
