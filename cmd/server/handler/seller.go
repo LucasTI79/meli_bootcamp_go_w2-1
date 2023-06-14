@@ -99,11 +99,11 @@ func (s *Seller) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req domain.CreateSeller
 		if err := c.ShouldBindJSON(&req); err != nil {
-			web.Error(c, http.StatusBadRequest, "corpo da requisicao invalido")
+			web.Error(c, http.StatusBadRequest, "corpo da requisição invalido")
 			return
 		}
 		if req.Address == "" {
-			web.Error(c, http.StatusUnprocessableEntity, "endereco é necessário")
+			web.Error(c, http.StatusUnprocessableEntity, "endereço é necessário")
 			return
 		}
 		if req.CompanyName == "" {
@@ -111,7 +111,7 @@ func (s *Seller) Create() gin.HandlerFunc {
 			return
 		}
 		if req.Telephone == "" {
-			web.Error(c, http.StatusUnprocessableEntity, "telephone é necessário")
+			web.Error(c, http.StatusUnprocessableEntity, "telefone é necessário")
 			return
 		}
 		if req.CID == 0 {
@@ -151,12 +151,12 @@ func (s *Seller) Update() gin.HandlerFunc {
 		id, _ := c.Params.Get("id")
 		parsedId, err := strconv.Atoi(id)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "id recebido é invalido")
+			web.Error(c, http.StatusBadRequest, "id recebido é inválido")
 			return
 		}
 		var req domain.UpdateSeller
 		if err := c.ShouldBindJSON(&req); err != nil {
-			web.Error(c, http.StatusBadRequest, "corpo da requisicão invalido")
+			web.Error(c, http.StatusBadRequest, "corpo da requisição inválido")
 			return
 		}
 		req.ID = parsedId
@@ -194,7 +194,7 @@ func (s *Seller) Delete() gin.HandlerFunc {
 		id, _ := c.Params.Get("id")
 		parsedId, err := strconv.Atoi(id)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "id recebido é invalido")
+			web.Error(c, http.StatusBadRequest, "id recebido é inválido")
 			return
 		}
 		err = s.sellerService.Delete(c.Request.Context(), parsedId)
