@@ -38,7 +38,7 @@ func (s *Seller) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sellers, err := s.sellerService.GetAll(c.Request.Context())
 		if err != nil {
-			web.Error(c, http.StatusInternalServerError, "internal server error")
+			web.Error(c, http.StatusInternalServerError, "erro interno de servidor")
 			return
 		}
 		if len(sellers) == 0 {
@@ -66,20 +66,20 @@ func (s *Seller) Get() gin.HandlerFunc {
 		id, _ := c.Params.Get("id")
 		parsedId, err := strconv.Atoi(id)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "id received is invalid")
+			web.Error(c, http.StatusBadRequest, "id recebido é invalido")
 			return
 		}
 		foundSeller, err := s.sellerService.Get(c.Request.Context(), parsedId)
 		if err != nil {
 			if errors.Is(err, seller.ErrNotFound) {
-				web.Error(c, http.StatusNotFound, "could not find id %v", parsedId)
+				web.Error(c, http.StatusNotFound, "não foi possível encontrar o id %v", parsedId)
 				return
 			} else {
-				web.Error(c, http.StatusInternalServerError, "internal server error")
+				web.Error(c, http.StatusInternalServerError, "erro interno de servidor")
 				return
 			}
 		}
-		web.Response(c, http.StatusOK, foundSeller)
+		web.Success(c, http.StatusOK, foundSeller)
 	}
 }
 
@@ -99,32 +99,32 @@ func (s *Seller) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req domain.CreateSeller
 		if err := c.ShouldBindJSON(&req); err != nil {
-			web.Error(c, http.StatusBadRequest, "invalid request body")
+			web.Error(c, http.StatusBadRequest, "corpo da requisicao invalido")
 			return
 		}
 		if req.Address == "" {
-			web.Error(c, http.StatusUnprocessableEntity, "address is required")
+			web.Error(c, http.StatusUnprocessableEntity, "endereco é necessário")
 			return
 		}
 		if req.CompanyName == "" {
-			web.Error(c, http.StatusUnprocessableEntity, "company name is required")
+			web.Error(c, http.StatusUnprocessableEntity, "nome da empresa é necessário")
 			return
 		}
 		if req.Telephone == "" {
-			web.Error(c, http.StatusUnprocessableEntity, "telephone is required")
+			web.Error(c, http.StatusUnprocessableEntity, "telephone é necessário")
 			return
 		}
 		if req.CID == 0 {
-			web.Error(c, http.StatusUnprocessableEntity, "cid is required")
+			web.Error(c, http.StatusUnprocessableEntity, "cid é necessário")
 			return
 		}
 		id, err := s.sellerService.Save(c.Request.Context(), req)
 		if err != nil {
 			if errors.Is(err, seller.ErrAlreadyExists) {
-				web.Error(c, http.StatusConflict, "there is already a seller with cid %v", req.CID)
+				web.Error(c, http.StatusConflict, "já existe um vendedor com cid %v", req.CID)
 				return
 			} else {
-				web.Error(c, http.StatusInternalServerError, "internal server error")
+				web.Error(c, http.StatusInternalServerError, "erro interno de servidor")
 				return
 			}
 		}
@@ -151,25 +151,25 @@ func (s *Seller) Update() gin.HandlerFunc {
 		id, _ := c.Params.Get("id")
 		parsedId, err := strconv.Atoi(id)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "id received is invalid")
+			web.Error(c, http.StatusBadRequest, "id recebido é invalido")
 			return
 		}
 		var req domain.UpdateSeller
 		if err := c.ShouldBindJSON(&req); err != nil {
-			web.Error(c, http.StatusBadRequest, "invalid request body")
+			web.Error(c, http.StatusBadRequest, "corpo da requisicão invalido")
 			return
 		}
 		req.ID = parsedId
 		updatedSeller, err := s.sellerService.Update(c.Request.Context(), req)
 		if err != nil {
 			if errors.Is(err, seller.ErrAlreadyExists) {
-				web.Error(c, http.StatusConflict, "cid already registred")
+				web.Error(c, http.StatusConflict, "cid já registrado")
 				return
 			} else if errors.Is(err, seller.ErrNotFound) {
 				web.Error(c, http.StatusNotFound, err.Error())
 				return
 			} else {
-				web.Error(c, http.StatusInternalServerError, "internal server error")
+				web.Error(c, http.StatusInternalServerError, "erro interno no servidor")
 				return
 			}
 		}
@@ -194,19 +194,19 @@ func (s *Seller) Delete() gin.HandlerFunc {
 		id, _ := c.Params.Get("id")
 		parsedId, err := strconv.Atoi(id)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "id received is invalid")
+			web.Error(c, http.StatusBadRequest, "id recebido é invalido")
 			return
 		}
 		err = s.sellerService.Delete(c.Request.Context(), parsedId)
 		if err != nil {
 			if errors.Is(err, seller.ErrNotFound) {
-				web.Error(c, http.StatusNotFound, "could not find seller with id %v", parsedId)
+				web.Error(c, http.StatusNotFound, "não foi possível encontrar um vendedor com id %v", parsedId)
 				return
 			} else {
-				web.Error(c, http.StatusInternalServerError, "internal server error")
+				web.Error(c, http.StatusInternalServerError, "erro interno no servidor")
 				return
 			}
 		}
-		web.Response(c, http.StatusNoContent, "")
+		web.Success(c, http.StatusNoContent, "")
 	}
 }
