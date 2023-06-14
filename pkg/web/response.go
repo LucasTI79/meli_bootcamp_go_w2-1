@@ -28,8 +28,12 @@ func Success(c *gin.Context, status int, data interface{}) {
 	Response(c, status, response{Data: data})
 }
 
-// NewErrorf creates a new error with the given status code and the message
-// formatted according to args and format.
+type Data struct {
+	Code  string      `json:"code"`
+	Data  interface{} `json:"data,omitempty"`
+	Error string      `json:"error,omitempty"`
+}
+
 func Error(c *gin.Context, status int, format string, args ...interface{}) {
 	err := ErrorResponse{
 		Code: strings.ReplaceAll(strings.ToLower(http.StatusText(status)), " ", "_"),
