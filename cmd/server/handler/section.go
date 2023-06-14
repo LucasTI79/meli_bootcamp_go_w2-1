@@ -38,15 +38,13 @@ func NewSection(s section.Service) *Section {
 // @Accept json
 // @Produce json
 // @Success 200 {object} []domain.Section "Section"
-// @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sections [get]
 func (s *Section) GetAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		sections, err := s.service.GetAll()
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "Error: Seções não encontradas.")
+			web.Error(ctx, http.StatusInternalServerError, "Error interno.")
 			return
 		}
 		web.Success(ctx, http.StatusOK, sections)
@@ -61,8 +59,7 @@ func (s *Section) GetAll() gin.HandlerFunc {
 // @Produce json
 // @Success 200 {object} domain.Section "Section"
 // @Failure 400 {object} web.ErrorResponse"Validation error"
-// @Failure 409 {object} web.ErrorResponse "Conflict error"
-// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Failure 404 {object} web.ErrorResponse "NotFound error"
 // @Router /sections/{id} [get]
 func (s *Section) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -73,7 +70,7 @@ func (s *Section) Get() gin.HandlerFunc {
 			return
 		}
 
-		sectionID, err := s.service.Get(int(id))
+		sectionID, err := s.service.Get(id)
 		if err != nil {
 			web.Error(ctx, http.StatusNotFound, "Error: Seção não encontrada.")
 			return
@@ -91,7 +88,7 @@ func (s *Section) Get() gin.HandlerFunc {
 // @Param request body domain.Section true "Section data"
 // @Success 201 {object} domain.Section "Created section"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Unprocessable error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sections [post]
 func (s *Section) Save() gin.HandlerFunc {
@@ -128,7 +125,7 @@ func (s *Section) Save() gin.HandlerFunc {
 // @Param request body domain.Section true "Section data"
 // @Success 200 {object} domain.Section "Updated section"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 404 {object} web.ErrorResponse "NotFound error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sections/{id} [patch]
 func (s *Section) Update() gin.HandlerFunc {
@@ -206,7 +203,7 @@ func (s *Section) Update() gin.HandlerFunc {
 // @Tags Sections
 // @Accept json
 // @Produce json
-// @Success 204 {object} string "Section number"
+// @Success 200 {object} string "Section number"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
@@ -224,7 +221,7 @@ func (s *Section) Exists() gin.HandlerFunc {
 		}
 		sectionNumber, err := s.service.Exists(req.Section_number)
 		if err != nil {
-			web.Error(ctx, http.StatusNoContent, "Seção já cadastrada.")
+			web.Error(ctx, http.StatusConflict, "Seção já cadastrada.")
 			return
 		}
 		web.Success(ctx, http.StatusOK, sectionNumber)
@@ -239,8 +236,7 @@ func (s *Section) Exists() gin.HandlerFunc {
 // @Produce json
 // @Success 204
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 409 {object} web.ErrorResponse "Conflict error"
-// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Failure 404 {object} web.ErrorResponse "NotFound error"
 // @Router /sections/{id} [delete]
 func (s *Section) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
