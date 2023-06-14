@@ -7,6 +7,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -60,7 +61,18 @@ func (r *router) buildSellerRoutes() {
 
 func (r *router) buildProductRoutes() {}
 
-func (r *router) buildSectionRoutes() {}
+func (r *router) buildSectionRoutes() {
+	repository := section.NewRepository(r.db)
+	service := section.NewService(repository)
+	handler := handler.NewSection(service)
+
+	r.rg.GET("/sections", handler.GetAll())
+	r.rg.POST("/sections", handler.Save())
+	r.rg.PATCH("/sections/:id", handler.Update())
+	r.rg.GET("/sections/:id", handler.Get())
+	r.rg.GET("/sections/sectionNumber", handler.Exists())
+	r.rg.DELETE("/sections/:id", handler.Delete())
+}
 
 func (r *router) buildWarehouseRoutes() {}
 
