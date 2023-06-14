@@ -34,7 +34,7 @@ func (r *repository) GetAll(ctx context.Context) ([]domain.Buyer, error) {
 		return nil, err
 	}
 
-	var buyers []domain.Buyer
+	buyers := make([]domain.Buyer, 0)
 
 	for rows.Next() {
 		b := domain.Buyer{}

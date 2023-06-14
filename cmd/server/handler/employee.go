@@ -4,12 +4,13 @@ import (
 	"net/http"
 	"strconv"
 
+	_ "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
 )
 
-type request struct {
+type EmployeeRequest struct {
 	Id             int    `json:"id"`
 	Card_number_id string `json:"card_number_id"`
 	First_name     string `json:"first_name"`
@@ -90,7 +91,7 @@ func (e *Employee) GetAll() gin.HandlerFunc {
 // @Router /employees/cardNumber [get]
 func (e *Employee) Exists() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req request
+		var req EmployeeRequest
 		if err := ctx.ShouldBindJSON(&req); err != nil {
 			web.Error(ctx, http.StatusBadRequest, "Error")
 			return
@@ -122,7 +123,7 @@ func (e *Employee) Exists() gin.HandlerFunc {
 // @Router /employees [post]
 func (e *Employee) Save() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req request
+		var req EmployeeRequest
 		if err := ctx.Bind(&req); err != nil {
 			web.Error(ctx, http.StatusNotFound, "Error")
 			return
@@ -165,7 +166,7 @@ func (e *Employee) Update() gin.HandlerFunc {
 			return
 		}
 
-		var req request
+		var req EmployeeRequest
 		err = c.Bind(&req)
 		if err != nil {
 			web.Error(c, http.StatusBadRequest, "Error.")

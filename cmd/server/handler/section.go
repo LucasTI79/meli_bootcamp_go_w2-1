@@ -4,12 +4,13 @@ import (
 	"net/http"
 	"strconv"
 
+	_ "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
 )
 
-type request struct {
+type SectionRequest struct {
 	Id                  int `json:"id"`
 	Section_number      int `json:"section_number"`
 	Current_temperature int `json:"current_temperature"`
@@ -93,7 +94,7 @@ func (s *Section) Get() gin.HandlerFunc {
 // @Router /sections [post]
 func (s *Section) Save() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req request
+		var req SectionRequest
 		if err := ctx.Bind(&req); err != nil {
 			web.Error(ctx, http.StatusNotFound, "Error")
 			return
@@ -137,7 +138,7 @@ func (s *Section) Update() gin.HandlerFunc {
 			return
 		}
 
-		var req request
+		var req SectionRequest
 		err = ctx.Bind(&req)
 		if err != nil {
 			web.Error(ctx, http.StatusBadRequest, "Error.")
@@ -210,7 +211,7 @@ func (s *Section) Update() gin.HandlerFunc {
 // @Router /sections/sectionNumber [get]
 func (s *Section) Exists() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req request
+		var req SectionRequest
 		if err := ctx.ShouldBindJSON(&req); err != nil {
 			web.Error(ctx, http.StatusBadRequest, "Error")
 			return

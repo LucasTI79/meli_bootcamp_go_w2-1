@@ -32,7 +32,7 @@ func (r *repository) GetAll() ([]domain.Section, error) {
 		return nil, err
 	}
 
-	var sections []domain.Section
+	sections := make([]domain.Section, 0)
 
 	for rows.Next() {
 		s := domain.Section{}

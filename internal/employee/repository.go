@@ -32,7 +32,7 @@ func (r *repository) GetAll() ([]domain.Employee, error) {
 		return nil, err
 	}
 
-	var employees []domain.Employee
+	employees := make([]domain.Employee, 0)
 
 	for rows.Next() {
 		e := domain.Employee{}
