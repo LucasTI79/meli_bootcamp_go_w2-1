@@ -4,12 +4,13 @@ import (
 	"net/http"
 	"strconv"
 
+	_ "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
 )
 
-type request struct {
+type SectionRequest struct {
 	Id                  int `json:"id"`
 	Section_number      int `json:"section_number"`
 	Current_temperature int `json:"current_temperature"`
@@ -44,7 +45,7 @@ func (s *Section) GetAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		sections, err := s.service.GetAll()
 		if err != nil {
-			web.Error(ctx, http.StatusInternalServerError, "Error interno.")
+			web.Error(ctx, http.StatusInternalServerError, "erro interno.")
 			return
 		}
 		web.Success(ctx, http.StatusOK, sections)
@@ -66,13 +67,13 @@ func (s *Section) Get() gin.HandlerFunc {
 		idParam := ctx.Param("id")
 		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "Error: ID inválido.")
+			web.Error(ctx, http.StatusBadRequest, "id inválido.")
 			return
 		}
 
 		sectionID, err := s.service.Get(id)
 		if err != nil {
-			web.Error(ctx, http.StatusNotFound, "Error: Seção não encontrada.")
+			web.Error(ctx, http.StatusNotFound, "seção não encontrada.")
 			return
 		}
 		web.Success(ctx, http.StatusOK, sectionID)
@@ -93,21 +94,21 @@ func (s *Section) Get() gin.HandlerFunc {
 // @Router /sections [post]
 func (s *Section) Save() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req request
+		var req SectionRequest
 		if err := ctx.Bind(&req); err != nil {
-			web.Error(ctx, http.StatusNotFound, "Error")
+			web.Error(ctx, http.StatusNotFound, "existem erros na formatação do json e não foi possível realizar o parse.")
 			return
 		}
 		if req.Section_number == 0 && req.Current_temperature == 0 && req.Minimum_temperature == 0 && req.Current_capacity == 0 && req.Minimum_capacity == 0 &&
 			req.Maximum_capacity == 0 && req.Warehouse_id == 0 && req.Id_product_type == 0 {
-			web.Error(ctx, http.StatusUnprocessableEntity, "Error: Necessário adicionar todas as informações.")
+			web.Error(ctx, http.StatusUnprocessableEntity, "necessário adicionar todas as informações.")
 			return
 		}
 
 		sectionId, err := s.service.Save(req.Section_number, req.Current_temperature, req.Minimum_temperature, req.Current_capacity, req.Minimum_capacity, req.Maximum_capacity,
 			req.Warehouse_id, req.Id_product_type)
 		if err != nil {
-			web.Error(ctx, http.StatusInternalServerError, "Error")
+			web.Error(ctx, http.StatusInternalServerError, "erro interno de servidor.")
 			return
 		}
 		sectionCreated, err := s.service.Get(sectionId)
@@ -133,33 +134,33 @@ func (s *Section) Update() gin.HandlerFunc {
 		idParam := ctx.Param("id")
 		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "ID inválido.")
+			web.Error(ctx, http.StatusBadRequest, "id inválido.")
 			return
 		}
 
-		var req request
+		var req SectionRequest
 		err = ctx.Bind(&req)
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "Error.")
+			web.Error(ctx, http.StatusBadRequest, "existem erros na formatação do json e não foi possível realizar o parse.")
 			return
 		}
 
 		if req.Section_number == 0 && req.Current_temperature == 0 && req.Minimum_temperature == 0 && req.Current_capacity == 0 && req.Minimum_capacity == 0 && req.Maximum_capacity == 0 &&
 			req.Warehouse_id == 0 && req.Id_product_type == 0 {
 
-			web.Error(ctx, http.StatusUnprocessableEntity, "Informe pelo menos um campo para concluir a atualização.")
+			web.Error(ctx, http.StatusUnprocessableEntity, "informe pelo menos um campo para concluir a atualização.")
 			return
 		}
 
 		section, err := s.service.Get(id)
 		if err != nil {
-			web.Error(ctx, http.StatusNotFound, "Seção não encontrada.")
+			web.Error(ctx, http.StatusNotFound, "seção não encontrada.")
 			return
 		}
 		if req.Section_number != 0 {
 			sectionNumber, err := s.service.Exists(req.Section_number)
 			if err != nil {
-				web.Error(ctx, http.StatusBadRequest, "Número de seção cadastrado.")
+				web.Error(ctx, http.StatusBadRequest, "número de seção cadastrado.")
 				return
 			} else {
 				section.SectionNumber = sectionNumber
@@ -210,18 +211,18 @@ func (s *Section) Update() gin.HandlerFunc {
 // @Router /sections/sectionNumber [get]
 func (s *Section) Exists() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req request
+		var req SectionRequest
 		if err := ctx.ShouldBindJSON(&req); err != nil {
-			web.Error(ctx, http.StatusBadRequest, "Error")
+			web.Error(ctx, http.StatusBadRequest, "existem erros na formatação do json e não foi possível realizar o parse.")
 			return
 		}
 		if req.Section_number == 0 {
-			web.Error(ctx, http.StatusUnprocessableEntity, "Error: Necessário adicionar número de seção.")
+			web.Error(ctx, http.StatusUnprocessableEntity, "necessário adicionar número de seção.")
 			return
 		}
 		sectionNumber, err := s.service.Exists(req.Section_number)
 		if err != nil {
-			web.Error(ctx, http.StatusConflict, "Seção já cadastrada.")
+			web.Error(ctx, http.StatusConflict, "seção já cadastrada.")
 			return
 		}
 		web.Success(ctx, http.StatusOK, sectionNumber)
@@ -243,16 +244,16 @@ func (s *Section) Delete() gin.HandlerFunc {
 		idParam := ctx.Param("id")
 		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "ID inválido.")
+			web.Error(ctx, http.StatusBadRequest, "id inválido.")
 			return
 		}
 
 		err = s.service.Delete(id)
 		if err != nil {
-			web.Error(ctx, http.StatusNotFound, "Seção não encontrada.")
+			web.Error(ctx, http.StatusNotFound, "seção não encontrada.")
 			return
 		}
 
-		web.Success(ctx, http.StatusNoContent, "")
+		web.Success(ctx, http.StatusNoContent, nil)
 	}
 }

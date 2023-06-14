@@ -4,12 +4,13 @@ import (
 	"net/http"
 	"strconv"
 
+	_ "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
 )
 
-type request struct {
+type EmployeeRequest struct {
 	Id             int    `json:"id"`
 	Card_number_id string `json:"card_number_id"`
 	First_name     string `json:"first_name"`
@@ -43,13 +44,13 @@ func (e *Employee) Get() gin.HandlerFunc {
 		idParam := ctx.Param("id")
 		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "Error: ID inválido.")
+			web.Error(ctx, http.StatusBadRequest, "id inválido.")
 			return
 		}
 
 		employeeID, err := e.service.Get(int(id))
 		if err != nil {
-			web.Error(ctx, http.StatusNotFound, "Error: Funcionário não encontrado.")
+			web.Error(ctx, http.StatusNotFound, "funcionário não encontrado.")
 			return
 		}
 		web.Success(ctx, http.StatusOK, employeeID)
@@ -70,7 +71,7 @@ func (e *Employee) GetAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		employees, err := e.service.GetAll()
 		if err != nil {
-			web.Error(ctx, http.StatusInternalServerError, "Um erro interno ocorreu.")
+			web.Error(ctx, http.StatusInternalServerError, "um erro interno ocorreu.")
 			return
 		}
 		web.Success(ctx, http.StatusOK, employees)
@@ -90,18 +91,18 @@ func (e *Employee) GetAll() gin.HandlerFunc {
 // @Router /employees/cardNumber [get]
 func (e *Employee) Exists() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req request
+		var req EmployeeRequest
 		if err := ctx.ShouldBindJSON(&req); err != nil {
-			web.Error(ctx, http.StatusBadRequest, "Error")
+			web.Error(ctx, http.StatusBadRequest, "existem erros na formatação do json e não foi possível realizar o parse.")
 			return
 		}
 		if req.Card_number_id == "" {
-			web.Error(ctx, http.StatusUnprocessableEntity, "Error: Necessário adicionar número do cartão.")
+			web.Error(ctx, http.StatusUnprocessableEntity, "necessário adicionar número do cartão.")
 			return
 		}
 		cardNumberId, err := e.service.Exists(req.Card_number_id)
 		if err != nil {
-			web.Error(ctx, http.StatusNoContent, "Não cadastrado.")
+			web.Error(ctx, http.StatusNoContent, "não cadastrado.")
 			return
 		}
 		web.Success(ctx, http.StatusOK, cardNumberId)
@@ -122,13 +123,13 @@ func (e *Employee) Exists() gin.HandlerFunc {
 // @Router /employees [post]
 func (e *Employee) Save() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req request
+		var req EmployeeRequest
 		if err := ctx.Bind(&req); err != nil {
-			web.Error(ctx, http.StatusNotFound, "Error")
+			web.Error(ctx, http.StatusNotFound, "existem erros na formatação do json e não foi possível realizar o parse.")
 			return
 		}
 		if req.Card_number_id == "" && req.First_name == "" && req.Last_name == "" && req.Warehouse_id == 0 {
-			web.Error(ctx, http.StatusUnprocessableEntity, "Error: Necessário adicionar todas as informações.")
+			web.Error(ctx, http.StatusUnprocessableEntity, "necessário adicionar todas as informações.")
 			return
 		}
 		if req.Card_number_id != "" {
@@ -136,7 +137,7 @@ func (e *Employee) Save() gin.HandlerFunc {
 		}
 		employeeId, err := e.service.Save(req.Card_number_id, req.First_name, req.Last_name, req.Warehouse_id)
 		if err != nil {
-			web.Error(ctx, http.StatusNotFound, "Error")
+			web.Error(ctx, http.StatusNotFound, "funcionário não encontrado.")
 			return
 		}
 		employeeCreated, err := e.service.Get(employeeId)
@@ -161,25 +162,25 @@ func (e *Employee) Update() gin.HandlerFunc {
 		idParam := c.Param("id")
 		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "ID inválido.")
+			web.Error(c, http.StatusBadRequest, "id inválido.")
 			return
 		}
 
-		var req request
+		var req EmployeeRequest
 		err = c.Bind(&req)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "Error.")
+			web.Error(c, http.StatusBadRequest, "existem erros na formatação do json e não foi possível realizar o parse.")
 			return
 		}
 
 		if req.Card_number_id == "" && req.First_name == "" && req.Last_name == "" && req.Warehouse_id == 0 {
-			web.Error(c, http.StatusUnprocessableEntity, "Informe pelo menos um campo para concluir a atualização.")
+			web.Error(c, http.StatusUnprocessableEntity, "informe pelo menos um campo para concluir a atualização.")
 			return
 		}
 
 		employee, err := e.service.Get(id)
 		if err != nil {
-			web.Error(c, http.StatusNotFound, "Funcionário não encontrado.")
+			web.Error(c, http.StatusNotFound, "funcionário não encontrado.")
 			return
 		}
 
@@ -223,13 +224,13 @@ func (e *Employee) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "Error: ID inválido.")
+			web.Error(ctx, http.StatusBadRequest, "id inválido.")
 			return
 		}
 
 		err = e.service.Delete(int(id))
 		if err != nil {
-			web.Error(ctx, http.StatusNotFound, "Error")
+			web.Error(ctx, http.StatusNotFound, "funcionário não encontrado.")
 			return
 		}
 		web.Success(ctx, http.StatusNoContent, nil)

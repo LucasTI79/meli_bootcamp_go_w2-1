@@ -3,8 +3,10 @@ package product
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	apperr "github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/errors"
 )
 
 // Repository encapsulates the storage of a Product.
@@ -34,7 +36,7 @@ func (r *repository) GetAll(ctx context.Context) ([]domain.Product, error) {
 		return nil, err
 	}
 
-	var products []domain.Product
+	products := make([]domain.Product, 0)
 
 	for rows.Next() {
 		p := domain.Product{}
@@ -50,6 +52,11 @@ func (r *repository) Get(ctx context.Context, id int) (domain.Product, error) {
 	row := r.db.QueryRow(query, id)
 	p := domain.Product{}
 	err := row.Scan(&p.ID, &p.Description, &p.ExpirationRate, &p.FreezingRate, &p.Height, &p.Length, &p.Netweight, &p.ProductCode, &p.RecomFreezTemp, &p.Width, &p.ProductTypeID, &p.SellerID)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return domain.Product{}, apperr.NewResourceNotFound("product not found with id %d", id)
+	}
+
 	if err != nil {
 		return domain.Product{}, err
 	}
@@ -122,7 +129,7 @@ func (r *repository) Delete(ctx context.Context, id int) error {
 	}
 
 	if affect < 1 {
-		return ErrNotFound
+		return apperr.NewResourceNotFound("product not found with id %d", id)
 	}
 
 	return nil

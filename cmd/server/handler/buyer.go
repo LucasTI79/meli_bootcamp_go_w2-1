@@ -2,11 +2,12 @@ package handler
 
 import (
 	"net/http"
-	"github.com/gin-gonic/gin"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
+	"strconv"
+
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
-	"strconv"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
+	"github.com/gin-gonic/gin"
 )
 
 type Buyer struct {
@@ -29,7 +30,7 @@ func NewBuyer(b buyer.IService) *Buyer {
 // @Success 200 {object} domain.Buyer "List a specific Buyer according to ID"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Buyer not found"
-// @Router /api/v1/buyers/{id} [get]
+// @Router /buyers/{id} [get]
 func (b *Buyer) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -39,12 +40,12 @@ func (b *Buyer) Get() gin.HandlerFunc {
 			web.Error(c, http.StatusBadRequest, "ID inválido")
 			return
 		}
-		
+
 		buyer, err := b.buyerService.Get(c.Request.Context(), id)
 		if err != nil {
 			web.Error(c, http.StatusNotFound, "Comprador não encontrado")
 			return
-		}	
+		}
 
 		web.Success(c, http.StatusOK, buyer)
 
@@ -60,7 +61,7 @@ func (b *Buyer) Get() gin.HandlerFunc {
 // @Success 200 {object} domain.Buyer "List of all Buyers"
 // @Failure 204 {object} web.ErrorResponse "Buyer not found"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Router /api/v1/buyers [get]
+// @Router /buyers [get]
 func (b *Buyer) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -91,27 +92,27 @@ func (b *Buyer) GetAll() gin.HandlerFunc {
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 422 {object} web.ErrorResponse "Json Parse error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
-// @Router /api/v1/buyers [post]
+// @Router /buyers [post]
 func (b *Buyer) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		var req domain.Request
 		err := c.Bind(&req)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "Existem erros na formatação do Json. Não foi possível realizar o parse.")
-			return	
+			web.Error(c, http.StatusBadRequest, "existem erros na formatação do Json. Não foi possível realizar o parse.")
+			return
 		}
 
 		if req.CardNumberID == "" {
-			web.Error(c, http.StatusUnprocessableEntity, "O campo 'Card Number' do comprador é obrigatório")
+			web.Error(c, http.StatusUnprocessableEntity, "o campo 'Card Number' do comprador é obrigatório")
 			return
 		}
 		if req.FirstName == "" {
-			web.Error(c, http.StatusUnprocessableEntity, "O campo 'Nome' do comprador é obrigatório")
+			web.Error(c, http.StatusUnprocessableEntity, "o campo 'Nome' do comprador é obrigatório")
 			return
 		}
-		if req.LastName== "" {
-			web.Error(c, http.StatusUnprocessableEntity, "O campo 'Sobrenome' do comprador é obrigatório")
+		if req.LastName == "" {
+			web.Error(c, http.StatusUnprocessableEntity, "o campo 'Sobrenome' do comprador é obrigatório")
 			return
 		}
 
@@ -146,25 +147,25 @@ func (b *Buyer) Create() gin.HandlerFunc {
 // @Failure 422 {object} web.ErrorResponse "Json Parse error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /api/v1/buyers/{id} [patch]
+// @Router /buyers/{id} [patch]
 func (b *Buyer) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Param("id")
 		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "ID inválido")
+			web.Error(c, http.StatusBadRequest, "id inválido.")
 			return
 		}
 
 		var req domain.Request
 		err = c.Bind(&req)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "Existem erros na formatação do Json. Não foi possível realizar o parse.")
-			return	
+			web.Error(c, http.StatusBadRequest, "existem erros na formatação do json e não foi possível realizar o parse.")
+			return
 		}
-		
-		if req.CardNumberID == "" && req.FirstName == "" && req.LastName== "" {
-			web.Error(c, http.StatusUnprocessableEntity, "Informe pelo menos um campo para atualização")
+
+		if req.CardNumberID == "" && req.FirstName == "" && req.LastName == "" {
+			web.Error(c, http.StatusUnprocessableEntity, "informe pelo menos um campo para atualização.")
 			return
 		}
 
@@ -172,15 +173,15 @@ func (b *Buyer) Update() gin.HandlerFunc {
 		if err != nil {
 			web.Error(c, http.StatusNotFound, err.Error())
 			return
-		}	
-		
+		}
+
 		if req.CardNumberID != "" {
 			exists := b.buyerService.Exists(c.Request.Context(), req.CardNumberID)
 
 			if !exists {
 				buyer.CardNumberID = req.CardNumberID
 			} else {
-				web.Error(c, http.StatusConflict, "Não é possível atualizar um comprador com Card Number repetido.") 
+				web.Error(c, http.StatusConflict, "não é possível atualizar um comprador com card number repetido.")
 				return
 			}
 		}
@@ -197,7 +198,7 @@ func (b *Buyer) Update() gin.HandlerFunc {
 		if err != nil {
 			web.Error(c, http.StatusInternalServerError, err.Error())
 			return
-		}	
+		}
 
 		web.Success(c, http.StatusOK, buyer)
 
@@ -213,21 +214,21 @@ func (b *Buyer) Update() gin.HandlerFunc {
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Buyer not found"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /api/v1/buyers/{id} [delete]
+// @Router /buyers/{id} [delete]
 func (b *Buyer) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Param("id")
 		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "ID inválido")
+			web.Error(c, http.StatusBadRequest, "id inválido")
 			return
 		}
-		
+
 		err = b.buyerService.Delete(c.Request.Context(), id)
 		if err != nil {
-			web.Error(c, http.StatusNotFound, "O comprador com o ID correspondente não existe")
+			web.Error(c, http.StatusNotFound, "o comprador com o id correspondente não existe.")
 			return
-		}	
+		}
 
 		web.Success(c, http.StatusNoContent, "")
 	}
