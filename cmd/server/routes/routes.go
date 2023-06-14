@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
@@ -14,7 +15,6 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/swag/example/basic/docs"
 )
 
 type IRouter interface {

@@ -11,15 +11,15 @@ import (
 )
 
 type SectionRequest struct {
-	Id                  int `json:"id"`
-	Section_number      int `json:"section_number"`
-	Current_temperature int `json:"current_temperature"`
-	Minimum_temperature int `json:"minimum_temperature"`
-	Current_capacity    int `json:"current_capacity"`
-	Minimum_capacity    int `json:"minimum_capacity"`
-	Maximum_capacity    int `json:"maximum_capacity"`
-	Warehouse_id        int `json:"warehouse_id"`
-	Id_product_type     int `json:"id_product_type"`
+	Id                 int `json:"id"`
+	SectionNumber      int `json:"section_number"`
+	CurrentTemperature int `json:"current_temperature"`
+	MinimumTemperature int `json:"minimum_temperature"`
+	CurrentCapacity    int `json:"current_capacity"`
+	MinimumCapacity    int `json:"minimum_capacity"`
+	MaximumCapacity    int `json:"maximum_capacity"`
+	WarehouseId        int `json:"warehouse_id"`
+	ProductTypeId      int `json:"id_product_type"`
 }
 
 type Section struct {
@@ -99,14 +99,14 @@ func (s *Section) Save() gin.HandlerFunc {
 			web.Error(ctx, http.StatusNotFound, "existem erros na formatação do json e não foi possível realizar o parse.")
 			return
 		}
-		if req.Section_number == 0 && req.Current_temperature == 0 && req.Minimum_temperature == 0 && req.Current_capacity == 0 && req.Minimum_capacity == 0 &&
-			req.Maximum_capacity == 0 && req.Warehouse_id == 0 && req.Id_product_type == 0 {
+		if req.SectionNumber == 0 && req.CurrentTemperature == 0 && req.MinimumTemperature == 0 && req.CurrentCapacity == 0 && req.MinimumCapacity == 0 &&
+			req.MaximumCapacity == 0 && req.WarehouseId == 0 && req.ProductTypeId == 0 {
 			web.Error(ctx, http.StatusUnprocessableEntity, "necessário adicionar todas as informações.")
 			return
 		}
 
-		sectionId, err := s.service.Save(req.Section_number, req.Current_temperature, req.Minimum_temperature, req.Current_capacity, req.Minimum_capacity, req.Maximum_capacity,
-			req.Warehouse_id, req.Id_product_type)
+		sectionId, err := s.service.Save(req.SectionNumber, req.CurrentTemperature, req.MinimumTemperature, req.CurrentCapacity, req.MinimumCapacity, req.MaximumCapacity,
+			req.WarehouseId, req.ProductTypeId)
 		if err != nil {
 			web.Error(ctx, http.StatusInternalServerError, "erro interno de servidor.")
 			return
@@ -145,8 +145,8 @@ func (s *Section) Update() gin.HandlerFunc {
 			return
 		}
 
-		if req.Section_number == 0 && req.Current_temperature == 0 && req.Minimum_temperature == 0 && req.Current_capacity == 0 && req.Minimum_capacity == 0 && req.Maximum_capacity == 0 &&
-			req.Warehouse_id == 0 && req.Id_product_type == 0 {
+		if req.SectionNumber == 0 && req.CurrentTemperature == 0 && req.MinimumTemperature == 0 && req.CurrentCapacity == 0 && req.MinimumCapacity == 0 && req.MaximumCapacity == 0 &&
+			req.WarehouseId == 0 && req.ProductTypeId == 0 {
 
 			web.Error(ctx, http.StatusUnprocessableEntity, "informe pelo menos um campo para concluir a atualização.")
 			return
@@ -157,8 +157,8 @@ func (s *Section) Update() gin.HandlerFunc {
 			web.Error(ctx, http.StatusNotFound, "seção não encontrada.")
 			return
 		}
-		if req.Section_number != 0 {
-			sectionNumber, err := s.service.Exists(req.Section_number)
+		if req.SectionNumber != 0 {
+			sectionNumber, err := s.service.Exists(req.SectionNumber)
 			if err != nil {
 				web.Error(ctx, http.StatusBadRequest, "número de seção cadastrado.")
 				return
@@ -166,26 +166,26 @@ func (s *Section) Update() gin.HandlerFunc {
 				section.SectionNumber = sectionNumber
 			}
 		}
-		if req.Current_temperature != 0 {
-			section.CurrentTemperature = req.Current_temperature
+		if req.CurrentTemperature != 0 {
+			section.CurrentTemperature = req.CurrentTemperature
 		}
-		if req.Minimum_temperature != 0 {
-			section.MinimumTemperature = req.Minimum_temperature
+		if req.MinimumTemperature != 0 {
+			section.MinimumTemperature = req.MinimumTemperature
 		}
-		if req.Current_capacity != 0 {
-			section.CurrentCapacity = req.Current_capacity
+		if req.CurrentCapacity != 0 {
+			section.CurrentCapacity = req.CurrentCapacity
 		}
-		if req.Minimum_capacity != 0 {
-			section.MinimumCapacity = req.Minimum_capacity
+		if req.MinimumCapacity != 0 {
+			section.MinimumCapacity = req.MinimumCapacity
 		}
-		if req.Maximum_capacity != 0 {
-			section.MaximumCapacity = req.Maximum_capacity
+		if req.MaximumCapacity != 0 {
+			section.MaximumCapacity = req.MaximumCapacity
 		}
-		if req.Warehouse_id != 0 {
-			section.WarehouseID = req.Warehouse_id
+		if req.WarehouseId != 0 {
+			section.WarehouseID = req.WarehouseId
 		}
-		if req.Id_product_type != 0 {
-			section.ProductTypeID = req.Id_product_type
+		if req.ProductTypeId != 0 {
+			section.ProductTypeID = req.ProductTypeId
 		}
 
 		err = s.service.Update(section)
@@ -216,11 +216,11 @@ func (s *Section) Exists() gin.HandlerFunc {
 			web.Error(ctx, http.StatusBadRequest, "existem erros na formatação do json e não foi possível realizar o parse.")
 			return
 		}
-		if req.Section_number == 0 {
+		if req.SectionNumber == 0 {
 			web.Error(ctx, http.StatusUnprocessableEntity, "necessário adicionar número de seção.")
 			return
 		}
-		sectionNumber, err := s.service.Exists(req.Section_number)
+		sectionNumber, err := s.service.Exists(req.SectionNumber)
 		if err != nil {
 			web.Error(ctx, http.StatusConflict, "seção já cadastrada.")
 			return
