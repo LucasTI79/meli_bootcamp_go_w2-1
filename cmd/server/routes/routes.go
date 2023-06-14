@@ -9,6 +9,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -74,7 +75,19 @@ func (r *router) buildSectionRoutes() {
 	r.rg.DELETE("/sections/:id", handler.Delete())
 }
 
-func (r *router) buildWarehouseRoutes() {}
+func (r *router) buildWarehouseRoutes() {
+
+	warehouseRepo := warehouse.NewWarehouseRepository(r.db)
+	warehouseService := warehouse.NewWarehouseService(warehouseRepo)
+	warehouseHandler := handler.NewWarehouse(warehouseService)
+
+	r.rg.GET("/warehouses", warehouseHandler.GetAll())
+	r.rg.GET("/warehouses/:id", warehouseHandler.GetByID())
+	r.rg.POST("/warehouses", warehouseHandler.Create())
+	r.rg.PUT("/warehouses", warehouseHandler.Update())
+	r.rg.PATCH("/warehouses/:id", warehouseHandler.UpdateByID())
+	r.rg.DELETE("/warehouses/:id", warehouseHandler.Delete())
+}
 
 func (r *router) buildEmployeeRoutes() {
 	repository := employee.NewRepository(r.db)
