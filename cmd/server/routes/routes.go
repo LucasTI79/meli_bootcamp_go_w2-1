@@ -4,15 +4,16 @@ import (
 	"database/sql"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
-	// "github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/swag/example/basic/docs"
 )
 
-type Router interface {
+type IRouter interface {
 	MapRoutes()
 }
 
@@ -22,13 +23,14 @@ type router struct {
 	db  *sql.DB
 }
 
-func NewRouter(eng *gin.Engine, db *sql.DB) Router {
+func NewRouter(eng *gin.Engine, db *sql.DB) IRouter {
 	return &router{eng: eng, db: db}
 }
 
 func (r *router) MapRoutes() {
 	r.setGroup()
-	docs.SwaggerInfo.Host = "http://localhost:8080/"
+
+	docs.SwaggerInfo.Host = os.Getenv("HOST")
 	r.rg.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.buildSellerRoutes()
@@ -41,9 +43,20 @@ func (r *router) MapRoutes() {
 
 func (r *router) setGroup() {
 	r.rg = r.eng.Group("/api/v1")
+
 }
 
-func (r *router) buildSellerRoutes() {}
+func (r *router) buildSellerRoutes() {
+	// Example
+	repo := seller.NewRepository(r.db)
+	service := seller.NewService(repo)
+	handler := handler.NewSeller(service)
+	r.rg.GET("/sellers", handler.GetAll())
+	r.rg.GET("/sellers/:id", handler.Get())
+	r.rg.POST("/sellers", handler.Create())
+	r.rg.PATCH("/sellers/:id", handler.Update())
+	r.rg.DELETE("/sellers/:id", handler.Delete())
+}
 
 func (r *router) buildProductRoutes() {}
 
@@ -64,4 +77,15 @@ func (r *router) buildEmployeeRoutes() {
 	r.rg.DELETE("/employees/:id", handler.Delete())
 }
 
-func (r *router) buildBuyerRoutes() {}
+func (r *router) buildBuyerRoutes() {
+
+	repo := buyer.NewRepository(r.db)
+	service := buyer.NewService(repo)
+	handler := handler.NewBuyer(service)
+
+	r.rg.GET("/buyers", handler.GetAll())
+	r.rg.GET("/buyers/:id", handler.Get())
+	r.rg.POST("/buyers", handler.Create())
+	r.rg.PATCH("/buyers/:id", handler.Update())
+	r.rg.DELETE("/buyers/:id", handler.Delete())
+}

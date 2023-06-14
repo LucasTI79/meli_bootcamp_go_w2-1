@@ -8,6 +8,16 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+// @title MELI_Bootcamp_Go_W2-1
+// @version 1.0
+// @description Add description HERE.
+// @termsOfService https://developers.mercadolibre.com.ar/es_ar/terminos-y-condiciones
+
+// @contact.name API Support
+// @contact.url https://developers.mercadolibre.com.ar/support
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 func main() {
 	/// @title MELI Bootcamp GO Wave 2
 	// @version 1.0
