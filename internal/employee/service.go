@@ -19,7 +19,7 @@ type service struct {
 }
 
 var (
-	ErrNotFound = errors.New("Employee não encontrado.")
+	ErrNotFound = errors.New("Funcionário não encontrado.")
 )
 
 func NewService(r Repository) Service {
