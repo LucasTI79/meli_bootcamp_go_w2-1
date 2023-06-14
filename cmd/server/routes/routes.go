@@ -3,7 +3,12 @@ package routes
 import (
 	"database/sql"
 
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Router interface {
@@ -23,6 +28,8 @@ func NewRouter(eng *gin.Engine, db *sql.DB) Router {
 func (r *router) MapRoutes() {
 	r.setGroup()
 
+	docs.SwaggerInfo.Host = "localhost:8080/api/v1"
+	r.rg.GET("docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.buildSellerRoutes()
 	r.buildProductRoutes()
 	r.buildSectionRoutes()
@@ -33,14 +40,19 @@ func (r *router) MapRoutes() {
 
 func (r *router) setGroup() {
 	r.rg = r.eng.Group("/api/v1")
+
 }
 
 func (r *router) buildSellerRoutes() {
 	// Example
-	// repo := seller.NewRepository(r.db)
-	// service := seller.NewService(repo)
-	// handler := handler.NewSeller(service)
-	// r.r.GET("/seller", handler.GetAll)
+	repo := seller.NewRepository(r.db)
+	service := seller.NewService(repo)
+	handler := handler.NewSeller(service)
+	r.rg.GET("/sellers", handler.GetAll())
+	r.rg.GET("/sellers/:id", handler.Get())
+	r.rg.POST("/sellers", handler.Create())
+	r.rg.PATCH("/sellers/:id", handler.Update())
+	r.rg.DELETE("/sellers/:id", handler.Delete())
 }
 
 func (r *router) buildProductRoutes() {}
