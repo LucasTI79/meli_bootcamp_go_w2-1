@@ -63,10 +63,11 @@ func (s *Section) GetAll() gin.HandlerFunc {
 // @Failure 400 {object} web.ErrorResponse"Validation error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /sections/:id [get]
+// @Router /sections/{id} [get]
 func (s *Section) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+		idParam := ctx.Param("id")
+		id, err := strconv.Atoi(idParam)
 		if err != nil {
 			web.Error(ctx, http.StatusBadRequest, "Error: ID inválido.")
 			return
@@ -105,14 +106,7 @@ func (s *Section) Save() gin.HandlerFunc {
 			web.Error(ctx, http.StatusUnprocessableEntity, "Error: Necessário adicionar todas as informações.")
 			return
 		}
-		// if req.Section_number != 0 {
-		// 	var err error
-		// 	req.Section_number, err = s.service.Exists(req.Section_number)
-		// 	if err != nil {
-		// 		web.Error(ctx, http.StatusBadRequest, "Error: Número de seção já cadastrado.")
-		// 		return
-		// 	}
-		// } else {
+
 		sectionId, err := s.service.Save(req.Section_number, req.Current_temperature, req.Minimum_temperature, req.Current_capacity, req.Minimum_capacity, req.Maximum_capacity,
 			req.Warehouse_id, req.Id_product_type)
 		if err != nil {
@@ -121,7 +115,7 @@ func (s *Section) Save() gin.HandlerFunc {
 		}
 		sectionCreated, err := s.service.Get(sectionId)
 		web.Success(ctx, http.StatusCreated, sectionCreated)
-		// }
+
 	}
 }
 
@@ -136,7 +130,7 @@ func (s *Section) Save() gin.HandlerFunc {
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /sections/:id [patch]
+// @Router /sections/{id} [patch]
 func (s *Section) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		idParam := ctx.Param("id")
@@ -247,7 +241,7 @@ func (s *Section) Exists() gin.HandlerFunc {
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /sections/:id [delete]
+// @Router /sections/{id} [delete]
 func (s *Section) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		idParam := ctx.Param("id")

@@ -4,11 +4,9 @@ import (
 	"database/sql"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
+	// "github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Router interface {
@@ -27,8 +25,8 @@ func NewRouter(eng *gin.Engine, db *sql.DB) Router {
 
 func (r *router) MapRoutes() {
 	r.setGroup()
-	docs.SwaggerInfo.Host = "http://localhost:8080/"
-	r.rg.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// docs.SwaggerInfo.Host = "http://localhost:8080/"
+	// r.rg.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.buildSellerRoutes()
 	r.buildProductRoutes()
