@@ -52,7 +52,7 @@ func ValidationError(c *gin.Context, err error) {
 			errorMessages = append(errorMessages, readableMessageFrom(err))
 		}
 	} else if marshallingError, ok := err.(*json.UnmarshalTypeError); ok {
-		errorMessages = append(errorMessages, fmt.Sprintf("the field '%s' must be a '%s'", marshallingError.Field, marshallingError.Type.String()))
+		errorMessages = append(errorMessages, fmt.Sprintf("o campo '%s' deve ser '%s'", marshallingError.Field, marshallingError.Type.String()))
 	}
 
 	response := ErrorResponse{
@@ -68,13 +68,13 @@ func readableMessageFrom(fe validator.FieldError) string {
 	var message string
 	switch fe.Tag() {
 	case "required":
-		message = fmt.Sprintf("'%s' is required", fe.Field())
+		message = fmt.Sprintf("'%s' é obrigatório", fe.Field())
 	case "lte":
-		message = fmt.Sprintf("'%s' should be less than %s", fe.Field(), fe.Param())
+		message = fmt.Sprintf("'%s' deveria ser menor do que %s", fe.Field(), fe.Param())
 	case "gte":
-		message = fmt.Sprintf("'%s' should be greater than %s", fe.Field(), fe.Param())
+		message = fmt.Sprintf("'%s' deveria ser maior do que %s", fe.Field(), fe.Param())
 	default:
-		message = "unknown error"
+		message = "erro desconhecido"
 	}
 
 	return strings.ToLower(message)

@@ -11,6 +11,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	InvalidId     = "o id '%s' é inválido"
+	CannotBeBlank = "pelo menos um campo deve ser informado para modificações"
+)
+
 type Product struct {
 	service product.Service
 }
@@ -133,7 +138,7 @@ func (p *Product) Get() gin.HandlerFunc {
 		id, err := strconv.Atoi(requestId)
 
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "id '%s' is not valid", requestId)
+			web.Error(c, http.StatusBadRequest, InvalidId, requestId)
 			return
 		}
 
@@ -211,7 +216,7 @@ func (p *Product) Update() gin.HandlerFunc {
 		id, err := strconv.Atoi(requestId)
 
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "id '%s' is not valid", requestId)
+			web.Error(c, http.StatusBadRequest, InvalidId, requestId)
 			return
 		}
 
@@ -222,7 +227,7 @@ func (p *Product) Update() gin.HandlerFunc {
 		}
 
 		if request.IsBlank() {
-			web.Error(c, http.StatusBadRequest, "at least one field must be informed for modifications")
+			web.Error(c, http.StatusBadRequest, CannotBeBlank)
 			return
 		}
 
@@ -263,7 +268,7 @@ func (p *Product) Delete() gin.HandlerFunc {
 		id, err := strconv.Atoi(requestId)
 
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "id '%s' is not valid", requestId)
+			web.Error(c, http.StatusBadRequest, InvalidId, requestId)
 			return
 		}
 
