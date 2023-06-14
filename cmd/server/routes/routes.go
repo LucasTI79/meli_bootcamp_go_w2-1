@@ -9,6 +9,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -49,11 +50,11 @@ func (r *router) setGroup() {
 }
 
 func (r *router) buildSellerRoutes() {
-	// Example
 	repo := seller.NewRepository(r.db)
 	service := seller.NewService(repo)
 	handler := handler.NewSeller(service)
 	sellerRoutes := r.rg.Group("/sellers")
+
 	sellerRoutes.GET("/", handler.GetAll())
 	sellerRoutes.GET("/:id", handler.Get())
 	sellerRoutes.POST("/", handler.Create())
@@ -66,6 +67,7 @@ func (r *router) buildProductRoutes() {
 	service := product.NewService(repo)
 	handler := handler.NewProduct(service)
 	productRoutes := r.rg.Group("/products")
+
 	productRoutes.GET("/", handler.GetAll())
 	productRoutes.GET("/:id", handler.Get())
 	productRoutes.POST("/", handler.Create())
@@ -73,7 +75,19 @@ func (r *router) buildProductRoutes() {
 	productRoutes.DELETE("/:id", handler.Delete())
 }
 
-func (r *router) buildSectionRoutes() {}
+func (r *router) buildSectionRoutes() {
+	repository := section.NewRepository(r.db)
+	service := section.NewService(repository)
+	handler := handler.NewSection(service)
+	sectionRoutes := r.rg.Group("/sections")
+
+	sectionRoutes.GET("/", handler.GetAll())
+	sectionRoutes.POST("/", handler.Save())
+	sectionRoutes.PATCH("/:id", handler.Update())
+	sectionRoutes.GET("/:id", handler.Get())
+	sectionRoutes.GET("/sectionNumber", handler.Exists())
+	sectionRoutes.DELETE("/:id", handler.Delete())
+}
 
 func (r *router) buildWarehouseRoutes() {}
 
@@ -81,24 +95,25 @@ func (r *router) buildEmployeeRoutes() {
 	repository := employee.NewRepository(r.db)
 	service := employee.NewService(repository)
 	handler := handler.NewEmployee(service)
+	employeeRoutes := r.rg.Group("/employees")
 
-	r.rg.GET("/employees", handler.GetAll())
-	r.rg.POST("/employees", handler.Save())
-	r.rg.PATCH("/employees/:id", handler.Update())
-	r.rg.GET("/employees/:id", handler.Get())
-	r.rg.GET("/employees/cardNumber", handler.Exists())
-	r.rg.DELETE("/employees/:id", handler.Delete())
+	employeeRoutes.GET("/", handler.GetAll())
+	employeeRoutes.POST("/", handler.Save())
+	employeeRoutes.PATCH("/:id", handler.Update())
+	employeeRoutes.GET("/:id", handler.Get())
+	employeeRoutes.GET("/cardNumber", handler.Exists())
+	employeeRoutes.DELETE("/:id", handler.Delete())
 }
 
 func (r *router) buildBuyerRoutes() {
-
 	repo := buyer.NewRepository(r.db)
 	service := buyer.NewService(repo)
 	handler := handler.NewBuyer(service)
+	buyerRoutes := r.rg.Group("/buyers")
 
-	r.rg.GET("/buyers", handler.GetAll())
-	r.rg.GET("/buyers/:id", handler.Get())
-	r.rg.POST("/buyers", handler.Create())
-	r.rg.PATCH("/buyers/:id", handler.Update())
-	r.rg.DELETE("/buyers/:id", handler.Delete())
+	buyerRoutes.GET("/", handler.GetAll())
+	buyerRoutes.GET("/:id", handler.Get())
+	buyerRoutes.POST("/", handler.Create())
+	buyerRoutes.PATCH("/:id", handler.Update())
+	buyerRoutes.DELETE("/:id", handler.Delete())
 }
