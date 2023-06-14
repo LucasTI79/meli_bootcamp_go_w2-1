@@ -40,7 +40,7 @@ func (b *Buyer) Get() gin.HandlerFunc {
 			return
 		}
 		
-		buyer, err := b.buyerService.Get(c, id)
+		buyer, err := b.buyerService.Get(c.Request.Context(), id)
 		if err != nil {
 			web.Error(c, http.StatusNotFound, "Comprador não encontrado")
 			return
@@ -64,7 +64,7 @@ func (b *Buyer) Get() gin.HandlerFunc {
 func (b *Buyer) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		buyers, err := b.buyerService.GetAll(c)
+		buyers, err := b.buyerService.GetAll(c.Request.Context())
 		if err != nil {
 			web.Error(c, http.StatusBadRequest, err.Error())
 			return
@@ -115,7 +115,7 @@ func (b *Buyer) Create() gin.HandlerFunc {
 			return
 		}
 
-		buyerId, err := b.buyerService.Save(c, req)
+		buyerId, err := b.buyerService.Save(c.Request.Context(), req)
 		if err != nil {
 			web.Error(c, http.StatusConflict, err.Error())
 			return
@@ -168,14 +168,14 @@ func (b *Buyer) Update() gin.HandlerFunc {
 			return
 		}
 
-		buyer, err := b.buyerService.Get(c, id)
+		buyer, err := b.buyerService.Get(c.Request.Context(), id)
 		if err != nil {
 			web.Error(c, http.StatusNotFound, err.Error())
 			return
 		}	
 		
 		if req.CardNumberID != "" {
-			exists := b.buyerService.Exists(c, req.CardNumberID)
+			exists := b.buyerService.Exists(c.Request.Context(), req.CardNumberID)
 
 			if !exists {
 				buyer.CardNumberID = req.CardNumberID
@@ -193,7 +193,7 @@ func (b *Buyer) Update() gin.HandlerFunc {
 			buyer.LastName = req.LastName
 		}
 
-		err = b.buyerService.Update(c, buyer)
+		err = b.buyerService.Update(c.Request.Context(), buyer)
 		if err != nil {
 			web.Error(c, http.StatusInternalServerError, err.Error())
 			return
@@ -223,7 +223,7 @@ func (b *Buyer) Delete() gin.HandlerFunc {
 			return
 		}
 		
-		err = b.buyerService.Delete(c, id)
+		err = b.buyerService.Delete(c.Request.Context(), id)
 		if err != nil {
 			web.Error(c, http.StatusNotFound, "O comprador com o ID correspondente não existe")
 			return
