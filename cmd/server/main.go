@@ -9,9 +9,9 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// @title MELI_Bootcamp_Go_W2-1
+// @title MELI Bootcamp API
 // @version 1.0
-// @description Add description HERE.
+// @description This API Handle MELI Products.
 // @termsOfService https://developers.mercadolibre.com.ar/es_ar/terminos-y-condiciones
 
 // @contact.name API Support
