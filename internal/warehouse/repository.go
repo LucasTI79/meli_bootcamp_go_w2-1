@@ -26,7 +26,6 @@ type repository struct {
 	db *sql.DB
 }
 
-// GetByCode implements IRepository.
 func (*repository) GetByCode(ctx context.Context, warehouseCode string) (domain.Warehouse, error) {
 	panic("unimplemented")
 }
