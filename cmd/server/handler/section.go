@@ -12,7 +12,7 @@ import (
 type request struct {
 	Id                  int `json:"id"`
 	Section_number      int `json:"section_number"`
-	Current_temperature int `json:"current_temperatur"`
+	Current_temperature int `json:"current_temperature"`
 	Minimum_temperature int `json:"minimum_temperature"`
 	Current_capacity    int `json:"current_capacity"`
 	Minimum_capacity    int `json:"minimum_capacity"`
@@ -105,19 +105,23 @@ func (s *Section) Save() gin.HandlerFunc {
 			web.Error(ctx, http.StatusUnprocessableEntity, "Error: Necessário adicionar todas as informações.")
 			return
 		}
-		if req.Section_number != 0 {
-			section, err := s.service.Exists(req.Section_number)
-
-			sectionId, err := s.service.Save(section, req.Current_temperature, req.Minimum_temperature, req.Current_capacity, req.Minimum_capacity, req.Maximum_capacity,
-				req.Warehouse_id, req.Id_product_type)
-			if err != nil {
-				web.Error(ctx, http.StatusInternalServerError, "Error")
-				return
-			}
-			sectionCreated, err := s.service.Get(sectionId)
-			web.Success(ctx, http.StatusCreated, sectionCreated)
+		// if req.Section_number != 0 {
+		// 	var err error
+		// 	req.Section_number, err = s.service.Exists(req.Section_number)
+		// 	if err != nil {
+		// 		web.Error(ctx, http.StatusBadRequest, "Error: Número de seção já cadastrado.")
+		// 		return
+		// 	}
+		// } else {
+		sectionId, err := s.service.Save(req.Section_number, req.Current_temperature, req.Minimum_temperature, req.Current_capacity, req.Minimum_capacity, req.Maximum_capacity,
+			req.Warehouse_id, req.Id_product_type)
+		if err != nil {
+			web.Error(ctx, http.StatusInternalServerError, "Error")
+			return
 		}
-
+		sectionCreated, err := s.service.Get(sectionId)
+		web.Success(ctx, http.StatusCreated, sectionCreated)
+		// }
 	}
 }
 
@@ -161,10 +165,14 @@ func (s *Section) Update() gin.HandlerFunc {
 			web.Error(ctx, http.StatusNotFound, "Seção não encontrada.")
 			return
 		}
-
 		if req.Section_number != 0 {
-			s.service.Exists(req.Section_number)
-			section.SectionNumber = req.Section_number
+			sectionNumber, err := s.service.Exists(req.Section_number)
+			if err != nil {
+				web.Error(ctx, http.StatusBadRequest, "Número de seção cadastrado.")
+				return
+			} else {
+				section.SectionNumber = sectionNumber
+			}
 		}
 		if req.Current_temperature != 0 {
 			section.CurrentTemperature = req.Current_temperature
@@ -222,7 +230,7 @@ func (s *Section) Exists() gin.HandlerFunc {
 		}
 		sectionNumber, err := s.service.Exists(req.Section_number)
 		if err != nil {
-			web.Error(ctx, http.StatusNoContent, "Seção não cadastrada.")
+			web.Error(ctx, http.StatusNoContent, "Seção já cadastrada.")
 			return
 		}
 		web.Success(ctx, http.StatusOK, sectionNumber)
