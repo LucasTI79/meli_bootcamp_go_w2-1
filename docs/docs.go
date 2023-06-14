@@ -139,6 +139,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/web.ErrorResponse"
                         }
+                    },
+                    "409": {
+                        "description": "Codigo Warehouse incorreto, rever",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
                     }
                 }
             }

@@ -96,6 +96,10 @@ paths:
           description: Invalid request body
           schema:
             $ref: '#/definitions/web.ErrorResponse'
+        "409":
+          description: Codigo Warehouse incorreto, rever
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
       summary: Create a warehouse
       tags:
       - Warehouses

@@ -2,8 +2,8 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"net/http"
-	"regexp"
 	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
@@ -29,6 +29,19 @@ func NewWarehouse(warehouseService service.WarehouseService) *Warehouse {
 	return &Warehouse{
 		warehouseService: warehouseService,
 	}
+}
+
+type UpdateRequest struct {
+	ID                 *int    `json:"id"`
+	Address            *string `json:"address"`
+	Telephone          *string `json:"telephone"`
+	WarehouseCode      *string `json:"warehouse_code"`
+	MinimumCapacity    *int    `json:"minimum_capacity"`
+	MinimumTemperature *int    `json:"minimum_temperature"`
+}
+
+func (w UpdateRequest) IsBlank() bool {
+	return w.ID == nil && w.Address == nil && w.Telephone == nil && w.WarehouseCode == nil && w.MinimumCapacity == nil && w.MinimumTemperature == nil
 }
 
 // GetByID godoc
@@ -92,6 +105,7 @@ func (w *Warehouse) GetAll() gin.HandlerFunc {
 // @Param warehouseData body WarehouseData true "Warehouse data to store"
 // @Success 201 {object} domain.Warehouse
 // @Failure 400 {object} web.ErrorResponse "Invalid request body"
+// @Failure 409 {object} web.ErrorResponse "Codigo Warehouse incorreto, rever"
 // @Router /warehouses [post]
 func (w *Warehouse) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -103,19 +117,19 @@ func (w *Warehouse) Create() gin.HandlerFunc {
 			web.Error(c, http.StatusBadRequest, "Invalid request body")
 			return
 		}
-		if warehouseData.Address == "" || warehouseData.WarehouseCode == "" || !isValidPhoneNumber(warehouseData.Telephone) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "All fields must be provided and the phone number must be in the proper format"})
+		if warehouseData.Address == "" || warehouseData.WarehouseCode == "" {
+			web.Error(c, http.StatusBadRequest, "All fields must be provided and the phone number must be in the proper format")
 			return
 		}
 		if usedCodes[warehouseData.WarehouseCode] {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "warehouse_code already registered"})
+			web.Error(c, http.StatusBadRequest, "warehouse_code already registered")
 			return
 		}
 		usedCodes[warehouseData.WarehouseCode] = true
 
 		createdWarehouse, err := w.warehouseService.CreateWarehouse(context.TODO(), warehouseData)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create warehouse"})
+			web.Error(c, http.StatusConflict, "Codigo Warehouse duplicado, rever")
 			return
 		}
 		web.Response(c, http.StatusCreated, createdWarehouse)
@@ -170,46 +184,46 @@ func (w *Warehouse) UpdateByID() gin.HandlerFunc {
 		warehouseIDStr := c.Param("id")
 		warehouseID, err := strconv.Atoi(warehouseIDStr)
 
-		var updatedWarehouse WarehouseData
-		if err := c.ShouldBindJSON(&updatedWarehouse); err != nil {
+		var request UpdateRequest
+		if err := c.ShouldBindJSON(&request); err != nil {
 			web.Error(c, http.StatusBadRequest, "Invalid data provided")
 			return
 		}
-
 		existingWarehouse, err := w.warehouseService.GetWarehouse(c.Request.Context(), warehouseID)
 		if err != nil {
 			web.Error(c, http.StatusNotFound, "Warehouse not found!")
 			return
 		}
-		if updatedWarehouse.Address == "" || updatedWarehouse.WarehouseCode == "" || !isValidPhoneNumber(updatedWarehouse.Telephone) {
-			web.Error(c, http.StatusBadRequest, "All fields must be provided and the phone number must be in the correct format")
+		fmt.Println(request.IsBlank())
+		if request.IsBlank() {
+			web.Error(c, http.StatusBadRequest, "Ao menos um campo deve ser informado")
 			return
 		}
 
-		existingWarehouse.Address = updatedWarehouse.Address
-		existingWarehouse.Telephone = updatedWarehouse.Telephone
-		existingWarehouse.WarehouseCode = updatedWarehouse.WarehouseCode
-		existingWarehouse.MinimumCapacity = updatedWarehouse.MinimumCapacity
-		existingWarehouse.MinimumTemperature = int(updatedWarehouse.MinimumTemperature)
+		if request.Address != nil {
+			existingWarehouse.Address = *request.Address
+		}
+		if request.Telephone != nil {
+			existingWarehouse.Telephone = *request.Telephone
+		}
+		if request.WarehouseCode != nil {
+			existingWarehouse.WarehouseCode = *request.WarehouseCode
+		}
+		if request.MinimumCapacity != nil {
+			existingWarehouse.MinimumCapacity = *request.MinimumCapacity
+		}
+		if request.MinimumTemperature != nil {
+			existingWarehouse.MinimumTemperature = *request.MinimumTemperature
+		}
 
-		err = w.warehouseService.UpdateWarehouse(context.TODO(), existingWarehouse)
+		err = w.warehouseService.UpdateWarehouse(c.Request.Context(), existingWarehouse)
 
 		if err != nil {
 			web.Error(c, http.StatusInternalServerError, "Failed to update warehouse")
 			return
 		}
-		web.Success(c, http.StatusOK, updatedWarehouse)
+		web.Success(c, http.StatusOK, existingWarehouse)
 	}
-}
-
-func isValidPhoneNumber(phoneNumber string) bool {
-	phoneRegex := `^\+\d{1,3}\s?\(\d{1,3}\)\s?\d{4,14}$`
-
-	match, err := regexp.MatchString(phoneRegex, phoneNumber)
-	if err != nil {
-		return false
-	}
-	return match
 }
 
 // Delete godoc

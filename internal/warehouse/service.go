@@ -3,8 +3,6 @@ package warehouse
 import (
 	"context"
 	"errors"
-	"regexp"
-	"strings"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
@@ -36,14 +34,6 @@ type WarehouseData struct {
 	MinimumTemperature int
 }
 
-func formatPhoneNumber(phoneNumber string) string {
-
-	phoneNumber = strings.ReplaceAll(phoneNumber, " ", "")
-	phoneNumber = "+55" + phoneNumber
-
-	return phoneNumber
-}
-
 type warehouseService struct {
 	warehouseRepository Repository
 }
@@ -73,7 +63,7 @@ func (s *warehouseService) CreateWarehouse(ctx context.Context, warehouseData do
 
 	warehouse := domain.Warehouse{
 		Address:            warehouseData.Address,
-		Telephone:          formatPhoneNumber(warehouseData.Telephone),
+		Telephone:          warehouseData.Telephone,
 		WarehouseCode:      warehouseData.WarehouseCode,
 		MinimumCapacity:    warehouseData.MinimumCapacity,
 		MinimumTemperature: warehouseData.MinimumTemperature,
@@ -111,7 +101,7 @@ func (s *warehouseService) UpdateWarehouse(ctx context.Context, warehouseData do
 	}
 
 	warehouse.Address = warehouseData.Address
-	warehouse.Telephone = formatPhoneNumber(warehouseData.Telephone)
+	warehouse.Telephone = warehouseData.Telephone
 	warehouse.WarehouseCode = warehouseData.WarehouseCode
 	warehouse.MinimumCapacity = warehouseData.MinimumCapacity
 	warehouse.MinimumTemperature = warehouseData.MinimumTemperature
@@ -140,17 +130,6 @@ func validateWarehouseData(warehouseData domain.Warehouse) error {
 		//indica que um campo obrigatorio esta faltando
 		return ErrMissingField
 	}
-	//validar o tel fornecido
-	if !isValidPhoneNumber(warehouseData.Telephone) {
-		return ErrInvalidPhoneNumber
-	}
 
 	return nil
-}
-
-func isValidPhoneNumber(phoneNumber string) bool {
-	// Padrão Regex para validar o formato do número de telefone: DDI + DDD + number (String)
-	pattern := `^\+\d{1,3}\s?\d{1,3}\s?\d+$`
-	regex := regexp.MustCompile(pattern)
-	return regex.MatchString(phoneNumber)
 }

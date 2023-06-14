@@ -26,8 +26,19 @@ type repository struct {
 	db *sql.DB
 }
 
-func (*repository) GetByCode(ctx context.Context, warehouseCode string) (domain.Warehouse, error) {
-	panic("unimplemented")
+func (r *repository) GetByCode(ctx context.Context, warehouseCode string) (domain.Warehouse, error) {
+	query := "SELECT * FROM warehouses WHERE Warehouse_code=?;"
+	row := r.db.QueryRow(query, warehouseCode)
+	w := domain.Warehouse{}
+	err := row.Scan(&w.ID, &w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumCapacity, &w.MinimumTemperature)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return domain.Warehouse{}, ErrNotFound
+		}
+		return domain.Warehouse{}, err
+	}
+
+	return w, nil
 }
 
 func NewWarehouseRepository(db *sql.DB) Repository {
