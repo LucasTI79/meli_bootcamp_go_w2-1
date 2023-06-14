@@ -3,9 +3,9 @@ package main
 import (
 	"database/sql"
 
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/routes"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/routes"
 )
 
 // @title MELI_Bootcamp_Go_W2-1
@@ -18,7 +18,6 @@ import (
 
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-
 func main() {
 	// NO MODIFICAR
 	db, err := sql.Open("mysql", "meli_sprint_user:Meli_Sprint#123@/melisprint")
