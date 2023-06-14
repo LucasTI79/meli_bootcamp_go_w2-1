@@ -99,20 +99,20 @@ func (b *Buyer) Create() gin.HandlerFunc {
 		var req domain.Request
 		err := c.Bind(&req)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "Existem erros na formatação do Json. Não foi possível realizar o parse.")
+			web.Error(c, http.StatusBadRequest, "existem erros na formatação do Json. Não foi possível realizar o parse.")
 			return
 		}
 
 		if req.CardNumberID == "" {
-			web.Error(c, http.StatusUnprocessableEntity, "O campo 'Card Number' do comprador é obrigatório")
+			web.Error(c, http.StatusUnprocessableEntity, "o campo 'Card Number' do comprador é obrigatório")
 			return
 		}
 		if req.FirstName == "" {
-			web.Error(c, http.StatusUnprocessableEntity, "O campo 'Nome' do comprador é obrigatório")
+			web.Error(c, http.StatusUnprocessableEntity, "o campo 'Nome' do comprador é obrigatório")
 			return
 		}
 		if req.LastName == "" {
-			web.Error(c, http.StatusUnprocessableEntity, "O campo 'Sobrenome' do comprador é obrigatório")
+			web.Error(c, http.StatusUnprocessableEntity, "o campo 'Sobrenome' do comprador é obrigatório")
 			return
 		}
 
@@ -153,19 +153,19 @@ func (b *Buyer) Update() gin.HandlerFunc {
 		idParam := c.Param("id")
 		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "ID inválido")
+			web.Error(c, http.StatusBadRequest, "id inválido.")
 			return
 		}
 
 		var req domain.Request
 		err = c.Bind(&req)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "Existem erros na formatação do Json. Não foi possível realizar o parse.")
+			web.Error(c, http.StatusBadRequest, "existem erros na formatação do json e não foi possível realizar o parse.")
 			return
 		}
 
 		if req.CardNumberID == "" && req.FirstName == "" && req.LastName == "" {
-			web.Error(c, http.StatusUnprocessableEntity, "Informe pelo menos um campo para atualização")
+			web.Error(c, http.StatusUnprocessableEntity, "informe pelo menos um campo para atualização.")
 			return
 		}
 
@@ -181,7 +181,7 @@ func (b *Buyer) Update() gin.HandlerFunc {
 			if !exists {
 				buyer.CardNumberID = req.CardNumberID
 			} else {
-				web.Error(c, http.StatusConflict, "Não é possível atualizar um comprador com Card Number repetido.")
+				web.Error(c, http.StatusConflict, "não é possível atualizar um comprador com card number repetido.")
 				return
 			}
 		}
@@ -220,13 +220,13 @@ func (b *Buyer) Delete() gin.HandlerFunc {
 		idParam := c.Param("id")
 		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "ID inválido")
+			web.Error(c, http.StatusBadRequest, "id inválido")
 			return
 		}
 
 		err = b.buyerService.Delete(c.Request.Context(), id)
 		if err != nil {
-			web.Error(c, http.StatusNotFound, "O comprador com o ID correspondente não existe")
+			web.Error(c, http.StatusNotFound, "o comprador com o id correspondente não existe.")
 			return
 		}
 
