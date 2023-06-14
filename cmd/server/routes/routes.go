@@ -4,12 +4,17 @@ import (
 	"database/sql"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
-	// "github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-type Router interface {
+type IRouter interface {
 	MapRoutes()
 }
 
@@ -19,14 +24,15 @@ type router struct {
 	db  *sql.DB
 }
 
-func NewRouter(eng *gin.Engine, db *sql.DB) Router {
+func NewRouter(eng *gin.Engine, db *sql.DB) IRouter {
 	return &router{eng: eng, db: db}
 }
 
 func (r *router) MapRoutes() {
 	r.setGroup()
-	// docs.SwaggerInfo.Host = "http://localhost:8080/"
-	// r.rg.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	docs.SwaggerInfo.Host = os.Getenv("HOST")
+	r.rg.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.buildSellerRoutes()
 	r.buildProductRoutes()
@@ -38,9 +44,20 @@ func (r *router) MapRoutes() {
 
 func (r *router) setGroup() {
 	r.rg = r.eng.Group("/api/v1")
+
 }
 
-func (r *router) buildSellerRoutes() {}
+func (r *router) buildSellerRoutes() {
+	// Example
+	repo := seller.NewRepository(r.db)
+	service := seller.NewService(repo)
+	handler := handler.NewSeller(service)
+	r.rg.GET("/sellers", handler.GetAll())
+	r.rg.GET("/sellers/:id", handler.Get())
+	r.rg.POST("/sellers", handler.Create())
+	r.rg.PATCH("/sellers/:id", handler.Update())
+	r.rg.DELETE("/sellers/:id", handler.Delete())
+}
 
 func (r *router) buildProductRoutes() {}
 
@@ -59,6 +76,28 @@ func (r *router) buildSectionRoutes() {
 
 func (r *router) buildWarehouseRoutes() {}
 
-func (r *router) buildEmployeeRoutes() {}
+func (r *router) buildEmployeeRoutes() {
+	repository := employee.NewRepository(r.db)
+	service := employee.NewService(repository)
+	handler := handler.NewEmployee(service)
 
-func (r *router) buildBuyerRoutes() {}
+	r.rg.GET("/employees", handler.GetAll())
+	r.rg.POST("/employees", handler.Save())
+	r.rg.PATCH("/employees/:id", handler.Update())
+	r.rg.GET("/employees/:id", handler.Get())
+	r.rg.GET("/employees/cardNumber", handler.Exists())
+	r.rg.DELETE("/employees/:id", handler.Delete())
+}
+
+func (r *router) buildBuyerRoutes() {
+
+	repo := buyer.NewRepository(r.db)
+	service := buyer.NewService(repo)
+	handler := handler.NewBuyer(service)
+
+	r.rg.GET("/buyers", handler.GetAll())
+	r.rg.GET("/buyers/:id", handler.Get())
+	r.rg.POST("/buyers", handler.Create())
+	r.rg.PATCH("/buyers/:id", handler.Update())
+	r.rg.DELETE("/buyers/:id", handler.Delete())
+}
