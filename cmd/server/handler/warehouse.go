@@ -152,12 +152,12 @@ func (w *Warehouse) Update() gin.HandlerFunc {
 
 		var updatedWarehouse domain.Warehouse
 		if err := c.ShouldBindJSON(&updatedWarehouse); err != nil {
-			web.Error(c, http.StatusBadRequest, "Invalid data")
+			web.Error(c, http.StatusBadRequest, "dados inválidos fornecidos.")
 			return
 		}
 		err := w.warehouseService.UpdateWarehouse(context.TODO(), updatedWarehouse)
 		if err != nil {
-			web.Error(c, http.StatusInternalServerError, "Failed to update warehouse")
+			web.Error(c, http.StatusInternalServerError, "falha ao atualizar o armazém.")
 			return
 		}
 		web.Response(c, http.StatusOK, updatedWarehouse)
@@ -186,17 +186,17 @@ func (w *Warehouse) UpdateByID() gin.HandlerFunc {
 
 		var request UpdateRequest
 		if err := c.ShouldBindJSON(&request); err != nil {
-			web.Error(c, http.StatusBadRequest, "Invalid data provided")
+			web.Error(c, http.StatusBadRequest, "dados inválidos fornecidos.")
 			return
 		}
 		existingWarehouse, err := w.warehouseService.GetWarehouse(c.Request.Context(), warehouseID)
 		if err != nil {
-			web.Error(c, http.StatusNotFound, "Warehouse not found!")
+			web.Error(c, http.StatusNotFound, "armazém não encontrado.")
 			return
 		}
 		fmt.Println(request.IsBlank())
 		if request.IsBlank() {
-			web.Error(c, http.StatusBadRequest, "Ao menos um campo deve ser informado")
+			web.Error(c, http.StatusBadRequest, "pelo menos um campo deve ser informado.")
 			return
 		}
 
@@ -219,7 +219,7 @@ func (w *Warehouse) UpdateByID() gin.HandlerFunc {
 		err = w.warehouseService.UpdateWarehouse(c.Request.Context(), existingWarehouse)
 
 		if err != nil {
-			web.Error(c, http.StatusInternalServerError, "Failed to update warehouse")
+			web.Error(c, http.StatusInternalServerError, "falha ao atualizar o armazém.")
 			return
 		}
 		web.Success(c, http.StatusOK, existingWarehouse)
@@ -244,18 +244,18 @@ func (w *Warehouse) Delete() gin.HandlerFunc {
 		warehouseID := c.Param("id")
 		id, err := strconv.Atoi(warehouseID)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "Invalid ID")
+			web.Error(c, http.StatusBadRequest, "id inválido.")
 		}
 		existingWarehouse, err := w.warehouseService.GetWarehouse(context.TODO(), id)
 		if err != nil {
-			web.Error(c, http.StatusNotFound, "Warehouse not found")
+			web.Error(c, http.StatusNotFound, "armazém não encontrado.")
 			return
 		}
 		err = w.warehouseService.DeleteWarehouse(context.TODO(), existingWarehouse.ID)
 		if err != nil {
-			web.Error(c, http.StatusInternalServerError, "Failed to delete warehouse")
+			web.Error(c, http.StatusInternalServerError, "falha ao excluir armazém.")
 			return
 		}
-		web.Success(c, http.StatusNoContent, "Warehouse deleted successfully")
+		web.Success(c, http.StatusNoContent, nil)
 	}
 }
