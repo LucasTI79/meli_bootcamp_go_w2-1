@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -11,11 +12,11 @@ import (
 )
 
 type EmployeeRequest struct {
-	Id             int    `json:"id"`
-	Card_number_id string `json:"card_number_id"`
-	First_name     string `json:"first_name"`
-	Last_name      string `json:"last_name"`
-	Warehouse_id   int    `json:"warehouse_id"`
+	Id           int    `json:"id"`
+	CardNumberId string `json:"card_number_id"`
+	FirstName    string `json:"first_name"`
+	LastName     string `json:"last_name"`
+	WarehouseId  int    `json:"warehouse_id"`
 }
 
 type Employee struct {
@@ -96,11 +97,11 @@ func (e *Employee) Exists() gin.HandlerFunc {
 			web.Error(ctx, http.StatusBadRequest, "existem erros na formatação do json e não foi possível realizar o parse.")
 			return
 		}
-		if req.Card_number_id == "" {
+		if req.CardNumberId == "" {
 			web.Error(ctx, http.StatusUnprocessableEntity, "necessário adicionar número do cartão.")
 			return
 		}
-		cardNumberId, err := e.service.Exists(req.Card_number_id)
+		cardNumberId, err := e.service.Exists(req.CardNumberId)
 		if err != nil {
 			web.Error(ctx, http.StatusNoContent, "não cadastrado.")
 			return
@@ -128,14 +129,14 @@ func (e *Employee) Save() gin.HandlerFunc {
 			web.Error(ctx, http.StatusNotFound, "existem erros na formatação do json e não foi possível realizar o parse.")
 			return
 		}
-		if req.Card_number_id == "" && req.First_name == "" && req.Last_name == "" && req.Warehouse_id == 0 {
+		if req.CardNumberId == "" && req.FirstName == "" && req.LastName == "" && req.WarehouseId == 0 {
 			web.Error(ctx, http.StatusUnprocessableEntity, "necessário adicionar todas as informações.")
 			return
 		}
-		if req.Card_number_id != "" {
-			e.service.Exists(req.Card_number_id)
+		if req.CardNumberId != "" {
+			e.service.Exists(req.CardNumberId)
 		}
-		employeeId, err := e.service.Save(req.Card_number_id, req.First_name, req.Last_name, req.Warehouse_id)
+		employeeId, err := e.service.Save(req.CardNumberId, req.FirstName, req.LastName, req.WarehouseId)
 		if err != nil {
 			web.Error(ctx, http.StatusNotFound, "funcionário não encontrado.")
 			return
@@ -159,54 +160,29 @@ func (e *Employee) Save() gin.HandlerFunc {
 // @Router /employees/{id} [patch]
 func (e *Employee) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		idParam := c.Param("id")
-		id, err := strconv.Atoi(idParam)
+		id, _ := c.Params.Get("id")
+		parsedId, err := strconv.Atoi(id)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "id inválido.")
+			web.Error(c, http.StatusBadRequest, "ID inválido.")
 			return
 		}
-
-		var req EmployeeRequest
-		err = c.Bind(&req)
+		var req employee.EmployeeRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			web.Error(c, http.StatusBadRequest, "Corpo da requisição inválido.")
+			return
+		}
+		req.Id = parsedId
+		updatedEmployee, err := e.service.Update(req)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "existem erros na formatação do json e não foi possível realizar o parse.")
-			return
+			if errors.Is(err, employee.ErrNotFound) {
+				web.Error(c, http.StatusNotFound, err.Error())
+				return
+			} else {
+				web.Error(c, http.StatusInternalServerError, "Erro interno no servidor.")
+				return
+			}
 		}
-
-		if req.Card_number_id == "" && req.First_name == "" && req.Last_name == "" && req.Warehouse_id == 0 {
-			web.Error(c, http.StatusUnprocessableEntity, "informe pelo menos um campo para concluir a atualização.")
-			return
-		}
-
-		employee, err := e.service.Get(id)
-		if err != nil {
-			web.Error(c, http.StatusNotFound, "funcionário não encontrado.")
-			return
-		}
-
-		if req.Card_number_id != "" {
-			e.service.Exists(req.Card_number_id)
-			employee.CardNumberID = req.Card_number_id
-		}
-		if req.First_name != "" {
-			employee.FirstName = req.First_name
-		}
-
-		if req.Last_name != "" {
-			employee.LastName = req.Last_name
-		}
-
-		if req.Warehouse_id != 0 {
-			employee.WarehouseID = req.Warehouse_id
-		}
-
-		err = e.service.Update(employee)
-		if err != nil {
-			web.Error(c, http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		web.Success(c, http.StatusOK, employee)
+		web.Success(c, http.StatusOK, updatedEmployee)
 	}
 }
 

@@ -11,7 +11,7 @@ type Repository interface {
 	Get(id int) (domain.Employee, error)
 	Exists(cardNumberID string) (string, error)
 	Save(card_number_id, first_name, last_name string, warehouse_id int) (int, error)
-	Update(domain.Employee) error
+	Update(EmployeeRequest) error
 	Delete(id int) error
 }
 
@@ -86,14 +86,14 @@ func (r *repository) Save(card_number_id, first_name, last_name string, warehous
 	return int(id), nil
 }
 
-func (r *repository) Update(e domain.Employee) error {
+func (r *repository) Update(e EmployeeRequest) error {
 	query := "UPDATE employees SET first_name=?, last_name=?, warehouse_id=?  WHERE id=?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return err
 	}
 
-	res, err := stmt.Exec(&e.FirstName, &e.LastName, &e.WarehouseID, &e.ID)
+	res, err := stmt.Exec(&e.First_name, &e.Last_name, &e.Warehouse_id, &e.Id)
 	if err != nil {
 		return err
 	}

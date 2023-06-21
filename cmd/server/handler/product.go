@@ -6,14 +6,15 @@ import (
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
-	apperr "github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/errors"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
 )
 
 const (
-	InvalidId     = "o id '%s' é inválido"
-	CannotBeBlank = "pelo menos um campo deve ser informado para modificações"
+	RequestParamContext = "Request"
+	InvalidId           = "o id '%s' é inválido"
+	CannotBeBlank       = "pelo menos um campo deve ser informado para modificações"
 )
 
 type Product struct {
@@ -110,12 +111,7 @@ func NewProduct(service product.Service) *Product {
 // @Router /products [get]
 func (p *Product) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		products, err := p.service.GetAll(c.Request.Context())
-
-		if err != nil {
-			web.Error(c, http.StatusInternalServerError, apperr.NewInternalServerError().Error())
-		}
-
+		products := p.service.GetAll(c.Request.Context())
 		web.Success(c, http.StatusOK, products)
 	}
 }
@@ -145,13 +141,10 @@ func (p *Product) Get() gin.HandlerFunc {
 		product, err := p.service.Get(c.Request.Context(), id)
 
 		if err != nil {
-			if _, ok := err.(*apperr.ResourceNotFound); ok {
+			if apperr.Is[*apperr.ResourceNotFound](err) {
 				web.Error(c, http.StatusNotFound, err.Error())
 				return
 			}
-
-			web.Error(c, http.StatusInternalServerError, apperr.NewInternalServerError().Error())
-			return
 		}
 
 		web.Success(c, http.StatusOK, product)
@@ -172,23 +165,15 @@ func (p *Product) Get() gin.HandlerFunc {
 // @Router /products [post]
 func (p *Product) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var request CreateProductRequest
-
-		if err := c.ShouldBindJSON(&request); err != nil {
-			web.ValidationError(c, err)
-			return
-		}
+		request := c.MustGet(RequestParamContext).(CreateProductRequest)
 
 		created, err := p.service.Create(c.Request.Context(), request.ToProduct())
 
 		if err != nil {
-			if _, ok := err.(*apperr.ResourceAlreadyExists); ok {
+			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
 				web.Error(c, http.StatusConflict, err.Error())
 				return
 			}
-
-			web.Error(c, http.StatusInternalServerError, apperr.NewInternalServerError().Error())
-			return
 		}
 
 		web.Success(c, http.StatusCreated, created)
@@ -220,11 +205,7 @@ func (p *Product) Update() gin.HandlerFunc {
 			return
 		}
 
-		var request UpdateProductRequest
-		if err := c.ShouldBindJSON(&request); err != nil {
-			web.ValidationError(c, err)
-			return
-		}
+		request := c.MustGet(RequestParamContext).(UpdateProductRequest)
 
 		if request.IsBlank() {
 			web.Error(c, http.StatusBadRequest, CannotBeBlank)
@@ -234,16 +215,15 @@ func (p *Product) Update() gin.HandlerFunc {
 		response, err := p.service.Update(c.Request.Context(), id, request.ToUpdateProduct())
 
 		if err != nil {
-			if _, ok := err.(*apperr.ResourceNotFound); ok {
+			if apperr.Is[*apperr.ResourceNotFound](err) {
 				web.Error(c, http.StatusNotFound, err.Error())
 				return
 			}
-			if _, ok := err.(*apperr.ResourceAlreadyExists); ok {
+
+			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
 				web.Error(c, http.StatusConflict, err.Error())
 				return
 			}
-			web.Error(c, http.StatusInternalServerError, apperr.NewInternalServerError().Error())
-			return
 		}
 
 		web.Success(c, http.StatusOK, response)
@@ -275,13 +255,10 @@ func (p *Product) Delete() gin.HandlerFunc {
 		err = p.service.Delete(c.Request.Context(), id)
 
 		if err != nil {
-			if _, ok := err.(*apperr.ResourceNotFound); ok {
+			if apperr.Is[*apperr.ResourceNotFound](err) {
 				web.Error(c, http.StatusNotFound, err.Error())
 				return
 			}
-
-			web.Error(c, http.StatusInternalServerError, apperr.NewInternalServerError().Error())
-			return
 		}
 
 		web.Success(c, http.StatusNoContent, nil)
