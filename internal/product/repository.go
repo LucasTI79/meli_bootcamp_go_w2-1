@@ -52,11 +52,10 @@ func (r *repository) Get(ctx context.Context, id int) *domain.Product {
 	p := domain.Product{}
 	err := row.Scan(&p.ID, &p.Description, &p.ExpirationRate, &p.FreezingRate, &p.Height, &p.Length, &p.Netweight, &p.ProductCode, &p.RecomFreezTemp, &p.Width, &p.ProductTypeID, &p.SellerID)
 
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil
-	}
-
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
 		panic(err)
 	}
 

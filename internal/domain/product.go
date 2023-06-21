@@ -1,6 +1,8 @@
 package domain
 
-import "reflect"
+import (
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/helpers"
+)
 
 // Product represents an underlying URL with statistics on how it is used.
 type Product struct {
@@ -34,25 +36,16 @@ type UpdateProduct struct {
 }
 
 func (p *Product) Overlap(product UpdateProduct) {
-	p.ID = fill(product.ID, p.ID).(int)
-	p.Description = fill(product.Description, p.Description).(string)
-	p.ExpirationRate = fill(product.ExpirationRate, p.ExpirationRate).(float32)
-	p.FreezingRate = fill(product.FreezingRate, p.FreezingRate).(float32)
-	p.Height = fill(product.Height, p.Height).(float32)
-	p.Length = fill(product.Length, p.Length).(float32)
-	p.Netweight = fill(product.Netweight, p.Netweight).(float32)
-	p.ProductCode = fill(product.ProductCode, p.ProductCode).(string)
-	p.RecomFreezTemp = fill(product.RecomFreezTemp, p.RecomFreezTemp).(float32)
-	p.Width = fill(product.Width, p.Width).(float32)
-	p.ProductTypeID = fill(product.ProductTypeID, p.ProductTypeID).(int)
-	p.SellerID = fill(product.SellerID, p.SellerID).(int)
-}
-
-func fill(first interface{}, second interface{}) interface{} {
-	valueOfFirst := reflect.ValueOf(first)
-	if valueOfFirst.IsNil() {
-		return second
-	}
-
-	return valueOfFirst.Elem().Interface()
+	p.ID = helpers.Fill(product.ID, p.ID).(int)
+	p.Description = helpers.Fill(product.Description, p.Description).(string)
+	p.ExpirationRate = helpers.Fill(product.ExpirationRate, p.ExpirationRate).(float32)
+	p.FreezingRate = helpers.Fill(product.FreezingRate, p.FreezingRate).(float32)
+	p.Height = helpers.Fill(product.Height, p.Height).(float32)
+	p.Length = helpers.Fill(product.Length, p.Length).(float32)
+	p.Netweight = helpers.Fill(product.Netweight, p.Netweight).(float32)
+	p.ProductCode = helpers.Fill(product.ProductCode, p.ProductCode).(string)
+	p.RecomFreezTemp = helpers.Fill(product.RecomFreezTemp, p.RecomFreezTemp).(float32)
+	p.Width = helpers.Fill(product.Width, p.Width).(float32)
+	p.ProductTypeID = helpers.Fill(product.ProductTypeID, p.ProductTypeID).(int)
+	p.SellerID = helpers.Fill(product.SellerID, p.SellerID).(int)
 }
