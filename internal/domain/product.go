@@ -1,5 +1,9 @@
 package domain
 
+import (
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/helpers"
+)
+
 // Product represents an underlying URL with statistics on how it is used.
 type Product struct {
 	ID             int     `json:"id"`
@@ -32,40 +36,16 @@ type UpdateProduct struct {
 }
 
 func (p *Product) Overlap(product UpdateProduct) {
-	if product.ID != nil {
-		p.ID = *product.ID
-	}
-	if product.Description != nil {
-		p.Description = *product.Description
-	}
-	if product.ExpirationRate != nil {
-		p.ExpirationRate = *product.ExpirationRate
-	}
-	if product.FreezingRate != nil {
-		p.FreezingRate = *product.FreezingRate
-	}
-	if product.Height != nil {
-		p.Height = *product.Height
-	}
-	if product.Length != nil {
-		p.Length = *product.Length
-	}
-	if product.Netweight != nil {
-		p.Netweight = *product.Netweight
-	}
-	if product.ProductCode != nil {
-		p.ProductCode = *product.ProductCode
-	}
-	if product.RecomFreezTemp != nil {
-		p.RecomFreezTemp = *product.RecomFreezTemp
-	}
-	if product.Width != nil {
-		p.Width = *product.Width
-	}
-	if product.ProductTypeID != nil {
-		p.ProductTypeID = *product.ProductTypeID
-	}
-	if product.SellerID != nil {
-		p.SellerID = *product.SellerID
-	}
+	p.ID = helpers.Fill(product.ID, p.ID).(int)
+	p.Description = helpers.Fill(product.Description, p.Description).(string)
+	p.ExpirationRate = helpers.Fill(product.ExpirationRate, p.ExpirationRate).(float32)
+	p.FreezingRate = helpers.Fill(product.FreezingRate, p.FreezingRate).(float32)
+	p.Height = helpers.Fill(product.Height, p.Height).(float32)
+	p.Length = helpers.Fill(product.Length, p.Length).(float32)
+	p.Netweight = helpers.Fill(product.Netweight, p.Netweight).(float32)
+	p.ProductCode = helpers.Fill(product.ProductCode, p.ProductCode).(string)
+	p.RecomFreezTemp = helpers.Fill(product.RecomFreezTemp, p.RecomFreezTemp).(float32)
+	p.Width = helpers.Fill(product.Width, p.Width).(float32)
+	p.ProductTypeID = helpers.Fill(product.ProductTypeID, p.ProductTypeID).(int)
+	p.SellerID = helpers.Fill(product.SellerID, p.SellerID).(int)
 }

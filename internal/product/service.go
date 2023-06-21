@@ -4,16 +4,17 @@ import (
 	"context"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
-	apperr "github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/errors"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 )
 
 const (
+	ResourceNotFound      = "produto não encontrado com o id %d"
 	ResourceAlreadyExists = "um produto com o código '%s' já existe"
 )
 
 type Service interface {
-	GetAll(context.Context) ([]domain.Product, error)
-	Get(context.Context, int) (domain.Product, error)
+	GetAll(context.Context) []domain.Product
+	Get(context.Context, int) (*domain.Product, error)
 	Create(context.Context, domain.Product) (*domain.Product, error)
 	Update(context.Context, int, domain.UpdateProduct) (*domain.Product, error)
 	Delete(context.Context, int) error
@@ -27,12 +28,18 @@ func NewService(repository Repository) Service {
 	return &service{repository}
 }
 
-func (s *service) GetAll(ctx context.Context) ([]domain.Product, error) {
+func (s *service) GetAll(ctx context.Context) []domain.Product {
 	return s.repository.GetAll(ctx)
 }
 
-func (s *service) Get(ctx context.Context, id int) (domain.Product, error) {
-	return s.repository.Get(ctx, id)
+func (s *service) Get(ctx context.Context, id int) (*domain.Product, error) {
+	product := s.repository.Get(ctx, id)
+
+	if product == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
+	}
+
+	return product, nil
 }
 
 func (s *service) Create(ctx context.Context, product domain.Product) (*domain.Product, error) {
@@ -40,22 +47,21 @@ func (s *service) Create(ctx context.Context, product domain.Product) (*domain.P
 		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, product.ProductCode)
 	}
 
-	id, err := s.repository.Save(ctx, product)
+	id := s.repository.Save(ctx, product)
+	created := s.repository.Get(ctx, id)
 
-	if err != nil {
-		return nil, err
+	if created == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
 	}
 
-	created, err := s.repository.Get(ctx, id)
-
-	return &created, nil
+	return created, nil
 }
 
 func (s *service) Update(ctx context.Context, id int, product domain.UpdateProduct) (*domain.Product, error) {
-	productFound, err := s.repository.Get(ctx, id)
+	productFound := s.repository.Get(ctx, id)
 
-	if err != nil {
-		return nil, err
+	if productFound == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
 	}
 
 	if product.ProductCode != nil {
@@ -68,17 +74,23 @@ func (s *service) Update(ctx context.Context, id int, product domain.UpdateProdu
 	}
 
 	productFound.Overlap(product)
+	s.repository.Update(ctx, *productFound)
+	updated := s.repository.Get(ctx, id)
 
-	err = s.repository.Update(ctx, productFound)
-
-	if err != nil {
-		return nil, err
+	if updated == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
 	}
 
-	productResponse, _ := s.repository.Get(ctx, id)
-	return &productResponse, nil
+	return updated, nil
 }
 
 func (s *service) Delete(ctx context.Context, id int) error {
-	return s.repository.Delete(ctx, id)
+	product := s.repository.Get(ctx, id)
+
+	if product == nil {
+		return apperr.NewResourceNotFound(ResourceNotFound, id)
+	}
+
+	s.repository.Delete(ctx, id)
+	return nil
 }
