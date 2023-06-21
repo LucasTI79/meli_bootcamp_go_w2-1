@@ -160,6 +160,7 @@ func (p *Product) Get() gin.HandlerFunc {
 // @Param request body CreateProductRequest true "Product data"
 // @Success 201 {object} domain.Product "Created product"
 // @Failure 422 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Not found error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /products [post]
@@ -170,6 +171,10 @@ func (p *Product) Create() gin.HandlerFunc {
 		created, err := p.service.Create(c.Request.Context(), request.ToProduct())
 
 		if err != nil {
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(c, http.StatusNotFound, err.Error())
+				return
+			}
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
 				web.Error(c, http.StatusConflict, err.Error())
 				return

@@ -101,16 +101,16 @@ func (r *router) buildSectionRoutes() {
 
 func (r *router) buildWarehouseRoutes() {
 
-	warehouseRepo := warehouse.NewRepository(r.db)
-	warehouseService := warehouse.NewService(warehouseRepo)
-	warehouseHandler := handler.NewWarehouse(warehouseService)
-	warehouseRoutes := r.rg.Group("/warehouses")
+	repo := warehouse.NewRepository(r.db)
+	service := warehouse.NewService(repo)
+	controller := handler.NewWarehouse(service)
+	routes := r.rg.Group("/warehouses")
 
-	warehouseRoutes.GET("/warehouses", warehouseHandler.GetAll())
-	warehouseRoutes.GET("/warehouses/:id", warehouseHandler.GetByID())
-	warehouseRoutes.POST("/warehouses", warehouseHandler.Create())
-	warehouseRoutes.PATCH("/warehouses/:id", warehouseHandler.Update())
-	warehouseRoutes.DELETE("/warehouses/:id", warehouseHandler.Delete())
+	routes.GET("/", controller.GetAll())
+	routes.GET("/:id", controller.Get())
+	routes.POST("/", middleware.Validation[handler.CreateWarehouseRequest](), controller.Create())
+	routes.PATCH("/:id", middleware.Validation[handler.UpdateWarehouseRequest](), controller.Update())
+	routes.DELETE("/:id", controller.Delete())
 }
 
 func (r *router) buildEmployeeRoutes() {

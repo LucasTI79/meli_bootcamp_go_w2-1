@@ -1,37 +1,72 @@
 package handler
 
 import (
-	"context"
-	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
 )
 
-type Warehouse struct {
-	warehouseService warehouse.Service
+type CreateWarehouseRequest struct {
+	Address            *string `json:"address" binding:"required"`
+	Telephone          *string `json:"telephone" binding:"required"`
+	WarehouseCode      *string `json:"warehouse_code" binding:"required"`
+	MinimumCapacity    *int    `json:"minimum_capacity" binding:"required"`
+	MinimumTemperature *int    `json:"minimum_temperature" binding:"required"`
 }
 
-type WarehouseData struct {
-	ID                 int     `json:"id"`
-	Address            string  `json:"address"`
-	Telephone          string  `json:"telephone"`
-	WarehouseCode      string  `json:"warehouse_code"`
-	MinimumCapacity    int     `json:"minimum_capacity"`
-	MinimumTemperature float64 `json:"minimum_temperature"`
+func (w CreateWarehouseRequest) ToWarehouse() domain.Warehouse {
+	return domain.Warehouse{
+		ID:                 0,
+		Address:            *w.Address,
+		Telephone:          *w.Telephone,
+		WarehouseCode:      *w.WarehouseCode,
+		MinimumCapacity:    *w.MinimumCapacity,
+		MinimumTemperature: *w.MinimumTemperature,
+	}
+}
+
+type UpdateWarehouseRequest struct {
+	Address            *string `json:"address"`
+	Telephone          *string `json:"telephone"`
+	WarehouseCode      *string `json:"warehouse_code"`
+	MinimumCapacity    *int    `json:"minimum_capacity"`
+	MinimumTemperature *int    `json:"minimum_temperature"`
+}
+
+func (w UpdateWarehouseRequest) ToUpdateWarehouse() domain.UpdateWarehouse {
+	return domain.UpdateWarehouse{
+		Address:            w.Address,
+		Telephone:          w.Telephone,
+		WarehouseCode:      w.WarehouseCode,
+		MinimumCapacity:    w.MinimumCapacity,
+		MinimumTemperature: w.MinimumTemperature,
+	}
+}
+
+func (w UpdateWarehouseRequest) IsBlank() bool {
+	return w.Address == nil &&
+		w.Telephone == nil &&
+		w.WarehouseCode == nil &&
+		w.MinimumCapacity == nil &&
+		w.MinimumTemperature == nil
+}
+
+type Warehouse struct {
+	service warehouse.Service
 }
 
 func NewWarehouse(w warehouse.Service) *Warehouse {
 	return &Warehouse{
-		warehouseService: w,
+		service: w,
 	}
 }
 
-// GetByID godoc
+// Get godoc
 // @Summary Get warehouse by ID
 // @Tags Warehouses
 // @Description This endpoint retrieves the information of a warehouse by its ID
@@ -42,19 +77,25 @@ func NewWarehouse(w warehouse.Service) *Warehouse {
 // @Failure 400 {object} web.ErrorResponse "ID de armazem invalido"
 // @Failure 404 {object} web.ErrorResponse "Armazem nao encontrado"
 // @Router /warehouses/{id} [get]
-func (w *Warehouse) GetByID() gin.HandlerFunc {
+func (w *Warehouse) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		whouseCode, err := strconv.Atoi(c.Param("id"))
+		warehouseId, err := strconv.Atoi(c.Param("id"))
+
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "ID de armazem invalido")
+			web.Error(c, http.StatusBadRequest, InvalidId, warehouseId)
 			return
 		}
-		warehouseData, err := w.warehouseService.Get(context.TODO(), whouseCode)
+
+		warehouse, err := w.service.Get(c.Request.Context(), warehouseId)
+
 		if err != nil {
-			web.Error(c, http.StatusNotFound, "Armazem nao encontrado")
-			return
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(c, http.StatusNotFound, err.Error())
+				return
+			}
 		}
-		web.Response(c, http.StatusOK, warehouseData)
+
+		web.Success(c, http.StatusOK, warehouse)
 	}
 }
 
@@ -69,16 +110,8 @@ func (w *Warehouse) GetByID() gin.HandlerFunc {
 // @Router /warehouses [get]
 func (w *Warehouse) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
-		warehouses, err := w.warehouseService.GetAll(c)
-		if err != nil {
-			web.Error(c, http.StatusInternalServerError, "Falha ao obter os armazéns")
-			return
-		}
-		response := gin.H{
-			"data": warehouses,
-		}
-		web.Success(c, http.StatusOK, response)
+		warehouses := w.service.GetAll(c.Request.Context())
+		web.Success(c, http.StatusOK, warehouses)
 	}
 }
 
@@ -88,8 +121,6 @@ func (w *Warehouse) GetAll() gin.HandlerFunc {
 // @Description Create a new warehouse
 // @Accept  json
 // @Produce  json
-// @Param token header string true "Authentication token"
-// @Param warehouseData body WarehouseData true "Warehouse data to store"
 // @Success 201 {object} domain.Warehouse
 // @Failure 400 {object} web.ErrorResponse "Invalid data"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
@@ -98,27 +129,18 @@ func (w *Warehouse) GetAll() gin.HandlerFunc {
 // @Router /warehouses [post]
 func (w *Warehouse) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		request := c.MustGet(RequestParamContext).(CreateWarehouseRequest)
 
-		var warehouseData domain.Warehouse
-		if err := c.ShouldBindJSON(&warehouseData); err != nil {
-			web.Error(c, http.StatusBadRequest, "Verifique os dados informados e tende novamente!")
-			return
-		}
-		if err := WarehouseValidator(c, warehouseData); err != nil {
-			web.Error(c, http.StatusUnprocessableEntity, err.Error())
-			return
-		}
-		wCode, err := w.warehouseService.Save(c.Request.Context(), warehouseData)
+		created, err := w.service.Create(c, request.ToWarehouse())
+
 		if err != nil {
-			if errors.Is(err, warehouse.ErrWarehouseExists) {
-				web.Error(c, http.StatusConflict, "Ja existe um armazem com o codigo %v", warehouseData.WarehouseCode)
-				return
-			} else {
-				web.Error(c, http.StatusInternalServerError, "Erro interno de servidor")
+			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
+				web.Error(c, http.StatusConflict, err.Error())
 				return
 			}
 		}
-		web.Response(c, http.StatusCreated, wCode)
+
+		web.Success(c, http.StatusCreated, created)
 	}
 }
 
@@ -137,36 +159,35 @@ func (w *Warehouse) Create() gin.HandlerFunc {
 // @Router /warehouses [put]
 func (w *Warehouse) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		paramId := c.Param("id")
+		id, err := strconv.Atoi(paramId)
 
-		warehouseId := c.Param("id")
-		warehouseData := domain.Warehouse{}
-
-		if err := c.ShouldBindJSON(&warehouseData); err != nil {
-			web.Error(c, http.StatusBadRequest, "Corpo da requisição inválido")
-			return
-		}
-
-		if warehouseData.WarehouseCode != "" && warehouseData.WarehouseCode != warehouseId {
-			web.Error(c, http.StatusBadRequest, "Não é permitido atualizar o campo WarehouseCode!")
-			return
-		}
-
-		warehouseData.WarehouseCode = warehouseId
-
-		updateWarehouse, err := w.warehouseService.Update(c.Request.Context(), warehouseData)
 		if err != nil {
-			if errors.Is(err, warehouse.ErrWarehouseExists) {
-				web.Error(c, http.StatusConflict, "Codigo de armazem ja registrado!")
-				return
-			} else if errors.Is(err, warehouse.ErrWarehouseNotFound) {
+			web.Error(c, http.StatusBadRequest, InvalidId, paramId)
+			return
+		}
+
+		request := c.MustGet(RequestParamContext).(UpdateWarehouseRequest)
+
+		if request.IsBlank() {
+			web.Error(c, http.StatusBadRequest, CannotBeBlank)
+			return
+		}
+
+		updated, err := w.service.Update(c.Request.Context(), id, request.ToUpdateWarehouse())
+
+		if err != nil {
+			if apperr.Is[*apperr.ResourceNotFound](err) {
 				web.Error(c, http.StatusNotFound, err.Error())
 				return
-			} else {
-				web.Error(c, http.StatusInternalServerError, "Erro interno no servidor.")
+			}
+			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
+				web.Error(c, http.StatusConflict, err.Error())
 				return
 			}
 		}
-		web.Success(c, http.StatusOK, updateWarehouse)
+
+		web.Success(c, http.StatusOK, updated)
 	}
 }
 
@@ -184,41 +205,23 @@ func (w *Warehouse) Update() gin.HandlerFunc {
 // @Router /warehouses/{id} [delete] "Falha ao excluir o armazem"
 func (w *Warehouse) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		paramId := c.Param("id")
+		id, err := strconv.Atoi(paramId)
 
-		warehouseID := c.Param("id")
-		id, err := strconv.Atoi(warehouseID)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "ID invalido")
-		}
-		existingWarehouse, err := w.warehouseService.Get(context.TODO(), id)
-		if err != nil {
-			web.Error(c, http.StatusNotFound, "Armazém não encontrado!")
+			web.Error(c, http.StatusBadRequest, InvalidId, paramId)
 			return
 		}
-		err = w.warehouseService.Delete(context.TODO(), existingWarehouse.ID)
-		if err != nil {
-			web.Error(c, http.StatusInternalServerError, "Falha ao excluir o armazem")
-			return
-		}
-		web.Success(c, http.StatusNoContent, "Armazém excluído com sucesso")
-	}
-}
 
-func WarehouseValidator(c *gin.Context, warehouseData domain.Warehouse) error {
-	if warehouseData.Address == "" {
-		web.Error(c, http.StatusBadRequest, "O endereco do armazem deve ser informado!")
+		err = w.service.Delete(c, id)
+
+		if err != nil {
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(c, http.StatusNotFound, err.Error())
+				return
+			}
+		}
+
+		web.Success(c, http.StatusNoContent, nil)
 	}
-	if warehouseData.Telephone == "" {
-		web.Error(c, http.StatusBadRequest, "O telefone do armazem deve ser informado!")
-	}
-	if warehouseData.MinimumTemperature == 0 {
-		web.Error(c, http.StatusBadRequest, "A temperatura minima deve ser informada!")
-	}
-	if warehouseData.MinimumCapacity == 0 {
-		web.Error(c, http.StatusBadRequest, "A capacidade minima deve ser informada!")
-	}
-	if warehouseData.WarehouseCode == "" {
-		web.Error(c, http.StatusBadRequest, "O codigo do armazem deve ser informado!")
-	}
-	return nil
 }
