@@ -130,12 +130,12 @@ func (r *router) buildEmployeeRoutes() {
 func (r *router) buildBuyerRoutes() {
 	repo := buyer.NewRepository(r.db)
 	service := buyer.NewService(repo)
-	handler := handler.NewBuyer(service)
+	controller := handler.NewBuyer(service)
 	buyerRoutes := r.rg.Group("/buyers")
 
-	buyerRoutes.GET("/", handler.GetAll())
-	buyerRoutes.GET("/:id", handler.Get())
-	buyerRoutes.POST("/", handler.Create())
-	buyerRoutes.PATCH("/:id", handler.Update())
-	buyerRoutes.DELETE("/:id", handler.Delete())
+	buyerRoutes.GET("/", controller.GetAll())
+	buyerRoutes.GET("/:id", controller.Get())
+	buyerRoutes.POST("/", middleware.Validation[handler.CreateBuyerRequest](), controller.Create())
+	buyerRoutes.PATCH("/:id", middleware.Validation[handler.UpdateBuyerRequest](), controller.Update())
+	buyerRoutes.DELETE("/:id", controller.Delete())
 }

@@ -6,9 +6,44 @@ import (
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
 )
+
+type CreateBuyerRequest struct {
+	CardNumberID *string `json:"card_number_id" binding:"required"`
+	FirstName    *string `json:"first_name" binding:"required"`
+	LastName     *string `json:"last_name" binding:"required"`
+}
+
+func (r CreateBuyerRequest) ToBuyer() domain.Buyer {
+	return domain.Buyer{
+		CardNumberID: *r.CardNumberID,
+		FirstName:    *r.FirstName,
+		LastName:     *r.LastName,
+	}
+}
+
+type UpdateBuyerRequest struct {
+	CardNumberID *string `json:"card_number_id"`
+	FirstName    *string `json:"first_name"`
+	LastName     *string `json:"last_name"`
+}
+
+func (r UpdateBuyerRequest) ToUpdateBuyer() domain.UpdateBuyer {
+	return domain.UpdateBuyer{
+		CardNumberID: r.CardNumberID,
+		FirstName:    r.FirstName,
+		LastName:     r.LastName,
+	}
+}
+
+func (buyerRequest UpdateBuyerRequest) IsBlank() bool {
+	return buyerRequest.CardNumberID == nil &&
+		buyerRequest.FirstName == nil &&
+		buyerRequest.LastName == nil
+}
 
 type Buyer struct {
 	buyerService buyer.IService
@@ -37,18 +72,19 @@ func (b *Buyer) Get() gin.HandlerFunc {
 		idParam := c.Param("id")
 		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "ID inválido")
+			web.Error(c, http.StatusBadRequest, InvalidId, idParam)
 			return
 		}
 
 		buyer, err := b.buyerService.Get(c.Request.Context(), id)
 		if err != nil {
-			web.Error(c, http.StatusNotFound, "Comprador não encontrado")
-			return
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(c, http.StatusNotFound, err.Error())
+				return
+			}
 		}
 
 		web.Success(c, http.StatusOK, buyer)
-
 	}
 }
 
@@ -65,11 +101,7 @@ func (b *Buyer) Get() gin.HandlerFunc {
 func (b *Buyer) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		buyers, err := b.buyerService.GetAll(c.Request.Context())
-		if err != nil {
-			web.Error(c, http.StatusInternalServerError, err.Error())
-			return
-		}
+		buyers := b.buyerService.GetAll(c.Request.Context())
 
 		if len(buyers) == 0 {
 			web.Success(c, http.StatusNoContent, nil)
@@ -77,7 +109,6 @@ func (b *Buyer) GetAll() gin.HandlerFunc {
 		}
 
 		web.Success(c, http.StatusOK, buyers)
-
 	}
 }
 
@@ -95,41 +126,18 @@ func (b *Buyer) GetAll() gin.HandlerFunc {
 // @Router /buyers [post]
 func (b *Buyer) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		request := c.MustGet(RequestParamContext).(CreateBuyerRequest)
 
-		var req domain.Request
-		err := c.Bind(&req)
+		buyer, err := b.buyerService.Save(c.Request.Context(), request.ToBuyer())
+
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "existem erros na formatação do Json. Não foi possível realizar o parse.")
-			return
+			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
+				web.Error(c, http.StatusConflict, err.Error())
+				return
+			}
 		}
 
-		if req.CardNumberID == "" {
-			web.Error(c, http.StatusUnprocessableEntity, "o campo 'Card Number' do comprador é obrigatório")
-			return
-		}
-		if req.FirstName == "" {
-			web.Error(c, http.StatusUnprocessableEntity, "o campo 'Nome' do comprador é obrigatório")
-			return
-		}
-		if req.LastName == "" {
-			web.Error(c, http.StatusUnprocessableEntity, "o campo 'Sobrenome' do comprador é obrigatório")
-			return
-		}
-
-		buyerId, err := b.buyerService.Save(c.Request.Context(), req)
-		if err != nil {
-			web.Error(c, http.StatusConflict, err.Error())
-			return
-		}
-
-		createdBuyer, err := b.buyerService.Get(c.Request.Context(), buyerId)
-		if err != nil {
-			web.Error(c, http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		web.Success(c, http.StatusCreated, createdBuyer)
-
+		web.Success(c, http.StatusCreated, buyer)
 	}
 }
 
@@ -153,55 +161,32 @@ func (b *Buyer) Update() gin.HandlerFunc {
 		idParam := c.Param("id")
 		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "id inválido.")
+			web.Error(c, http.StatusBadRequest, InvalidId, idParam)
 			return
 		}
 
-		var req domain.Request
-		err = c.Bind(&req)
+		request := c.MustGet(RequestParamContext).(UpdateBuyerRequest)
+
+		if request.IsBlank() {
+			web.Error(c, http.StatusBadRequest, CannotBeBlank)
+			return
+		}
+
+		updated, err := b.buyerService.Update(c.Request.Context(), id, request.ToUpdateBuyer())
+
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "existem erros na formatação do json e não foi possível realizar o parse.")
-			return
-		}
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(c, http.StatusNotFound, err.Error())
+				return
+			}
 
-		if req.CardNumberID == "" && req.FirstName == "" && req.LastName == "" {
-			web.Error(c, http.StatusUnprocessableEntity, "informe pelo menos um campo para atualização.")
-			return
-		}
-
-		buyer, err := b.buyerService.Get(c.Request.Context(), id)
-		if err != nil {
-			web.Error(c, http.StatusNotFound, err.Error())
-			return
-		}
-
-		if req.CardNumberID != "" {
-			exists := b.buyerService.Exists(c.Request.Context(), req.CardNumberID)
-
-			if !exists {
-				buyer.CardNumberID = req.CardNumberID
-			} else {
-				web.Error(c, http.StatusConflict, "não é possível atualizar um comprador com card number repetido.")
+			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
+				web.Error(c, http.StatusConflict, err.Error())
 				return
 			}
 		}
 
-		if req.FirstName != "" {
-			buyer.FirstName = req.FirstName
-		}
-
-		if req.LastName != "" {
-			buyer.LastName = req.LastName
-		}
-
-		err = b.buyerService.Update(c.Request.Context(), buyer)
-		if err != nil {
-			web.Error(c, http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		web.Success(c, http.StatusOK, buyer)
-
+		web.Success(c, http.StatusOK, updated)
 	}
 }
 
@@ -220,16 +205,19 @@ func (b *Buyer) Delete() gin.HandlerFunc {
 		idParam := c.Param("id")
 		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "id inválido")
+			web.Error(c, http.StatusBadRequest, InvalidId, idParam)
 			return
 		}
 
 		err = b.buyerService.Delete(c.Request.Context(), id)
+
 		if err != nil {
-			web.Error(c, http.StatusNotFound, "o comprador com o id correspondente não existe.")
-			return
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(c, http.StatusNotFound, err.Error())
+				return
+			}
 		}
 
-		web.Success(c, http.StatusNoContent, "")
+		web.Success(c, http.StatusNoContent, nil)
 	}
 }

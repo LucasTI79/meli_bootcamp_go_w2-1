@@ -1,27 +1,26 @@
 package buyer
 
 import (
-	"errors"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"context"
-) 
 
-// Errors
-var (
-	ErrNotFound = errors.New("Comprador não encontrado.")
-	ErrAlreadyExists = errors.New("Não é possível cadastrar um comprador com Card Number repetido.")
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 )
 
-type IService interface{
-	GetAll(c context.Context) ([]domain.Buyer, error)
-	Get(c context.Context, id int) (domain.Buyer, error)
-	Save(c context.Context, b domain.Request) (int, error)
-	Update(c context.Context, b domain.Buyer) error
+const (
+	ResourceNotFound      = "comprador não encontrado com o id %d"
+	ResourceAlreadyExists = "um comprador com o número de cartão '%s' já existe"
+)
+
+type IService interface {
+	GetAll(c context.Context) []domain.Buyer
+	Get(c context.Context, id int) (*domain.Buyer, error)
+	Save(c context.Context, b domain.Buyer) (*domain.Buyer, error)
+	Update(c context.Context, id int, b domain.UpdateBuyer) (*domain.Buyer, error)
 	Delete(c context.Context, id int) error
-	Exists(c context.Context, cardNumberID string) bool
 }
 
-type service struct{
+type service struct {
 	repository IRepository
 }
 
@@ -31,52 +30,63 @@ func NewService(r IRepository) IService {
 	}
 }
 
-func (s *service) GetAll(c context.Context) ([]domain.Buyer, error) {
-	buyers, err := s.repository.GetAll(c)
-	if err != nil {
-		return nil, err
-	}
-
-	return buyers, nil
+func (s *service) GetAll(c context.Context) []domain.Buyer {
+	return s.repository.GetAll(c)
 }
 
-func (s *service) Get(c context.Context, id int) (domain.Buyer, error) {
-	buyer, err := s.repository.Get(c, id)
-	if err != nil {
-		return domain.Buyer{}, ErrNotFound
+func (s *service) Get(c context.Context, id int) (*domain.Buyer, error) {
+	buyer := s.repository.Get(c, id)
+
+	if buyer == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
 	}
 
 	return buyer, nil
 }
 
-func (s *service) Save(c context.Context, b domain.Request) (int, error) {
+func (s *service) Save(c context.Context, b domain.Buyer) (*domain.Buyer, error) {
 	exists := s.repository.Exists(c, b.CardNumberID)
 
 	if !exists {
-		id, err := s.repository.Save(c, b)
-		if err != nil {
-			return 0, err
-		}
-		return id, nil 
-	} else {
-		return 0, ErrAlreadyExists
-	}
+		id := s.repository.Save(c, b)
+		created := s.repository.Get(c, id)
 
+		if created == nil {
+			return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
+		}
+
+		return created, nil
+	} else {
+		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, b.CardNumberID)
+	}
 }
 
-func (s *service) Update(c context.Context, b domain.Buyer) error {
+func (s *service) Update(c context.Context, id int, buyer domain.UpdateBuyer) (*domain.Buyer, error) {
+	buyerFound := s.repository.Get(c, id)
 
-	return s.repository.Update(c, b)
-	
+	if buyerFound == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
+	}
+
+	buyerFound.Overlap(buyer)
+
+	s.repository.Update(c, *buyerFound)
+	updated := s.repository.Get(c, id)
+
+	if updated == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
+	}
+
+	return updated, nil
 }
 
 func (s *service) Delete(c context.Context, id int) error {
-	
-	return s.repository.Delete(c, id)
+	buyer := s.repository.Get(c, id)
 
-}
+	if buyer == nil {
+		return apperr.NewResourceNotFound(ResourceNotFound, id)
+	}
 
-func (s *service) Exists(c context.Context, cardNumberID string) bool {
-	
-	return s.repository.Exists(c, cardNumberID)
+	s.repository.Delete(c, id)
+	return nil
 }
