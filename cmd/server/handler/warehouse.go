@@ -79,14 +79,15 @@ func NewWarehouse(w warehouse.Service) *Warehouse {
 // @Router /warehouses/{id} [get]
 func (w *Warehouse) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		warehouseId, err := strconv.Atoi(c.Param("id"))
+		paramId := c.Param("id")
+		id, err := strconv.Atoi(paramId)
 
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, warehouseId)
+			web.Error(c, http.StatusBadRequest, InvalidId, paramId)
 			return
 		}
 
-		warehouse, err := w.service.Get(c.Request.Context(), warehouseId)
+		warehouse, err := w.service.Get(c.Request.Context(), id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
