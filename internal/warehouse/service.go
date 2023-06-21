@@ -14,50 +14,39 @@ var (
 	ErrInvalidID          = errors.New("invalid ID")
 	ErrInvalidPhoneNumber = errors.New("invalid phone number")
 	ErrMissingField       = errors.New("missing required field")
-	ErrorResponse         = errors.New("Nao localizado no momento")
 )
 
-type WarehouseService interface {
-	GetAllWarehouses(ctx context.Context) ([]domain.Warehouse, error)
-	GetWarehouse(ctx context.Context, id int) (domain.Warehouse, error)
-	CreateWarehouse(ctx context.Context, warehouseData domain.Warehouse) (*domain.Warehouse, error)
-	UpdateWarehouse(ctx context.Context, warehouseData domain.Warehouse) error
-	DeleteWarehouse(ctx context.Context, id int) error
+type Service interface {
+	GetAll(ctx context.Context) ([]domain.Warehouse, error)
+	Get(ctx context.Context, id int) (domain.Warehouse, error)
+	Create(ctx context.Context, warehouseData domain.Warehouse) (*domain.Warehouse, error)
+	Save(ctx context.Context, warehouse domain.Warehouse) (int, error)
+	Update(ctx context.Context, warehouseData domain.Warehouse) (domain.Warehouse, error)
+	Delete(ctx context.Context, id int) error
 }
 
-type WarehouseData struct {
-	ID                 int
-	WarehouseCode      string
-	Address            string
-	Telephone          string
-	MinimumCapacity    int
-	MinimumTemperature int
+type service struct {
+	repository Repository
 }
 
-type warehouseService struct {
-	warehouseRepository Repository
+func NewService(r Repository) Service {
+	return &service{repository: r}
 }
 
-func NewWarehouseService(repository Repository) WarehouseService {
-	return &warehouseService{
-		warehouseRepository: repository,
-	}
+func (s *service) GetAll(ctx context.Context) ([]domain.Warehouse, error) {
+	return s.repository.GetAll(ctx)
 }
 
-func (s *warehouseService) GetAllWarehouses(ctx context.Context) ([]domain.Warehouse, error) {
-	return s.warehouseRepository.GetAll(ctx)
+func (s *service) Get(ctx context.Context, id int) (domain.Warehouse, error) {
+	return s.repository.Get(ctx, id)
 }
 
-func (s *warehouseService) GetWarehouse(ctx context.Context, id int) (domain.Warehouse, error) {
-	return s.warehouseRepository.Get(ctx, id)
-}
-
-func (s *warehouseService) CreateWarehouse(ctx context.Context, warehouseData domain.Warehouse) (*domain.Warehouse, error) {
+func (s *service) Create(ctx context.Context, warehouseData domain.Warehouse) (*domain.Warehouse, error) {
 	if err := validateWarehouseData(warehouseData); err != nil {
 		return nil, err
 	}
 
-	if s.warehouseRepository.Exists(ctx, warehouseData.WarehouseCode) {
+	if s.repository.Exists(ctx, warehouseData.WarehouseCode) {
 		return nil, ErrWarehouseExists
 	}
 
@@ -69,7 +58,7 @@ func (s *warehouseService) CreateWarehouse(ctx context.Context, warehouseData do
 		MinimumTemperature: warehouseData.MinimumTemperature,
 	}
 
-	id, err := s.warehouseRepository.Save(ctx, warehouse)
+	id, err := s.repository.Save(ctx, warehouse)
 	if err != nil {
 		return nil, err
 	}
@@ -79,26 +68,42 @@ func (s *warehouseService) CreateWarehouse(ctx context.Context, warehouseData do
 	return &warehouse, nil
 }
 
-func (s *warehouseService) UpdateWarehouse(ctx context.Context, warehouseData domain.Warehouse) error {
-	if err := validateWarehouseData(warehouseData); err != nil {
-		return err
+func (s *service) Save(ctx context.Context, warehouse domain.Warehouse) (int, error) {
+	if s.repository.Exists(ctx, warehouse.WarehouseCode) {
+		return 0, ErrWarehouseExists
 	}
 
-	existingWarehouse, err := s.warehouseRepository.GetByCode(ctx, warehouseData.WarehouseCode)
-	if err != nil && err != ErrNotFound {
-		return err
+	wCode, err := s.repository.Save(ctx, warehouse)
+	if err != nil {
+		return 0, err
+	}
+	return wCode, nil
+}
+
+func (s *service) Update(ctx context.Context, warehouseData domain.Warehouse) (domain.Warehouse, error) {
+
+	if err := validateWarehouseData(warehouseData); err != nil {
+		return domain.Warehouse{}, err
+	}
+
+	existingWarehouse, err := s.repository.GetByCode(ctx, warehouseData.WarehouseCode)
+	if err != nil && err != ErrWarehouseNotFound {
+		return domain.Warehouse{}, err
 	}
 
 	if existingWarehouse.ID != warehouseData.ID {
-		return ErrWarehouseExists
+		return domain.Warehouse{}, ErrWarehouseExists
 	}
-	warehouse, err := s.warehouseRepository.Get(ctx, warehouseData.ID)
+
+	warehouse, err := s.repository.Get(ctx, warehouseData.ID)
 	if err != nil {
-		if err == ErrNotFound {
-			return ErrWarehouseNotFound
+		if err == ErrWarehouseNotFound {
+			return domain.Warehouse{}, err
 		}
-		return err
+		return domain.Warehouse{}, err
 	}
+
+	originalWarehouseCode := warehouse.WarehouseCode
 
 	warehouse.Address = warehouseData.Address
 	warehouse.Telephone = warehouseData.Telephone
@@ -106,14 +111,21 @@ func (s *warehouseService) UpdateWarehouse(ctx context.Context, warehouseData do
 	warehouse.MinimumCapacity = warehouseData.MinimumCapacity
 	warehouse.MinimumTemperature = warehouseData.MinimumTemperature
 
-	return s.warehouseRepository.Update(ctx, warehouse)
+	warehouse.WarehouseCode = originalWarehouseCode
+
+	err = s.repository.Update(ctx, warehouse)
+	if err != nil {
+		return domain.Warehouse{}, err
+	}
+
+	return warehouse, err
 }
 
-func (s *warehouseService) DeleteWarehouse(ctx context.Context, id int) error {
-	err := s.warehouseRepository.Delete(ctx, id)
+func (s *service) Delete(ctx context.Context, id int) error {
+	err := s.repository.Delete(ctx, id)
 	if err != nil {
-		if err == ErrNotFound {
-			return ErrWarehouseNotFound
+		if err == ErrWarehouseNotFound {
+			return err
 		}
 		return err
 	}
