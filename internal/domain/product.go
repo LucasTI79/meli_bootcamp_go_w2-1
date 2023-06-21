@@ -1,5 +1,7 @@
 package domain
 
+import "reflect"
+
 // Product represents an underlying URL with statistics on how it is used.
 type Product struct {
 	ID             int     `json:"id"`
@@ -32,40 +34,25 @@ type UpdateProduct struct {
 }
 
 func (p *Product) Overlap(product UpdateProduct) {
-	if product.ID != nil {
-		p.ID = *product.ID
+	p.ID = fill(product.ID, p.ID).(int)
+	p.Description = fill(product.Description, p.Description).(string)
+	p.ExpirationRate = fill(product.ExpirationRate, p.ExpirationRate).(float32)
+	p.FreezingRate = fill(product.FreezingRate, p.FreezingRate).(float32)
+	p.Height = fill(product.Height, p.Height).(float32)
+	p.Length = fill(product.Length, p.Length).(float32)
+	p.Netweight = fill(product.Netweight, p.Netweight).(float32)
+	p.ProductCode = fill(product.ProductCode, p.ProductCode).(string)
+	p.RecomFreezTemp = fill(product.RecomFreezTemp, p.RecomFreezTemp).(float32)
+	p.Width = fill(product.Width, p.Width).(float32)
+	p.ProductTypeID = fill(product.ProductTypeID, p.ProductTypeID).(int)
+	p.SellerID = fill(product.SellerID, p.SellerID).(int)
+}
+
+func fill(first interface{}, second interface{}) interface{} {
+	valueOfFirst := reflect.ValueOf(first)
+	if valueOfFirst.IsNil() {
+		return second
 	}
-	if product.Description != nil {
-		p.Description = *product.Description
-	}
-	if product.ExpirationRate != nil {
-		p.ExpirationRate = *product.ExpirationRate
-	}
-	if product.FreezingRate != nil {
-		p.FreezingRate = *product.FreezingRate
-	}
-	if product.Height != nil {
-		p.Height = *product.Height
-	}
-	if product.Length != nil {
-		p.Length = *product.Length
-	}
-	if product.Netweight != nil {
-		p.Netweight = *product.Netweight
-	}
-	if product.ProductCode != nil {
-		p.ProductCode = *product.ProductCode
-	}
-	if product.RecomFreezTemp != nil {
-		p.RecomFreezTemp = *product.RecomFreezTemp
-	}
-	if product.Width != nil {
-		p.Width = *product.Width
-	}
-	if product.ProductTypeID != nil {
-		p.ProductTypeID = *product.ProductTypeID
-	}
-	if product.SellerID != nil {
-		p.SellerID = *product.SellerID
-	}
+
+	return valueOfFirst.Elem().Interface()
 }
