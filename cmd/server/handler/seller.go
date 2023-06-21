@@ -14,9 +14,6 @@ import (
 type Seller struct {
 	sellerService seller.Service
 }
-type CreateResponse struct {
-	Data int `json:"data"`
-}
 
 func NewSeller(s seller.Service) *Seller {
 	return &Seller{
@@ -90,7 +87,7 @@ func (s *Seller) Get() gin.HandlerFunc {
 // @Accept  json
 // @Produce  json
 // @Param request body domain.CreateSeller true "Seller data"
-// @Success 201 {object} CreateResponse "Created seller"
+// @Success 201 {object} domain.Seller "Created seller"
 // @Failure 400 {object} web.ErrorResponse "Invalid data"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
@@ -118,7 +115,7 @@ func (s *Seller) Create() gin.HandlerFunc {
 			web.Error(c, http.StatusUnprocessableEntity, "cid é necessário.")
 			return
 		}
-		id, err := s.sellerService.Save(c.Request.Context(), req)
+		createdUser, err := s.sellerService.Save(c.Request.Context(), req)
 		if err != nil {
 			if errors.Is(err, seller.ErrAlreadyExists) {
 				web.Error(c, http.StatusConflict, "já existe um vendedor com cid %v.", req.CID)
@@ -128,7 +125,7 @@ func (s *Seller) Create() gin.HandlerFunc {
 				return
 			}
 		}
-		web.Response(c, http.StatusCreated, CreateResponse{id})
+		web.Success(c, http.StatusCreated, createdUser)
 	}
 }
 
