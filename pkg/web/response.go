@@ -15,7 +15,7 @@ type response struct {
 type ErrorResponse struct {
 	Status   int      `json:"-"`
 	Code     string   `json:"code"`
-	Messages []string `json:"message"`
+	Messages []string `json:"messages"`
 }
 
 type Data struct {
