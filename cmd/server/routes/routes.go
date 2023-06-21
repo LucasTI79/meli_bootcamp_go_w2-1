@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
@@ -35,8 +34,10 @@ func NewRouter(eng *gin.Engine, db *sql.DB) IRouter {
 func (r *router) MapRoutes() {
 	r.setGroup()
 
-	r.buildDocumentationRoutes()
-	r.defineGlobalMiddlewares()
+	docs.SwaggerInfo.BasePath = "/api/v1"
+	docs.SwaggerInfo.Host = os.Getenv("HOST")
+	r.rg.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	r.buildSellerRoutes()
 	r.buildProductRoutes()
 	r.buildSectionRoutes()
@@ -47,16 +48,6 @@ func (r *router) MapRoutes() {
 
 func (r *router) setGroup() {
 	r.rg = r.eng.Group("/api/v1")
-}
-
-func (r *router) defineGlobalMiddlewares() {
-	r.rg.Use(middleware.InternalError())
-}
-
-func (r *router) buildDocumentationRoutes() {
-	docs.SwaggerInfo.BasePath = "/api/v1"
-	docs.SwaggerInfo.Host = os.Getenv("HOST")
-	r.rg.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
 
 func (r *router) buildSellerRoutes() {
@@ -75,14 +66,14 @@ func (r *router) buildSellerRoutes() {
 func (r *router) buildProductRoutes() {
 	repo := product.NewRepository(r.db)
 	service := product.NewService(repo)
-	controller := handler.NewProduct(service)
+	handler := handler.NewProduct(service)
 	productRoutes := r.rg.Group("/products")
 
-	productRoutes.GET("/", controller.GetAll())
-	productRoutes.GET("/:id", controller.Get())
-	productRoutes.POST("/", middleware.Validation[handler.CreateProductRequest](), controller.Create())
-	productRoutes.PATCH("/:id", middleware.Validation[handler.UpdateProductRequest](), controller.Update())
-	productRoutes.DELETE("/:id", controller.Delete())
+	productRoutes.GET("/", handler.GetAll())
+	productRoutes.GET("/:id", handler.Get())
+	productRoutes.POST("/", handler.Create())
+	productRoutes.PATCH("/:id", handler.Update())
+	productRoutes.DELETE("/:id", handler.Delete())
 }
 
 func (r *router) buildSectionRoutes() {
@@ -101,16 +92,17 @@ func (r *router) buildSectionRoutes() {
 
 func (r *router) buildWarehouseRoutes() {
 
-	warehouseRepo := warehouse.NewRepository(r.db)
-	warehouseService := warehouse.NewService(warehouseRepo)
+	warehouseRepo := warehouse.NewWarehouseRepository(r.db)
+	warehouseService := warehouse.NewWarehouseService(warehouseRepo)
 	warehouseHandler := handler.NewWarehouse(warehouseService)
 	warehouseRoutes := r.rg.Group("/warehouses")
 
-	warehouseRoutes.GET("/warehouses", warehouseHandler.GetAll())
-	warehouseRoutes.GET("/warehouses/:id", warehouseHandler.GetByID())
-	warehouseRoutes.POST("/warehouses", warehouseHandler.Create())
-	warehouseRoutes.PATCH("/warehouses/:id", warehouseHandler.Update())
-	warehouseRoutes.DELETE("/warehouses/:id", warehouseHandler.Delete())
+	warehouseRoutes.GET("/", warehouseHandler.GetAll())
+	warehouseRoutes.GET("/:id", warehouseHandler.GetByID())
+	warehouseRoutes.POST("/", warehouseHandler.Create())
+	warehouseRoutes.PUT("/", warehouseHandler.Update())
+	warehouseRoutes.PATCH("/:id", warehouseHandler.UpdateByID())
+	warehouseRoutes.DELETE("/:id", warehouseHandler.Delete())
 }
 
 func (r *router) buildEmployeeRoutes() {

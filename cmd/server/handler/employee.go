@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -160,29 +159,54 @@ func (e *Employee) Save() gin.HandlerFunc {
 // @Router /employees/{id} [patch]
 func (e *Employee) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id, _ := c.Params.Get("id")
-		parsedId, err := strconv.Atoi(id)
+		idParam := c.Param("id")
+		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "ID inválido.")
+			web.Error(c, http.StatusBadRequest, "id inválido.")
 			return
 		}
-		var req employee.EmployeeRequest
-		if err := c.ShouldBindJSON(&req); err != nil {
-			web.Error(c, http.StatusBadRequest, "Corpo da requisição inválido.")
+
+		var req EmployeeRequest
+		err = c.Bind(&req)
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, "existem erros na formatação do json e não foi possível realizar o parse.")
 			return
 		}
-		req.Id = parsedId
-		updatedEmployee, err := e.service.Update(req)
-		if err != nil {
-			if errors.Is(err, employee.ErrNotFound) {
-				web.Error(c, http.StatusNotFound, err.Error())
-				return
-			} else {
-				web.Error(c, http.StatusInternalServerError, "Erro interno no servidor.")
-				return
-			}
+
+		if req.CardNumberId == "" && req.FirstName == "" && req.LastName == "" && req.WarehouseId == 0 {
+			web.Error(c, http.StatusUnprocessableEntity, "informe pelo menos um campo para concluir a atualização.")
+			return
 		}
-		web.Success(c, http.StatusOK, updatedEmployee)
+
+		employee, err := e.service.Get(id)
+		if err != nil {
+			web.Error(c, http.StatusNotFound, "funcionário não encontrado.")
+			return
+		}
+
+		if req.CardNumberId != "" {
+			e.service.Exists(req.CardNumberId)
+			employee.CardNumberID = req.CardNumberId
+		}
+		if req.FirstName != "" {
+			employee.FirstName = req.FirstName
+		}
+
+		if req.LastName != "" {
+			employee.LastName = req.LastName
+		}
+
+		if req.WarehouseId != 0 {
+			employee.WarehouseID = req.WarehouseId
+		}
+
+		err = e.service.Update(employee)
+		if err != nil {
+			web.Error(c, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		web.Success(c, http.StatusOK, employee)
 	}
 }
 

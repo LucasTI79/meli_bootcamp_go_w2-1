@@ -16,7 +16,7 @@ var (
 type Service interface {
 	GetAll(ctx context.Context) ([]domain.Seller, error)
 	Get(ctx context.Context, id int) (domain.Seller, error)
-	Save(ctx context.Context, seller domain.CreateSeller) (domain.Seller, error)
+	Save(ctx context.Context, seller domain.CreateSeller) (int, error)
 	Update(ctx context.Context, seller domain.UpdateSeller) (domain.UpdateSeller, error)
 	Delete(ctc context.Context, id int) error
 }
@@ -36,19 +36,15 @@ func (s *service) Get(ctx context.Context, id int) (domain.Seller, error) {
 	}
 	return seller, nil
 }
-func (s *service) Save(ctx context.Context, seller domain.CreateSeller) (domain.Seller, error) {
+func (s *service) Save(ctx context.Context, seller domain.CreateSeller) (int, error) {
 	if s.repository.Exists(ctx, seller.CID) {
-		return domain.Seller{}, ErrAlreadyExists
+		return 0, ErrAlreadyExists
 	}
 	id, err := s.repository.Save(ctx, seller)
 	if err != nil {
-		return domain.Seller{}, err
+		return 0, err
 	}
-	createdUser, err := s.Get(ctx, id)
-	if err != nil {
-		return domain.Seller{}, err
-	}
-	return createdUser, nil
+	return id, nil
 }
 func (s *service) Update(ctx context.Context, seller domain.UpdateSeller) (domain.UpdateSeller, error) {
 	if seller.CID != nil {

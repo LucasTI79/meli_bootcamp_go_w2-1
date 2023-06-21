@@ -6,16 +6,17 @@ import (
 	"errors"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	apperr "github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/errors"
 )
 
 // Repository encapsulates the storage of a Product.
 type Repository interface {
-	GetAll(ctx context.Context) []domain.Product
-	Get(ctx context.Context, id int) *domain.Product
+	GetAll(ctx context.Context) ([]domain.Product, error)
+	Get(ctx context.Context, id int) (domain.Product, error)
 	Exists(ctx context.Context, productCode string) bool
-	Save(ctx context.Context, p domain.Product) int
-	Update(ctx context.Context, p domain.Product)
-	Delete(ctx context.Context, id int)
+	Save(ctx context.Context, p domain.Product) (int, error)
+	Update(ctx context.Context, p domain.Product) error
+	Delete(ctx context.Context, id int) error
 }
 
 type repository struct {
@@ -28,11 +29,11 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r *repository) GetAll(ctx context.Context) []domain.Product {
+func (r *repository) GetAll(ctx context.Context) ([]domain.Product, error) {
 	query := "SELECT * FROM products;"
 	rows, err := r.db.Query(query)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	products := make([]domain.Product, 0)
@@ -43,23 +44,24 @@ func (r *repository) GetAll(ctx context.Context) []domain.Product {
 		products = append(products, p)
 	}
 
-	return products
+	return products, nil
 }
 
-func (r *repository) Get(ctx context.Context, id int) *domain.Product {
+func (r *repository) Get(ctx context.Context, id int) (domain.Product, error) {
 	query := "SELECT * FROM products WHERE id=?;"
 	row := r.db.QueryRow(query, id)
 	p := domain.Product{}
 	err := row.Scan(&p.ID, &p.Description, &p.ExpirationRate, &p.FreezingRate, &p.Height, &p.Length, &p.Netweight, &p.ProductCode, &p.RecomFreezTemp, &p.Width, &p.ProductTypeID, &p.SellerID)
 
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil
-		}
-		panic(err)
+	if errors.Is(err, sql.ErrNoRows) {
+		return domain.Product{}, apperr.NewResourceNotFound("product not found with id %d", id)
 	}
 
-	return &p
+	if err != nil {
+		return domain.Product{}, err
+	}
+
+	return p, nil
 }
 
 func (r *repository) Exists(ctx context.Context, productCode string) bool {
@@ -69,48 +71,66 @@ func (r *repository) Exists(ctx context.Context, productCode string) bool {
 	return err == nil
 }
 
-func (r *repository) Save(ctx context.Context, p domain.Product) int {
+func (r *repository) Save(ctx context.Context, p domain.Product) (int, error) {
 	query := "INSERT INTO products(description,expiration_rate,freezing_rate,height,lenght,netweight,product_code,recommended_freezing_temperature,width,id_product_type,id_seller) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		panic(err)
+		return 0, err
 	}
 
 	res, err := stmt.Exec(p.Description, p.ExpirationRate, p.FreezingRate, p.Height, p.Length, p.Netweight, p.ProductCode, p.RecomFreezTemp, p.Width, p.ProductTypeID, p.SellerID)
 	if err != nil {
-		panic(err)
+		return 0, err
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		panic(err)
+		return 0, err
 	}
 
-	return int(id)
+	return int(id), nil
 }
 
-func (r *repository) Update(ctx context.Context, p domain.Product) {
+func (r *repository) Update(ctx context.Context, p domain.Product) error {
 	query := "UPDATE products SET description=?, expiration_rate=?, freezing_rate=?, height=?, lenght=?, netweight=?, product_code=?, recommended_freezing_temperature=?, width=?, id_product_type=?, id_seller=?  WHERE id=?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	_, err = stmt.Exec(p.Description, p.ExpirationRate, p.FreezingRate, p.Height, p.Length, p.Netweight, p.ProductCode, p.RecomFreezTemp, p.Width, p.ProductTypeID, p.SellerID, p.ID)
+	res, err := stmt.Exec(p.Description, p.ExpirationRate, p.FreezingRate, p.Height, p.Length, p.Netweight, p.ProductCode, p.RecomFreezTemp, p.Width, p.ProductTypeID, p.SellerID, p.ID)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	_, err = res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (r *repository) Delete(ctx context.Context, id int) {
+func (r *repository) Delete(ctx context.Context, id int) error {
 	query := "DELETE FROM products WHERE id=?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	_, err = stmt.Exec(id)
+	res, err := stmt.Exec(id)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	affect, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if affect < 1 {
+		return apperr.NewResourceNotFound("product not found with id %d", id)
+	}
+
+	return nil
 }
