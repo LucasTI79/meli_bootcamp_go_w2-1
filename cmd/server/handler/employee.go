@@ -1,27 +1,61 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
-	_ "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/gin-gonic/gin"
 )
-
-type EmployeeRequest struct {
-	Id           int    `json:"id"`
-	CardNumberId string `json:"card_number_id"`
-	FirstName    string `json:"first_name"`
-	LastName     string `json:"last_name"`
-	WarehouseId  int    `json:"warehouse_id"`
-}
 
 type Employee struct {
 	service employee.Service
 }
+
+type CreateEmployeeRequest struct {
+	CardNumberID    *string `json:"card_number_id" binding:"required"`
+	FirstName 		*string `json:"first_name" binding:"required"`
+	LastName   		*string `json:"last_name" binding:"required"`
+	WarehouseID     *int 	`json:"warehouse_id" binding:"required"`
+}
+
+func (r CreateEmployeeRequest) ToEmployee() domain.Employee {
+	return domain.Employee{
+		ID:             0,
+		CardNumberID:   *r.CardNumberID,
+		FirstName: 		*r.FirstName,
+		LastName:   	*r.LastName,
+		WarehouseID:    *r.WarehouseID,
+	}
+}
+
+type UpdateEmployeeRequest struct {
+	CardNumberID    *string `json:"card_number_id"`
+	FirstName 		*string `json:"first_name"`
+	LastName   		*string `json:"last_name"`
+	WarehouseID     *int 	`json:"warehouse_id"`
+}
+
+func (r UpdateEmployeeRequest) ToUpdateEmployee() domain.UpdateEmployee{
+	return domain.UpdateEmployee{
+		CardNumberID:   r.CardNumberID,
+		FirstName: 		r.FirstName,
+		LastName:   	r.LastName,
+		WarehouseID:    r.WarehouseID,
+	}
+}
+
+func (employeeRequest UpdateEmployeeRequest) IsBlank() bool {
+	return 	employeeRequest.CardNumberID == nil &&
+			employeeRequest.FirstName == nil &&
+			employeeRequest.LastName == nil &&
+			employeeRequest.WarehouseID == nil
+}
+
+
 
 func NewEmployee(e employee.Service) *Employee {
 	return &Employee{
@@ -29,84 +63,51 @@ func NewEmployee(e employee.Service) *Employee {
 	}
 }
 
-// Get godoc
-// @Summary Get a employee
-// @Description Get a employee based on the provided JSON payload
+// GetAll Employee godoc
+// @Summary List all employees
+// @Description List all employees
 // @Tags Employees
-// @Accept json
-// @Produce json
-// @Success 200 {object} domain.Employee "Employee"
-// @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 409 {object} web.ErrorResponse "Conflict error"
-// @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /employees/{id} [get]
-func (e *Employee) Get() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		idParam := ctx.Param("id")
-		id, err := strconv.Atoi(idParam)
-		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "id inválido.")
-			return
-		}
-
-		employeeID, err := e.service.Get(int(id))
-		if err != nil {
-			web.Error(ctx, http.StatusNotFound, "funcionário não encontrado.")
-			return
-		}
-		web.Success(ctx, http.StatusOK, employeeID)
-	}
-}
-
-// Get All Employee godoc
-// @Summary Get all employee
-// @Description Get employee based on the provided JSON payload
-// @Tags Employees
-// @Accept json
 // @Produce json
 // @Success 200 {object} []domain.Employee "Employee"
-// @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /employees [get]
 func (e *Employee) GetAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		employees, err := e.service.GetAll()
-		if err != nil {
-			web.Error(ctx, http.StatusInternalServerError, "um erro interno ocorreu.")
-			return
-		}
+		employees := e.service.GetAll(ctx.Request.Context())
 		web.Success(ctx, http.StatusOK, employees)
 	}
 }
 
-// Exists godoc
-// @Summary Exist card number
-// @Description Validate card number
+// Get godoc
+// @Summary Get a employee by ID
+// @Description Get a employee based on the ID parameter
 // @Tags Employees
-// @Accept json
 // @Produce json
-// @Success 204 {object} string "Card number"
+// @Success 200 {object} domain.Employee "Employee"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 404 {object} web.ErrorResponse "ID not found"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /employees/cardNumber [get]
-func (e *Employee) Exists() gin.HandlerFunc {
+// @Router /employees/{id} [get]
+func (e *Employee) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req EmployeeRequest
-		if err := ctx.ShouldBindJSON(&req); err != nil {
-			web.Error(ctx, http.StatusBadRequest, "existem erros na formatação do json e não foi possível realizar o parse.")
-			return
-		}
-		if req.CardNumberId == "" {
-			web.Error(ctx, http.StatusUnprocessableEntity, "necessário adicionar número do cartão.")
-			return
-		}
-		cardNumberId, err := e.service.Exists(req.CardNumberId)
+		requestId := ctx.Param("id")
+		id, err := strconv.Atoi(requestId)
+
 		if err != nil {
-			web.Error(ctx, http.StatusNoContent, "não cadastrado.")
+			web.Error(ctx, http.StatusBadRequest, InvalidId, requestId)
 			return
 		}
-		web.Success(ctx, http.StatusOK, cardNumberId)
+
+		employee, err := e.service.Get(ctx.Request.Context(), id)
+
+		if err != nil {
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(ctx, http.StatusNotFound, err.Error())
+				return
+			}
+		}
+
+		web.Success(ctx, http.StatusOK, employee)
 	}
 }
 
@@ -118,31 +119,29 @@ func (e *Employee) Exists() gin.HandlerFunc {
 // @Produce json
 // @Param request body domain.Employee true "Employee data"
 // @Success 201 {object} domain.Employee "Created employee"
-// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "ID not found"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /employees [post]
-func (e *Employee) Save() gin.HandlerFunc {
+func (e *Employee) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req EmployeeRequest
-		if err := ctx.Bind(&req); err != nil {
-			web.Error(ctx, http.StatusNotFound, "existem erros na formatação do json e não foi possível realizar o parse.")
-			return
-		}
-		if req.CardNumberId == "" && req.FirstName == "" && req.LastName == "" && req.WarehouseId == 0 {
-			web.Error(ctx, http.StatusUnprocessableEntity, "necessário adicionar todas as informações.")
-			return
-		}
-		if req.CardNumberId != "" {
-			e.service.Exists(req.CardNumberId)
-		}
-		employeeId, err := e.service.Save(req.CardNumberId, req.FirstName, req.LastName, req.WarehouseId)
+		request := ctx.MustGet(RequestParamContext).(CreateEmployeeRequest)
+
+		createdEmployee, err := e.service.Create(ctx.Request.Context(), request.ToEmployee())
+
 		if err != nil {
-			web.Error(ctx, http.StatusNotFound, "funcionário não encontrado.")
-			return
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(ctx, http.StatusNotFound, err.Error())
+				return
+			}
+			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
+				web.Error(ctx, http.StatusConflict, err.Error())
+				return
+			}
 		}
-		employeeCreated, err := e.service.Get(employeeId)
-		web.Success(ctx, http.StatusCreated, employeeCreated)
+
+		web.Success(ctx, http.StatusCreated, createdEmployee)
 	}
 }
 
@@ -152,63 +151,78 @@ func (e *Employee) Save() gin.HandlerFunc {
 // @Tags Employees
 // @Accept json
 // @Produce json
-// @Param request body domain.Employee true "Employee data"
+// @Param request body domain.Employee true "Employee data to update"
 // @Success 200 {object} domain.Employee "Updated employee"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "ID not found error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /employees/{id} [patch]
 func (e *Employee) Update() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		id, _ := c.Params.Get("id")
-		parsedId, err := strconv.Atoi(id)
+	return func(ctx *gin.Context) {
+		requestId := ctx.Param("id")
+		id, err := strconv.Atoi(requestId)
+
 		if err != nil {
-			web.Error(c, http.StatusBadRequest, "ID inválido.")
+			web.Error(ctx, http.StatusBadRequest, InvalidId, requestId)
 			return
 		}
-		var req employee.EmployeeRequest
-		if err := c.ShouldBindJSON(&req); err != nil {
-			web.Error(c, http.StatusBadRequest, "Corpo da requisição inválido.")
+
+		request := ctx.MustGet(RequestParamContext).(UpdateEmployeeRequest)
+
+		if request.IsBlank() {
+			web.Error(ctx, http.StatusBadRequest, CannotBeBlank)
 			return
 		}
-		req.Id = parsedId
-		updatedEmployee, err := e.service.Update(req)
+
+		response, err := e.service.Update(ctx.Request.Context(), id, request.ToUpdateEmployee())
+
 		if err != nil {
-			if errors.Is(err, employee.ErrNotFound) {
-				web.Error(c, http.StatusNotFound, err.Error())
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(ctx, http.StatusNotFound, err.Error())
 				return
-			} else {
-				web.Error(c, http.StatusInternalServerError, "Erro interno no servidor.")
+			}
+
+			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
+				web.Error(ctx, http.StatusConflict, err.Error())
 				return
 			}
 		}
-		web.Success(c, http.StatusOK, updatedEmployee)
+
+		web.Success(ctx, http.StatusOK, response)
 	}
 }
 
+
 // Delete godoc
 // @Summary Delete employee
-// @Description Delete employee based on the provided JSON payload
+// @Description Delete employee based on ID
 // @Tags Employees
-// @Accept json
 // @Produce json
-// @Success 204
+// @Success 204 "No content"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "NotFound error"
+// @Failure 404 {object} web.ErrorResponse "ID not found error"
 // @Router /employees/{id} [delete]
 func (e *Employee) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+		requestId := ctx.Param("id")
+		id, err := strconv.Atoi(requestId)
+
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "id inválido.")
+			web.Error(ctx, http.StatusBadRequest, InvalidId, requestId)
 			return
 		}
 
-		err = e.service.Delete(int(id))
+		err = e.service.Delete(ctx.Request.Context(), id)
+
 		if err != nil {
-			web.Error(ctx, http.StatusNotFound, "funcionário não encontrado.")
-			return
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(ctx, http.StatusNotFound, err.Error())
+				return
+			}
 		}
+
 		web.Success(ctx, http.StatusNoContent, nil)
 	}
 }
