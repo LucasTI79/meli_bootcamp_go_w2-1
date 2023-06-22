@@ -116,15 +116,14 @@ func (r *router) buildWarehouseRoutes() {
 func (r *router) buildEmployeeRoutes() {
 	repository := employee.NewRepository(r.db)
 	service := employee.NewService(repository)
-	handler := handler.NewEmployee(service)
+	controller := handler.NewEmployee(service)
 	employeeRoutes := r.rg.Group("/employees")
 
-	employeeRoutes.GET("/", handler.GetAll())
-	employeeRoutes.POST("/", handler.Save())
-	employeeRoutes.PATCH("/:id", handler.Update())
-	employeeRoutes.GET("/:id", handler.Get())
-	employeeRoutes.GET("/cardNumber", handler.Exists())
-	employeeRoutes.DELETE("/:id", handler.Delete())
+	employeeRoutes.GET("/", controller.GetAll())
+	employeeRoutes.GET("/:id", controller.Get())
+	employeeRoutes.POST("/", middleware.Validation[handler.CreateEmployeeRequest](), controller.Create())
+	employeeRoutes.PATCH("/:id", middleware.Validation[handler.UpdateEmployeeRequest](), controller.Update())
+	employeeRoutes.DELETE("/:id", controller.Delete())
 }
 
 func (r *router) buildBuyerRoutes() {
