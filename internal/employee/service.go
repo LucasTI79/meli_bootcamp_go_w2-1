@@ -1,34 +1,28 @@
 package employee
 
 import (
-	"errors"
+	"context"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 )
 
-type EmployeeRequest struct {
-	Id             int    `json:"id"`
-	Card_number_id string `json:"card_number_id"`
-	First_name     string `json:"first_name"`
-	Last_name      string `json:"last_name"`
-	Warehouse_id   int    `json:"warehouse_id"`
-}
+const (
+	ResourceNotFound = "produto não encontrado com o id %d"
+	ResourceAlreadyExists = "um produto com o código '%s' já existe"
+)
 
 type Service interface {
-	GetAll() ([]domain.Employee, error)
-	Get(id int) (domain.Employee, error)
-	Exists(cardNumberID string) (string, error)
-	Save(card_number_id, first_name, last_name string, warehouse_id int) (int, error)
-	Update(EmployeeRequest) (EmployeeRequest, error)
-	Delete(id int) error
+	GetAll(context.Context) []domain.Employee
+	Get(context.Context, int) (*domain.Employee, error)
+	Create(context.Context, domain.Employee) (*domain.Employee, error)
+	Update(context.Context, int, domain.UpdateEmployee) (*domain.Employee, error)
+	Delete(context.Context, int) error
 }
+
 type service struct {
 	repository Repository
 }
-
-var (
-	ErrNotFound = errors.New("Funcionário não encontrado.")
-)
 
 func NewService(r Repository) Service {
 	return &service{
@@ -36,52 +30,69 @@ func NewService(r Repository) Service {
 	}
 }
 
-func (s *service) GetAll() ([]domain.Employee, error) {
-	employees, err := s.repository.GetAll()
-	if err != nil {
-		return nil, err
-	}
-
-	return employees, nil
+func (s *service) GetAll(ctx context.Context) []domain.Employee {
+	return s.repository.GetAll(ctx)
 }
 
-func (s *service) Save(card_number_id, first_name, last_name string, warehouse_id int) (int, error) {
+func (s *service) Get(ctx context.Context, id int) (*domain.Employee, error) {
+	employee := s.repository.Get(ctx, id)
 
-	employeeId, err := s.repository.Save(card_number_id, first_name, last_name, warehouse_id)
-	if err != nil {
-		return 0, err
+	if employee == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
 	}
 
-	return employeeId, nil
-}
-
-func (s *service) Update(employee EmployeeRequest) (EmployeeRequest, error) {
-	err := s.repository.Update(employee)
-	if err != nil {
-		if errors.Is(err, ErrNotFound) {
-			return EmployeeRequest{}, ErrNotFound
-		} else {
-			return EmployeeRequest{}, err
-		}
-	}
 	return employee, nil
 }
 
-func (s *service) Exists(cardNumberID string) (string, error) {
-	cardNumber, err := s.repository.Exists(cardNumberID)
+func (s *service) Create(ctx context.Context, employee domain.Employee) (*domain.Employee, error) {
+	if s.repository.Exists(ctx, employee.CardNumberID) {
+		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, employee.CardNumberID)
+	}
 
-	return cardNumber, err
+	id := s.repository.Save(ctx, employee)
+	created := s.repository.Get(ctx, id)
+
+	if created == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
+	}
+
+	return created, nil
 }
 
-func (s *service) Get(id int) (domain.Employee, error) {
-	employee, err := s.repository.Get(id)
+func (s *service) Update(ctx context.Context, id int, employee domain.UpdateEmployee) (*domain.Employee, error) {
+	employeeFound := s.repository.Get(ctx, id)
 
-	return employee, err
+	if employeeFound == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
+	}
 
+	if employee.CardNumberID != nil {
+		employeeCardNumber := *employee.CardNumberID 
+		employeeCardNumberExists := s.repository.Exists(ctx, employeeCardNumber)
+
+		if employeeCardNumberExists && employeeCardNumber != employeeFound.CardNumberID {
+			return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, employeeCardNumber)
+		}
+	}
+
+	employeeFound.Overlap(employee)
+	s.repository.Update(ctx, *employeeFound)
+	updated := s.repository.Get(ctx, id)
+
+	if updated == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
+	}
+
+	return updated, nil
 }
 
-func (s *service) Delete(id int) error {
-	err := s.repository.Delete(id)
+func (s *service) Delete(ctx context.Context, id int) error {
+	employee := s.repository.Get(ctx, id)
 
-	return err
+	if employee == nil {
+		return apperr.NewResourceNotFound(ResourceNotFound, id)
+	}
+
+	s.repository.Delete(ctx, id)
+	return nil
 }

@@ -31,7 +31,7 @@ func (r *repository) GetAll(ctx context.Context) []domain.Employee{
 	query := "SELECT * FROM employees;"
 	rows, err := r.db.Query(query)
 	if err != nil {
-		return panic(err)
+		panic(err)
 	}
 
 	employees := make([]domain.Employee, 0)
