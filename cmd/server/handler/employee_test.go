@@ -47,6 +47,18 @@ func TestCreateEmployee(t *testing.T) {
 
 		assert.Equal(t, http.StatusConflict, response.Code)
 	})
+	t.Run("Should return a created employee", func(t *testing.T) {
+		server, service, controller := InitEmployeeServer(t)
+
+		server.POST(DefinePath(ResourceEmployeesUri), ValidationMiddleware(requestObject), controller.Create())
+		request, response := MakeRequest("POST", DefinePath(ResourceEmployeesUri), CreateBody(requestObject))
+
+		service.On("Create", requestObject.ToEmployee()).Return(&mockedEmployee, nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusCreated, response.Code)
+	})
 }
 
 func InitEmployeeServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Employee) {
