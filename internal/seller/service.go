@@ -9,19 +9,23 @@ import (
 
 const (
 	ResourceNotFound      = "vendedor não encontrado com o id %d"
-	ResourceAlreadyExists = "um vededor com o CID '%s' já existe"
+	ResourceAlreadyExists = "um vededor com o CID '%d' já existe"
 )
 
 type Service interface {
 	GetAll(ctx context.Context) []domain.Seller
 	Get(ctx context.Context, id int) (*domain.Seller, error)
-	Save(ctx context.Context, seller domain.CreateSeller) (domain.Seller, error)
-	Update(ctx context.Context, seller domain.UpdateSeller) (domain.UpdateSeller, error)
+	Create(ctx context.Context, seller domain.Seller) (*domain.Seller, error)
+	Update(ctx context.Context, id int, seller domain.UpdateSeller) (*domain.Seller, error)
 	Delete(ctc context.Context, id int) error
 }
 
 type service struct {
 	repository Repository
+}
+
+func NewService(repository Repository) Service {
+	return &service{repository}
 }
 
 func (s *service) GetAll(ctx context.Context) []domain.Seller {
