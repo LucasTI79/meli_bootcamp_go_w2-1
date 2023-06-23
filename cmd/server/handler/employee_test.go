@@ -74,6 +74,17 @@ func TestGetEmployee(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, response.Code)
 	})
+
+	t.Run("Should return bad request error when ID is invalid", func(t *testing.T) {
+		server, _, controller := InitEmployeeServer(t)
+
+		server.GET(DefinePath(ResourceEmployeesUri)+"/:id", controller.Get())
+		request, response := MakeRequest("GET", DefinePath(ResourceEmployeesUri)+"/teste", "")
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	})
 }
 
 func InitEmployeeServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Employee) {
