@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	ResourceNotFound = "produto não encontrado com o id %d"
-	ResourceAlreadyExists = "um produto com o código '%s' já existe"
+	ResourceNotFound = "empregado não encontrado com o id %d"
+	ResourceAlreadyExists = "um empregado com card number ID '%s' já existe"
 )
 
 type Service interface {
