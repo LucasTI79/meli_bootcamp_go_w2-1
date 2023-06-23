@@ -36,4 +36,5 @@ func (r *Repository) Update(ctx context.Context, employee domain.Employee) {
 }
 
 func (r *Repository) Delete(ctx context.Context, id int) {
+	r.Called(id)
 }
