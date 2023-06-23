@@ -52,10 +52,6 @@ func (s *service) Create(ctx context.Context, employee domain.Employee) (*domain
 	id := s.repository.Save(ctx, employee)
 	created := s.repository.Get(ctx, id)
 
-	if created == nil {
-		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
-	}
-
 	return created, nil
 }
 
