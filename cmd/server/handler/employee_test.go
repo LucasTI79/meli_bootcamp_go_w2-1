@@ -181,6 +181,21 @@ func TestUpdateEmployee(t *testing.T) {
 
 		assert.Equal(t, http.StatusConflict, response.Code)
 	})
+
+	t.Run("Should return updated product", func(t *testing.T) {
+		server, service, controller := InitEmployeeServer(t)
+
+		id := 1
+
+		server.PATCH(DefinePath(ResourceEmployeesUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceEmployeesUri, id), CreateBody(requestObject))
+
+		service.On("Update", id, requestObject.ToUpdateEmployee()).Return(&mockedEmployee, nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
 }
 
 func InitEmployeeServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Employee) {
