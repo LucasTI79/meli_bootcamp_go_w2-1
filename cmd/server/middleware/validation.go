@@ -48,6 +48,8 @@ func readableMessageFrom(structValue interface{}, fe validator.FieldError) strin
 	switch fe.Tag() {
 	case "required":
 		message = fmt.Sprintf("'%s' é obrigatório", getFieldName(structValue, fe))
+	case "e164":
+		message = fmt.Sprintf("'%s' precisa estar no formato +<country_code><zone_code><phone_number> sem espaços ou caracteres especiais, por exemplo: +5500123456789", getFieldName(structValue, fe))
 	default:
 		message = "erro desconhecido"
 	}

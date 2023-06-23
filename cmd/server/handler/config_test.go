@@ -6,10 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strconv"
-	"testing"
 
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product/mocks"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,14 +18,6 @@ func CreateServer() *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
 	return r
-}
-
-func InitServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Product) {
-	t.Helper()
-	server := CreateServer()
-	service := new(mocks.Service)
-	controller := handler.NewProduct(service)
-	return server, service, controller
 }
 
 func MakeRequest(method, url, body string) (*http.Request, *httptest.ResponseRecorder) {
