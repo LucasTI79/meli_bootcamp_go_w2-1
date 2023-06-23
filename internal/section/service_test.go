@@ -160,7 +160,33 @@ func TestServiceUpdate(t *testing.T) {
 	})
 }
 
+func TestServiceDelete(t *testing.T) {
+	t.Run("Should return not found error", func(t *testing.T) {
+		service, repository := CreateService(t)
 
+		id := 1
+		var respositoryResult *domain.Section
+
+		repository.On("Get", id).Return(respositoryResult)
+		err := service.Delete(context.TODO(), id)
+
+		assert.Error(t, err)
+		assert.True(t, apperr.Is[*apperr.ResourceNotFound](err))
+	})
+
+	t.Run("Should delete a section with success", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		id := 1
+
+		repository.On("Get", id).Return(&mockedSection)
+		repository.On("Delete", id)
+
+		err := service.Delete(context.TODO(), id)
+
+		assert.NoError(t, err)
+	})
+}
 
 func CreateService(t *testing.T) (section.Service, *mocks.Repository) {
 	t.Helper()
