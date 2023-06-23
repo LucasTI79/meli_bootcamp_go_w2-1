@@ -48,13 +48,7 @@ func (s *service) Create(ctx context.Context, product domain.Product) (*domain.P
 	}
 
 	id := s.repository.Save(ctx, product)
-	created := s.repository.Get(ctx, id)
-
-	if created == nil {
-		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
-	}
-
-	return created, nil
+	return s.repository.Get(ctx, id), nil
 }
 
 func (s *service) Update(ctx context.Context, id int, product domain.UpdateProduct) (*domain.Product, error) {
@@ -75,13 +69,7 @@ func (s *service) Update(ctx context.Context, id int, product domain.UpdateProdu
 
 	productFound.Overlap(product)
 	s.repository.Update(ctx, *productFound)
-	updated := s.repository.Get(ctx, id)
-
-	if updated == nil {
-		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
-	}
-
-	return updated, nil
+	return s.repository.Get(ctx, id), nil
 }
 
 func (s *service) Delete(ctx context.Context, id int) error {
