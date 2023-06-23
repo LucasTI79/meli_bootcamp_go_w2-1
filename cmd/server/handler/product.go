@@ -171,10 +171,6 @@ func (p *Product) Create() gin.HandlerFunc {
 		created, err := p.service.Create(c.Request.Context(), request.ToProduct())
 
 		if err != nil {
-			if apperr.Is[*apperr.ResourceNotFound](err) {
-				web.Error(c, http.StatusNotFound, err.Error())
-				return
-			}
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
 				web.Error(c, http.StatusConflict, err.Error())
 				return
