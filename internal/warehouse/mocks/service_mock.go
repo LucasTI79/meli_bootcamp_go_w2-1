@@ -13,7 +13,7 @@ type Service struct {
 
 func (s *Service) GetAll(c context.Context) []domain.Warehouse {
 	args := s.Called()
-	return args.Get(0).([]domain.Product)
+	return args.Get(0).([]domain.Warehouse)
 }
 
 func (s *Service) Get(c context.Context, id int) (*domain.Warehouse, error) {
@@ -21,13 +21,13 @@ func (s *Service) Get(c context.Context, id int) (*domain.Warehouse, error) {
 	return args.Get(0).(*domain.Warehouse), args.Error(1)
 }
 
-func (s *Service) Create(c context.Context, p domain.Warehouse) (*domain.Warehouse, error) {
-	args := s.Called(p)
+func (s *Service) Create(c context.Context, w domain.Warehouse) (*domain.Warehouse, error) {
+	args := s.Called(w)
 	return args.Get(0).(*domain.Warehouse), args.Error(1)
 }
 
-func (s *Service) Update(c context.Context, id int, p domain.UpdateWarehouse) (*domain.Warehouse, error) {
-	args := s.Called(id, p)
+func (s *Service) Update(c context.Context, id int, w domain.UpdateWarehouse) (*domain.Warehouse, error) {
+	args := s.Called(id, w)
 	return args.Get(0).(*domain.Warehouse), args.Error(1)
 }
 
