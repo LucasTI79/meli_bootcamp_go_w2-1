@@ -48,6 +48,23 @@ func TestServiceCreate(t *testing.T) {
 	})
 }
 
+func TestServiceGet(t *testing.T) {
+	t.Run("Should return a list of employees", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		expectedResult := []domain.Employee{e}
+
+		repository.On("GetAll").Return(expectedResult)
+		result := service.GetAll(context.TODO())
+
+		assert.NotEmpty(t, result)
+		assert.True(t, len(result) >= 1)
+		assert.Equal(t, result[0].CardNumberID, e.CardNumberID)
+		assert.Equal(t, result[0].FirstName, e.FirstName)
+		assert.Equal(t, result[0].LastName, e.LastName)
+		assert.Equal(t, result[0].WarehouseID, e.WarehouseID)
+	})
+}
 
 func CreateService(t *testing.T) (employee.Service, *mocks.Repository) {
 	t.Helper()

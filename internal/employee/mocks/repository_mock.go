@@ -12,7 +12,8 @@ type Repository struct {
 }
 
 func (r *Repository) GetAll(ctx context.Context) []domain.Employee {
-	return nil
+	args := r.Called()
+	return args.Get(0).([]domain.Employee)
 }
 
 func (r *Repository) Get(ctx context.Context, id int) *domain.Employee {
