@@ -127,6 +127,90 @@ func TestGetSection(t *testing.T) {
 	})
 }
 
+func TestUpdateSection(t *testing.T) {
+	requestObject := handler.UpdateSectionRequest{
+		SectionNumber: &s.SectionNumber,      
+		CurrentTemperature: &s.CurrentTemperature,
+		MinimumTemperature: &s.MinimumTemperature,
+		CurrentCapacity: &s.CurrentCapacity,
+		MinimumCapacity: &s.MinimumCapacity,
+		MaximumCapacity: &s.MaximumCapacity,
+		WarehouseID: &s.WarehouseID,
+		ProductTypeID: &s.ProductTypeID, 
+	}
+	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
+		server, _, controller := initSectionServer(t)
+
+		server.PATCH(DefinePath(resourceSectionUri)+"/:id", controller.Update())
+		request, response := MakeRequest("PATCH", DefinePath(resourceSectionUri)+"/abc", CreateBody(requestObject))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	})
+	t.Run("Should return bad request error when request is blank", func(t *testing.T) {
+		server, _, controller := initSectionServer(t)
+
+		var requestObject handler.UpdateSectionRequest
+		server.PATCH(DefinePath(resourceSectionUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(resourceSectionUri, 1), CreateBody(requestObject))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	})
+	t.Run("Should return not found error", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		id := 2
+
+		server.PATCH(DefinePath(resourceSectionUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(resourceSectionUri, id), CreateBody(requestObject))
+
+		var serviceReturn *domain.Section
+		service.On(
+			"Update", id, requestObject.ToUpdateSection()).
+			Return(serviceReturn, apperr.NewResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	})
+	t.Run("Should return conflict error", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		id := 1
+
+		server.PATCH(DefinePath(resourceSectionUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(resourceSectionUri, id), CreateBody(requestObject))
+
+		var serviceReturn *domain.Section
+		service.On(
+			"Update", id, requestObject.ToUpdateSection()).
+			Return(serviceReturn, apperr.NewResourceAlreadyExists(ResourceAlreadyExists))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
+	t.Run("Should return updated section", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		id := 1
+
+		server.PATCH(DefinePath(resourceSectionUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(resourceSectionUri, id), CreateBody(requestObject))
+
+		service.On(
+			"Update", id, requestObject.ToUpdateSection()).
+			Return(&s, nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
+}
 
 
 func initSectionServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Section) {
