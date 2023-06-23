@@ -32,6 +32,7 @@ func (r *Repository) Save(ctx context.Context, employee domain.Employee) int {
 }
 
 func (r *Repository) Update(ctx context.Context, employee domain.Employee) {
+	r.Called(employee)
 }
 
 func (r *Repository) Delete(ctx context.Context, id int) {

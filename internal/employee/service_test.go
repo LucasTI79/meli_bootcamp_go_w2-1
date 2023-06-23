@@ -94,6 +94,28 @@ func TestServiceGet(t *testing.T) {
 	})
 }
 
+func TestServiceUpdate(t *testing.T) {
+	t.Run("Should return a not found error", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		id := 99
+		cardNumberID := "444555"
+		updateEmployee := domain.UpdateEmployee {
+			ID: &id,
+			CardNumberID: &cardNumberID,
+		}
+
+		var emptyEmployee *domain.Employee
+
+		repository.On("Get", id).Return(emptyEmployee)
+		result, err := service.Update(context.TODO(), id, updateEmployee)
+
+		assert.Nil(t, result)
+		assert.Error(t, err)
+		assert.True(t, apperr.Is[*apperr.ResourceNotFound](err))
+	})
+}
+
 func CreateService(t *testing.T) (employee.Service, *mocks.Repository) {
 	t.Helper()
 	repository := new(mocks.Repository)
