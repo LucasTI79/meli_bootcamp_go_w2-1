@@ -70,6 +70,65 @@ func TestCreateSection(t *testing.T) {
 	})
 }
 
+func TestGetSection(t *testing.T) {
+	t.Run("Should return all sections", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		server.GET(DefinePath(resourceSectionUri), controller.GetAll())
+		request, response := MakeRequest("GET", DefinePath(resourceSectionUri), "")
+
+		service.On("GetAll").Return([]domain.Section{})
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
+
+	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
+		server, _, controller := initSectionServer(t)
+
+		server.GET(DefinePath(resourceSectionUri)+"/:id", controller.Get())
+		request, response := MakeRequest("GET", DefinePath(resourceSectionUri)+"/abc", "")
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	})
+
+	t.Run("Should return not found error", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		id := 1
+
+		server.GET(DefinePath(resourceSectionUri)+"/:id", controller.Get())
+		request, response := MakeRequest("GET", DefinePathWithId(resourceSectionUri, id), "")
+
+		var serviceReturn *domain.Section
+		service.On("Get", id).Return(serviceReturn, apperr.NewResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	})
+
+	t.Run("Should return the found section", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		id := 1
+
+		server.GET(DefinePath(resourceSectionUri)+"/:id", controller.Get())
+		request, response := MakeRequest("GET", DefinePathWithId(resourceSectionUri, id), "")
+
+		service.On("Get", id).Return(&s, nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
+}
+
+
+
 func initSectionServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Section) {
 	t.Helper()
 	server := CreateServer()
