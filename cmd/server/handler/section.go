@@ -4,26 +4,76 @@ import (
 	"net/http"
 	"strconv"
 
-	_ "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
 )
 
-type SectionRequest struct {
-	Id                 int `json:"id"`
-	SectionNumber      int `json:"section_number"`
-	CurrentTemperature int `json:"current_temperature"`
-	MinimumTemperature int `json:"minimum_temperature"`
-	CurrentCapacity    int `json:"current_capacity"`
-	MinimumCapacity    int `json:"minimum_capacity"`
-	MaximumCapacity    int `json:"maximum_capacity"`
-	WarehouseId        int `json:"warehouse_id"`
-	ProductTypeId      int `json:"id_product_type"`
-}
-
 type Section struct {
 	service section.Service
+}
+
+type CreateSectionRequest struct {
+		SectionNumber      *int `json:"section_number" binding:"required"`
+		CurrentTemperature *int `json:"current_temperature" binding:"required"`
+		MinimumTemperature *int `json:"minimum_temperature" binding:"required"`
+		CurrentCapacity    *int `json:"current_capacity" binding:"required"`
+		MinimumCapacity    *int `json:"minimum_capacity" binding:"required"`
+		MaximumCapacity    *int `json:"maximum_capacity" binding:"required"`
+		WarehouseID        *int `json:"warehouse_id" binding:"required"`
+		ProductTypeID      *int `json:"product_type_id" binding:"required"`
+
+}
+
+func (r CreateSectionRequest) ToSection() domain.Section {
+	return domain.Section{
+		ID: 0,
+		SectionNumber: *r.SectionNumber,
+		CurrentTemperature: *r.CurrentTemperature,
+		MinimumTemperature: *r.MinimumTemperature,
+		CurrentCapacity: *r.CurrentCapacity,
+		MinimumCapacity: *r.MinimumCapacity,
+		MaximumCapacity: *r.MaximumCapacity,
+		WarehouseID: *r.WarehouseID,
+		ProductTypeID: *r.ProductTypeID,
+	}
+}
+
+type UpdateSectionRequest struct {
+	SectionNumber      *int `json:"section_number"`
+	CurrentTemperature *int `json:"current_temperature"`
+	MinimumTemperature *int `json:"minimum_temperature"`
+	CurrentCapacity    *int `json:"current_capacity"`
+	MinimumCapacity    *int `json:"minimum_capacity"`
+	MaximumCapacity    *int `json:"maximum_capacity"`
+	WarehouseID        *int `json:"warehouse_id"`
+	ProductTypeID      *int `json:"product_type_id"`
+}
+
+func (r UpdateSectionRequest) ToUpdateSection() domain.UpdateSection {
+	return domain.UpdateSection {
+		SectionNumber: r.SectionNumber,
+		CurrentTemperature: r.CurrentTemperature,
+		MinimumTemperature: r.MinimumTemperature,
+		CurrentCapacity: r.CurrentCapacity,
+		MinimumCapacity: r.MinimumCapacity,
+		MaximumCapacity: r.MaximumCapacity,
+		WarehouseID: r.WarehouseID,
+		ProductTypeID: r.ProductTypeID,
+	}
+}
+
+func (r UpdateSectionRequest) IsBlank() bool {
+	return r.SectionNumber == nil &&
+	r.CurrentTemperature == nil &&
+	r.MinimumTemperature == nil &&
+	r.CurrentCapacity == nil &&
+	r.MinimumCapacity == nil &&
+	r.MaximumCapacity == nil &&
+	r.WarehouseID == nil &&
+	r.ProductTypeID == nil 
 }
 
 func NewSection(s section.Service) *Section {
@@ -43,11 +93,7 @@ func NewSection(s section.Service) *Section {
 // @Router /sections [get]
 func (s *Section) GetAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		sections, err := s.service.GetAll()
-		if err != nil {
-			web.Error(ctx, http.StatusInternalServerError, "erro interno.")
-			return
-		}
+		sections := s.service.GetAll(ctx.Request.Context())
 		web.Success(ctx, http.StatusOK, sections)
 	}
 }
@@ -61,22 +107,26 @@ func (s *Section) GetAll() gin.HandlerFunc {
 // @Success 200 {object} domain.Section "Section"
 // @Failure 400 {object} web.ErrorResponse"Validation error"
 // @Failure 404 {object} web.ErrorResponse "NotFound error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sections/{id} [get]
 func (s *Section) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		idParam := ctx.Param("id")
-		id, err := strconv.Atoi(idParam)
+		requestId := ctx.Param("id")
+		id, err := strconv.Atoi(requestId)
+
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "id inválido.")
+			web.Error(ctx, http.StatusBadRequest, InvalidId, requestId)
 			return
 		}
 
-		sectionID, err := s.service.Get(id)
+		section, err := s.service.Get(ctx.Request.Context(), id)
+
 		if err != nil {
-			web.Error(ctx, http.StatusNotFound, "seção não encontrada.")
-			return
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(ctx, http.StatusNotFound, err.Error())
+			}
 		}
-		web.Success(ctx, http.StatusOK, sectionID)
+		web.Success(ctx, http.StatusOK, section)
 	}
 }
 
@@ -92,28 +142,20 @@ func (s *Section) Get() gin.HandlerFunc {
 // @Failure 422 {object} web.ErrorResponse "Unprocessable error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sections [post]
-func (s *Section) Save() gin.HandlerFunc {
+func (s *Section) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req SectionRequest
-		if err := ctx.Bind(&req); err != nil {
-			web.Error(ctx, http.StatusNotFound, "existem erros na formatação do json e não foi possível realizar o parse.")
-			return
-		}
-		if req.SectionNumber == 0 && req.CurrentTemperature == 0 && req.MinimumTemperature == 0 && req.CurrentCapacity == 0 && req.MinimumCapacity == 0 &&
-			req.MaximumCapacity == 0 && req.WarehouseId == 0 && req.ProductTypeId == 0 {
-			web.Error(ctx, http.StatusUnprocessableEntity, "necessário adicionar todas as informações.")
-			return
-		}
+		request := ctx.MustGet(RequestParamContext).(CreateSectionRequest)
 
-		sectionId, err := s.service.Save(req.SectionNumber, req.CurrentTemperature, req.MinimumTemperature, req.CurrentCapacity, req.MinimumCapacity, req.MaximumCapacity,
-			req.WarehouseId, req.ProductTypeId)
+		created, err := s.service.Create(ctx.Request.Context(), request.ToSection())
+
 		if err != nil {
-			web.Error(ctx, http.StatusInternalServerError, "erro interno de servidor.")
-			return
+			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
+				web.Error(ctx, http.StatusConflict, err.Error())
+				return
+			}
 		}
-		sectionCreated, err := s.service.Get(sectionId)
-		web.Success(ctx, http.StatusCreated, sectionCreated)
 
+		web.Success(ctx, http.StatusCreated, created)
 	}
 }
 
@@ -131,101 +173,36 @@ func (s *Section) Save() gin.HandlerFunc {
 // @Router /sections/{id} [patch]
 func (s *Section) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		idParam := ctx.Param("id")
-		id, err := strconv.Atoi(idParam)
+		requestId := ctx.Param("id")
+		id, err := strconv.Atoi(requestId)
+
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "id inválido.")
+			web.Error(ctx, http.StatusBadRequest, InvalidId, requestId)
 			return
 		}
 
-		var req SectionRequest
-		err = ctx.Bind(&req)
+		request := ctx.MustGet(RequestParamContext).(UpdateSectionRequest)
+
+		if request.IsBlank() {
+			web.Error(ctx, http.StatusBadRequest, CannotBeBlank)
+			return
+		}
+
+		response, err := s.service.Update(ctx.Request.Context(), id, request.ToUpdateSection())
+
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "existem erros na formatação do json e não foi possível realizar o parse.")
-			return
-		}
-
-		if req.SectionNumber == 0 && req.CurrentTemperature == 0 && req.MinimumTemperature == 0 && req.CurrentCapacity == 0 && req.MinimumCapacity == 0 && req.MaximumCapacity == 0 &&
-			req.WarehouseId == 0 && req.ProductTypeId == 0 {
-
-			web.Error(ctx, http.StatusUnprocessableEntity, "informe pelo menos um campo para concluir a atualização.")
-			return
-		}
-
-		section, err := s.service.Get(id)
-		if err != nil {
-			web.Error(ctx, http.StatusNotFound, "seção não encontrada.")
-			return
-		}
-		if req.SectionNumber != 0 {
-			sectionNumber, err := s.service.Exists(req.SectionNumber)
-			if err != nil {
-				web.Error(ctx, http.StatusBadRequest, "número de seção cadastrado.")
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(ctx, http.StatusNotFound, err.Error())
 				return
-			} else {
-				section.SectionNumber = sectionNumber
+			}
+
+			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
+				web.Error(ctx, http.StatusConflict, err.Error())
+				return
 			}
 		}
-		if req.CurrentTemperature != 0 {
-			section.CurrentTemperature = req.CurrentTemperature
-		}
-		if req.MinimumTemperature != 0 {
-			section.MinimumTemperature = req.MinimumTemperature
-		}
-		if req.CurrentCapacity != 0 {
-			section.CurrentCapacity = req.CurrentCapacity
-		}
-		if req.MinimumCapacity != 0 {
-			section.MinimumCapacity = req.MinimumCapacity
-		}
-		if req.MaximumCapacity != 0 {
-			section.MaximumCapacity = req.MaximumCapacity
-		}
-		if req.WarehouseId != 0 {
-			section.WarehouseID = req.WarehouseId
-		}
-		if req.ProductTypeId != 0 {
-			section.ProductTypeID = req.ProductTypeId
-		}
 
-		err = s.service.Update(section)
-		if err != nil {
-			web.Error(ctx, http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		web.Success(ctx, http.StatusOK, section)
-	}
-}
-
-// Exists godoc
-// @Summary Exist section number
-// @Description Validate section number
-// @Tags Sections
-// @Accept json
-// @Produce json
-// @Success 200 {object} string "Section number"
-// @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 409 {object} web.ErrorResponse "Conflict error"
-// @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /sections/sectionNumber [get]
-func (s *Section) Exists() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		var req SectionRequest
-		if err := ctx.ShouldBindJSON(&req); err != nil {
-			web.Error(ctx, http.StatusBadRequest, "existem erros na formatação do json e não foi possível realizar o parse.")
-			return
-		}
-		if req.SectionNumber == 0 {
-			web.Error(ctx, http.StatusUnprocessableEntity, "necessário adicionar número de seção.")
-			return
-		}
-		sectionNumber, err := s.service.Exists(req.SectionNumber)
-		if err != nil {
-			web.Error(ctx, http.StatusConflict, "seção já cadastrada.")
-			return
-		}
-		web.Success(ctx, http.StatusOK, sectionNumber)
+		web.Success(ctx, http.StatusOK, response)
 	}
 }
 
@@ -238,20 +215,25 @@ func (s *Section) Exists() gin.HandlerFunc {
 // @Success 204
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "NotFound error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sections/{id} [delete]
 func (s *Section) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		idParam := ctx.Param("id")
-		id, err := strconv.Atoi(idParam)
+		requestId := ctx.Param("id")
+		id, err := strconv.Atoi(requestId)
+
 		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, "id inválido.")
+			web.Error(ctx, http.StatusBadRequest, InvalidId, requestId)
 			return
 		}
 
-		err = s.service.Delete(id)
+		err = s.service.Delete(ctx.Request.Context(), id)
+
 		if err != nil {
-			web.Error(ctx, http.StatusNotFound, "seção não encontrada.")
-			return
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(ctx, http.StatusNotFound, err.Error())
+				return
+			}
 		}
 
 		web.Success(ctx, http.StatusNoContent, nil)

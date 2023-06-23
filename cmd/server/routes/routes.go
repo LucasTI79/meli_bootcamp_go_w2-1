@@ -88,15 +88,14 @@ func (r *router) buildProductRoutes() {
 func (r *router) buildSectionRoutes() {
 	repository := section.NewRepository(r.db)
 	service := section.NewService(repository)
-	handler := handler.NewSection(service)
+	controller := handler.NewSection(service)
 	sectionRoutes := r.rg.Group("/sections")
-
-	sectionRoutes.GET("/", handler.GetAll())
-	sectionRoutes.POST("/", handler.Save())
-	sectionRoutes.PATCH("/:id", handler.Update())
-	sectionRoutes.GET("/:id", handler.Get())
-	sectionRoutes.GET("/sectionNumber", handler.Exists())
-	sectionRoutes.DELETE("/:id", handler.Delete())
+	
+	sectionRoutes.GET("/", controller.GetAll())
+	sectionRoutes.POST("/", middleware.Validation[handler.CreateSectionRequest](), controller.Create())
+	sectionRoutes.PATCH("/:id", middleware.Validation[handler.UpdateSectionRequest](), controller.Update())
+	sectionRoutes.GET("/:id", controller.Get())
+	sectionRoutes.DELETE("/:id", controller.Delete())
 }
 
 func (r *router) buildWarehouseRoutes() {

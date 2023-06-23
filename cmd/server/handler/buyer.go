@@ -118,7 +118,7 @@ func (b *Buyer) GetAll() gin.HandlerFunc {
 // @Tags Buyers
 // @Accept json
 // @Produce json
-// @Param buyer body domain.Request true "Buyer to be created"
+// @Param buyer body domain.Buyer true "Buyer to be created"
 // @Success 201 {object} domain.Buyer "Created buyer"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 422 {object} web.ErrorResponse "Json Parse error"
@@ -147,7 +147,7 @@ func (b *Buyer) Create() gin.HandlerFunc {
 // @Tags Buyers
 // @Accept json
 // @Produce json
-// @Param buyer body domain.Request true "Buyer to be updated"
+// @Param buyer body domain.UpdateBuyer true "Buyer to be updated"
 // @Param id path int true "ID do comprador"
 // @Success 200 {object} domain.Buyer "Buyer with updated information"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
