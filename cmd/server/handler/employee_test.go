@@ -135,6 +135,20 @@ func TestUpdateEmployee(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, response.Code)
 	})
+
+	t.Run("Should return bad request error when request is blank", func(t *testing.T) {
+		server, _, controller := InitEmployeeServer(t)
+
+		id := 1
+		var requestObject handler.UpdateEmployeeRequest
+		
+		server.PATCH(DefinePath(ResourceEmployeesUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceEmployeesUri, id), CreateBody(requestObject))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	})
 }
 
 func InitEmployeeServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Employee) {
