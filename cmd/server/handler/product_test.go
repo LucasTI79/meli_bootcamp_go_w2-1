@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	ResourceUri           = "products"
+	ResourceUri           = "/products"
 	ResourceAlreadyExists = "resource already exists"
 	ResourceNotFound      = "resource not found"
 )
@@ -51,8 +51,8 @@ func TestCreateProduct(t *testing.T) {
 	t.Run("Should return conflict error", func(t *testing.T) {
 		server, service, controller := InitServer(t)
 
-		server.POST(BaseUri, ValidationMiddleware(requestObject), controller.Create())
-		request, response := MakeRequest("POST", BaseUri, CreateBody(requestObject))
+		server.POST(DefinePath(ResourceUri), ValidationMiddleware(requestObject), controller.Create())
+		request, response := MakeRequest("POST", DefinePath(ResourceUri), CreateBody(requestObject))
 
 		var serviceReturn *domain.Product
 		service.On("Create", requestObject.ToProduct()).Return(serviceReturn, apperr.NewResourceAlreadyExists(ResourceAlreadyExists))
@@ -65,8 +65,8 @@ func TestCreateProduct(t *testing.T) {
 	t.Run("Should return a created product", func(t *testing.T) {
 		server, service, controller := InitServer(t)
 
-		server.POST(BaseUri, ValidationMiddleware(requestObject), controller.Create())
-		request, response := MakeRequest("POST", BaseUri, CreateBody(requestObject))
+		server.POST(DefinePath(ResourceUri), ValidationMiddleware(requestObject), controller.Create())
+		request, response := MakeRequest("POST", DefinePath(ResourceUri), CreateBody(requestObject))
 
 		service.On("Create", requestObject.ToProduct()).Return(&p, nil)
 
@@ -80,8 +80,8 @@ func TestGetProduct(t *testing.T) {
 	t.Run("Should return all products", func(t *testing.T) {
 		server, service, controller := InitServer(t)
 
-		server.GET(BaseUri, controller.GetAll())
-		request, response := MakeRequest("GET", BaseUri, "")
+		server.GET(DefinePath(ResourceUri), controller.GetAll())
+		request, response := MakeRequest("GET", DefinePath(ResourceUri), "")
 
 		service.On("GetAll").Return([]domain.Product{})
 
@@ -93,8 +93,8 @@ func TestGetProduct(t *testing.T) {
 	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
 		server, _, controller := InitServer(t)
 
-		server.GET(BaseUri+"/:id", controller.Get())
-		request, response := MakeRequest("GET", BaseUri+"/abc", "")
+		server.GET(DefinePath(ResourceUri)+"/:id", controller.Get())
+		request, response := MakeRequest("GET", DefinePath(ResourceUri)+"/abc", "")
 
 		server.ServeHTTP(response, request)
 
@@ -106,8 +106,8 @@ func TestGetProduct(t *testing.T) {
 
 		id := 1
 
-		server.GET(BaseUri+"/:id", controller.Get())
-		request, response := MakeRequest("GET", DefineRequestParamId(ResourceUri, id), "")
+		server.GET(DefinePath(ResourceUri)+"/:id", controller.Get())
+		request, response := MakeRequest("GET", DefinePathWithId(ResourceUri, id), "")
 
 		var serviceReturn *domain.Product
 		service.On("Get", id).Return(serviceReturn, apperr.NewResourceNotFound(ResourceNotFound))
@@ -122,8 +122,8 @@ func TestGetProduct(t *testing.T) {
 
 		id := 1
 
-		server.GET(BaseUri+"/:id", controller.Get())
-		request, response := MakeRequest("GET", DefineRequestParamId(ResourceUri, id), "")
+		server.GET(DefinePath(ResourceUri)+"/:id", controller.Get())
+		request, response := MakeRequest("GET", DefinePathWithId(ResourceUri, id), "")
 
 		service.On("Get", id).Return(&p, nil)
 
@@ -150,8 +150,8 @@ func TestUpdateProduct(t *testing.T) {
 	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
 		server, _, controller := InitServer(t)
 
-		server.PATCH(BaseUri+"/:id", controller.Update())
-		request, response := MakeRequest("PATCH", BaseUri+"/abc", CreateBody(requestObject))
+		server.PATCH(DefinePath(ResourceUri)+"/:id", controller.Update())
+		request, response := MakeRequest("PATCH", DefinePath(ResourceUri)+"/abc", CreateBody(requestObject))
 
 		server.ServeHTTP(response, request)
 
@@ -161,8 +161,8 @@ func TestUpdateProduct(t *testing.T) {
 		server, _, controller := InitServer(t)
 
 		var requestObject handler.UpdateProductRequest
-		server.PATCH(BaseUri+"/:id", ValidationMiddleware(requestObject), controller.Update())
-		request, response := MakeRequest("PATCH", DefineRequestParamId(ResourceUri, 1), CreateBody(requestObject))
+		server.PATCH(DefinePath(ResourceUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceUri, 1), CreateBody(requestObject))
 
 		server.ServeHTTP(response, request)
 
@@ -173,8 +173,8 @@ func TestUpdateProduct(t *testing.T) {
 
 		id := 1
 
-		server.PATCH(BaseUri+"/:id", ValidationMiddleware(requestObject), controller.Update())
-		request, response := MakeRequest("PATCH", DefineRequestParamId(ResourceUri, id), CreateBody(requestObject))
+		server.PATCH(DefinePath(ResourceUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceUri, id), CreateBody(requestObject))
 
 		var serviceReturn *domain.Product
 		service.On(
@@ -190,8 +190,8 @@ func TestUpdateProduct(t *testing.T) {
 
 		id := 1
 
-		server.PATCH(BaseUri+"/:id", ValidationMiddleware(requestObject), controller.Update())
-		request, response := MakeRequest("PATCH", DefineRequestParamId(ResourceUri, id), CreateBody(requestObject))
+		server.PATCH(DefinePath(ResourceUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceUri, id), CreateBody(requestObject))
 
 		var serviceReturn *domain.Product
 		service.On(
@@ -208,8 +208,8 @@ func TestUpdateProduct(t *testing.T) {
 
 		id := 1
 
-		server.PATCH(BaseUri+"/:id", ValidationMiddleware(requestObject), controller.Update())
-		request, response := MakeRequest("PATCH", DefineRequestParamId(ResourceUri, id), CreateBody(requestObject))
+		server.PATCH(DefinePath(ResourceUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceUri, id), CreateBody(requestObject))
 
 		service.On(
 			"Update", id, requestObject.ToUpdateProduct()).
@@ -226,8 +226,8 @@ func TestDeleteProduct(t *testing.T) {
 	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
 		server, _, controller := InitServer(t)
 
-		server.DELETE(BaseUri+"/:id", controller.Delete())
-		request, response := MakeRequest("DELETE", BaseUri+"/abc", "")
+		server.DELETE(DefinePath(ResourceUri)+"/:id", controller.Delete())
+		request, response := MakeRequest("DELETE", DefinePath(ResourceUri)+"/abc", "")
 
 		server.ServeHTTP(response, request)
 
@@ -239,8 +239,8 @@ func TestDeleteProduct(t *testing.T) {
 
 		id := 1
 
-		server.DELETE(BaseUri+"/:id", controller.Delete())
-		request, response := MakeRequest("DELETE", DefineRequestParamId(ResourceUri, id), "")
+		server.DELETE(DefinePath(ResourceUri)+"/:id", controller.Delete())
+		request, response := MakeRequest("DELETE", DefinePathWithId(ResourceUri, id), "")
 
 		service.On("Delete", id).Return(apperr.NewResourceNotFound(ResourceNotFound))
 
@@ -254,8 +254,8 @@ func TestDeleteProduct(t *testing.T) {
 
 		id := 1
 
-		server.DELETE(BaseUri+"/:id", controller.Delete())
-		request, response := MakeRequest("DELETE", DefineRequestParamId(ResourceUri, id), "")
+		server.DELETE(DefinePath(ResourceUri)+"/:id", controller.Delete())
+		request, response := MakeRequest("DELETE", DefinePathWithId(ResourceUri, id), "")
 
 		service.On("Delete", id).Return(nil)
 

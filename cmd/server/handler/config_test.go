@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	BaseUri = "api/v1/"
+	BaseUri = "/api/v1"
 )
 
 func CreateServer() *gin.Engine {
@@ -43,8 +43,12 @@ func CreateBody(obj interface{}) string {
 	return string(encoded)
 }
 
-func DefineRequestParamId(resourceUri string, id int) string {
-	return BaseUri + "/" + resourceUri + "/" + strconv.Itoa(id)
+func DefinePath(resourceUri string) string {
+	return BaseUri + resourceUri
+}
+
+func DefinePathWithId(resourceUri string, id int) string {
+	return DefinePath(resourceUri) + "/" + strconv.Itoa(id)
 }
 
 func ValidationMiddleware(requestObject interface{}) gin.HandlerFunc {

@@ -32,9 +32,9 @@ func (r *Repository) Save(ctx context.Context, product domain.Product) int {
 }
 
 func (r *Repository) Update(ctx context.Context, product domain.Product) {
-	// args := r.Called(product)
-	// return args.Get(0).(int)
+	r.Called(product)
 }
 
 func (r *Repository) Delete(ctx context.Context, id int) {
+	r.Called(id)
 }
