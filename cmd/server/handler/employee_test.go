@@ -101,6 +101,21 @@ func TestGetEmployee(t *testing.T) {
 
 		assert.Equal(t, http.StatusNotFound, response.Code)
 	})
+
+	t.Run("Should return an employee based on ID", func(t *testing.T) {
+		server, service, controller := InitEmployeeServer(t)
+
+		id := 1
+
+		server.GET(DefinePath(ResourceEmployeesUri)+"/:id", controller.Get())
+		request, response := MakeRequest("GET", DefinePathWithId(ResourceEmployeesUri, id), "")
+
+		service.On("Get", id).Return(&mockedEmployee, nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
 }
 
 func InitEmployeeServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Employee) {
