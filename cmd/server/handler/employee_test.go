@@ -119,7 +119,7 @@ func TestGetEmployee(t *testing.T) {
 }
 
 func TestUpdateEmployee(t *testing.T) {
-	requestObject := handler.CreateEmployeeRequest {
+	requestObject := handler.UpdateEmployeeRequest {
 		CardNumberID: &mockedEmployee.CardNumberID,
 		FirstName: &mockedEmployee.FirstName,
 		LastName: &mockedEmployee.LastName,
@@ -141,13 +141,29 @@ func TestUpdateEmployee(t *testing.T) {
 
 		id := 1
 		var requestObject handler.UpdateEmployeeRequest
-		
+
 		server.PATCH(DefinePath(ResourceEmployeesUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
 		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceEmployeesUri, id), CreateBody(requestObject))
 
 		server.ServeHTTP(response, request)
 
 		assert.Equal(t, http.StatusBadRequest, response.Code)
+	})
+
+	t.Run("Should return employee not found error", func(t *testing.T) {
+		server, service, controller := InitEmployeeServer(t)
+
+		id := 99
+		var serviceReturn *domain.Employee
+
+		server.PATCH(DefinePath(ResourceEmployeesUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceEmployeesUri, id), CreateBody(requestObject))
+
+		service.On("Update", id, requestObject.ToUpdateEmployee()).Return(serviceReturn, apperr.NewResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusNotFound, response.Code)
 	})
 }
 

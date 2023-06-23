@@ -27,7 +27,8 @@ func (s *Service) Create(c context.Context, p domain.Employee) (*domain.Employee
 }
 
 func (s *Service) Update(c context.Context, id int, p domain.UpdateEmployee) (*domain.Employee, error) {
-	return nil, nil
+	args := s.Called(id, p)
+	return args.Get(0).(*domain.Employee), args.Error(1)
 }
 
 func (s *Service) Delete(c context.Context, id int) error {
