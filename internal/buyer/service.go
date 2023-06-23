@@ -15,7 +15,7 @@ const (
 type IService interface {
 	GetAll(c context.Context) []domain.Buyer
 	Get(c context.Context, id int) (*domain.Buyer, error)
-	Save(c context.Context, b domain.Buyer) (*domain.Buyer, error)
+	Create(c context.Context, b domain.Buyer) (*domain.Buyer, error)
 	Update(c context.Context, id int, b domain.UpdateBuyer) (*domain.Buyer, error)
 	Delete(c context.Context, id int) error
 }
@@ -44,21 +44,15 @@ func (s *service) Get(c context.Context, id int) (*domain.Buyer, error) {
 	return buyer, nil
 }
 
-func (s *service) Save(c context.Context, b domain.Buyer) (*domain.Buyer, error) {
+func (s *service) Create(c context.Context, b domain.Buyer) (*domain.Buyer, error) {
 	exists := s.repository.Exists(c, b.CardNumberID)
 
 	if !exists {
 		id := s.repository.Save(c, b)
-		created := s.repository.Get(c, id)
-
-		if created == nil {
-			return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
-		}
-
-		return created, nil
-	} else {
-		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, b.CardNumberID)
+		return s.repository.Get(c, id), nil
 	}
+
+	return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, b.CardNumberID)
 }
 
 func (s *service) Update(c context.Context, id int, buyer domain.UpdateBuyer) (*domain.Buyer, error) {
@@ -68,14 +62,19 @@ func (s *service) Update(c context.Context, id int, buyer domain.UpdateBuyer) (*
 		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
 	}
 
+	if buyer.CardNumberID != nil {
+		cardNumberID := *buyer.CardNumberID
+		cardNumberIDExists := s.repository.Exists(c, cardNumberID)
+
+		if cardNumberIDExists && cardNumberID != buyerFound.CardNumberID {
+			return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, cardNumberID)
+		}
+	}
+
 	buyerFound.Overlap(buyer)
 
 	s.repository.Update(c, *buyerFound)
 	updated := s.repository.Get(c, id)
-
-	if updated == nil {
-		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
-	}
 
 	return updated, nil
 }
