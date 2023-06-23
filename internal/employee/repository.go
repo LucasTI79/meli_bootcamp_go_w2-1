@@ -1,18 +1,20 @@
 package employee
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
 
 type Repository interface {
-	GetAll() ([]domain.Employee, error)
-	Get(id int) (domain.Employee, error)
-	Exists(cardNumberID string) (string, error)
-	Save(card_number_id, first_name, last_name string, warehouse_id int) (int, error)
-	Update(EmployeeRequest) error
-	Delete(id int) error
+	GetAll(ctx context.Context) []domain.Employee
+	Get(ctx context.Context, id int) *domain.Employee
+	Exists(ctx context.Context, cardNumberID string) bool
+	Save(ctx context.Context, p domain.Employee) int
+	Update(ctx context.Context, p domain.Employee)
+	Delete(ctx context.Context, id int)
 }
 
 type repository struct {
@@ -25,11 +27,11 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r *repository) GetAll() ([]domain.Employee, error) {
-	query := "SELECT * FROM employees"
+func (r *repository) GetAll(ctx context.Context) []domain.Employee{
+	query := "SELECT * FROM employees;"
 	rows, err := r.db.Query(query)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	employees := make([]domain.Employee, 0)
@@ -40,92 +42,75 @@ func (r *repository) GetAll() ([]domain.Employee, error) {
 		employees = append(employees, e)
 	}
 
-	return employees, nil
+	return employees
 }
 
-func (r *repository) Get(id int) (domain.Employee, error) {
+func (r *repository) Get(ctx context.Context, id int) *domain.Employee {
 	query := "SELECT * FROM employees WHERE id=?;"
 	row := r.db.QueryRow(query, id)
 	e := domain.Employee{}
 	err := row.Scan(&e.ID, &e.CardNumberID, &e.FirstName, &e.LastName, &e.WarehouseID)
+	
 	if err != nil {
-		return domain.Employee{}, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		panic(err)
 	}
 
-	return e, nil
+	return &e
 }
 
-func (r *repository) Exists(cardNumberID string) (string, error) {
+func (r *repository) Exists(ctx context.Context, cardNumberID string) bool {
 	query := "SELECT card_number_id FROM employees WHERE card_number_id=?;"
 	row := r.db.QueryRow(query, cardNumberID)
 	err := row.Scan(&cardNumberID)
-	if err != nil {
-		return "", err
-	}
-
-	return cardNumberID, nil
+	
+	return err == nil
 }
 
-func (r *repository) Save(card_number_id, first_name, last_name string, warehouse_id int) (int, error) {
+func (r *repository) Save(ctx context.Context, e domain.Employee) int {
 	query := "INSERT INTO employees(card_number_id,first_name,last_name,warehouse_id) VALUES (?,?,?,?)"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return 0, err
+		panic(err)
 	}
 
-	res, err := stmt.Exec(card_number_id, first_name, last_name, warehouse_id)
+	res, err := stmt.Exec(e.CardNumberID, e.FirstName, e.LastName, e.WarehouseID)
 	if err != nil {
-		return 0, err
+		panic(err)
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		return 0, err
+		panic(err)
 	}
 
-	return int(id), nil
+	return int(id)
 }
 
-func (r *repository) Update(e EmployeeRequest) error {
-	query := "UPDATE employees SET first_name=?, last_name=?, warehouse_id=?  WHERE id=?"
+func (r *repository) Update(ctx context.Context, e domain.Employee) {
+	query := "UPDATE employees SET card_number_id=?, first_name=?, last_name=?, warehouse_id=?  WHERE id=?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
-	res, err := stmt.Exec(&e.First_name, &e.Last_name, &e.Warehouse_id, &e.Id)
+	_, err = stmt.Exec(&e.CardNumberID, &e.FirstName, &e.LastName, &e.WarehouseID, &e.ID)
 	if err != nil {
-		return err
+		panic(err)
 	}
-
-	_, err = res.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
-func (r *repository) Delete(id int) error {
+func (r *repository) Delete(ctx context.Context, id int){
 	query := "DELETE FROM employees WHERE id=?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
-	res, err := stmt.Exec(id)
+	_, err = stmt.Exec(id)
 	if err != nil {
-		return err
+		panic(err)
 	}
-
-	affect, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	if affect < 1 {
-		return ErrNotFound
-	}
-
-	return nil
 }
