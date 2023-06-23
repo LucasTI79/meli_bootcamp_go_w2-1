@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	b = domain.Buyer{
+	mockedBuyer = domain.Buyer{
 		ID:           1,
 		CardNumberID: "123",
 		FirstName:    "Teste",
@@ -24,20 +24,20 @@ func TestServiceCreate(t *testing.T) {
 	t.Run("Should return a created buyer", func(t *testing.T) {
 		service, repository := CreateService(t)
 		id := 1
-		repository.On("Save", b).Return(id)
-		repository.On("Get", id).Return(&b)
-		repository.On("Exists", b.CardNumberID).Return(false)
-		result, err := service.Create(context.TODO(), b)
+		repository.On("Save", mockedBuyer).Return(id)
+		repository.On("Get", id).Return(&mockedBuyer)
+		repository.On("Exists", mockedBuyer.CardNumberID).Return(false)
+		result, err := service.Create(context.TODO(), mockedBuyer)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, b, *result)
+		assert.Equal(t, mockedBuyer, *result)
 
 	})
 
 	t.Run("Should return a conflict error", func(t *testing.T) {
 		service, repository := CreateService(t)
-		repository.On("Exists", b.CardNumberID).Return(true)
-		result, err := service.Create(context.TODO(), b)
+		repository.On("Exists", mockedBuyer.CardNumberID).Return(true)
+		result, err := service.Create(context.TODO(), mockedBuyer)
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.True(t, apperr.Is[*apperr.ResourceAlreadyExists](err))
@@ -47,22 +47,22 @@ func TestServiceCreate(t *testing.T) {
 func TestServiceGet(t *testing.T) {
 	t.Run("Should return a list of buyers", func(t *testing.T) {
 		service, repository := CreateService(t)
-		expected := []domain.Buyer{b}
+		expected := []domain.Buyer{mockedBuyer}
 		repository.On("GetAll").Return(expected)
 		result := service.GetAll(context.TODO())
 		assert.NotEmpty(t, result)
 		assert.Equal(t, len(result), 1)
-		assert.Equal(t, result[0], b)
+		assert.Equal(t, result[0], mockedBuyer)
 	})
 
 	t.Run("Shoul returne a buyer by a especified id", func(t *testing.T) {
 		service, repository := CreateService(t)
 		id := 1
-		repository.On("Get", id).Return(&b)
+		repository.On("Get", id).Return(&mockedBuyer)
 		result, err := service.Get(context.TODO(), id)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, *result, b)
+		assert.Equal(t, *result, mockedBuyer)
 	})
 
 	t.Run("should return a not found error", func(t *testing.T) {
@@ -102,7 +102,7 @@ func TestServiceUpdate(t *testing.T) {
 			ID:           &id,
 			CardNumberID: &cardNumberId,
 		}
-		repository.On("Get", id).Return(&b)
+		repository.On("Get", id).Return(&mockedBuyer)
 		repository.On("Exists", cardNumberId).Return(true)
 		result, err := service.Update(context.TODO(), id, updateBuyer)
 		assert.Error(t, err)
@@ -119,11 +119,11 @@ func TestServiceUpdate(t *testing.T) {
 			CardNumberID: &cardNumberId,
 		}
 
-		updatedBuyer := b
+		updatedBuyer := mockedBuyer
 
 		updatedBuyer.Overlap(updateBuyer)
 
-		repository.On("Get", id).Return(&b)
+		repository.On("Get", id).Return(&mockedBuyer)
 		repository.On("Exists", cardNumberId).Return(true)
 		repository.On("Update", updatedBuyer).Return(updatedBuyer)
 		repository.On("Get", id).Return(&updatedBuyer)
@@ -149,7 +149,7 @@ func TestServiceDelete(t *testing.T) {
 	t.Run("Should delete a product with success", func(t *testing.T) {
 		service, repository := CreateService(t)
 		id := 1
-		repository.On("Get", id).Return(&b)
+		repository.On("Get", id).Return(&mockedBuyer)
 		repository.On("Delete", id)
 		err := service.Delete(context.TODO(), id)
 		assert.NoError(t, err)
