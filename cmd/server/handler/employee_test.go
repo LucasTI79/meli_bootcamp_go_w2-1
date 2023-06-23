@@ -165,6 +165,22 @@ func TestUpdateEmployee(t *testing.T) {
 
 		assert.Equal(t, http.StatusNotFound, response.Code)
 	})
+
+	t.Run("Should return conflict error", func(t *testing.T) {
+		server, service, controller := InitEmployeeServer(t)
+
+		id := 1
+		var serviceReturn *domain.Employee
+
+		server.PATCH(DefinePath(ResourceEmployeesUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceEmployeesUri, id), CreateBody(requestObject))
+
+		service.On("Update", id, requestObject.ToUpdateEmployee()).Return(serviceReturn, apperr.NewResourceAlreadyExists(ResourceAlreadyExists))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
 }
 
 func InitEmployeeServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Employee) {
