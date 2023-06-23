@@ -114,6 +114,26 @@ func TestServiceUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.True(t, apperr.Is[*apperr.ResourceNotFound](err))
 	})
+
+	t.Run("Should return a conflict error", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		id := 1
+		cardNumberID := "555555"
+		updateEmployee := domain.UpdateEmployee{
+			ID: &id,
+			CardNumberID: &cardNumberID,
+		}
+
+		repository.On("Get", id).Return(&e)
+		repository.On("Exists", cardNumberID).Return(true)
+
+		result, err := service.Update(context.TODO(), id, updateEmployee)
+
+		assert.Nil(t, result)
+		assert.Error(t, err)
+		assert.True(t, apperr.Is[*apperr.ResourceAlreadyExists](err))
+	})
 }
 
 func CreateService(t *testing.T) (employee.Service, *mocks.Repository) {
