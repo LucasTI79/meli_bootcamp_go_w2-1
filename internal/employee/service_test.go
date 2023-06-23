@@ -64,6 +64,20 @@ func TestServiceGet(t *testing.T) {
 		assert.Equal(t, result[0].LastName, e.LastName)
 		assert.Equal(t, result[0].WarehouseID, e.WarehouseID)
 	})
+
+	t.Run("Should return a employee by id", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		id := 1
+
+		repository.On("Get", id).Return(&e)
+		result, err := service.Get(context.TODO(), id)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, result.ID, e.ID)
+		assert.Equal(t, *result, e)
+	})
 }
 
 func CreateService(t *testing.T) (employee.Service, *mocks.Repository) {
