@@ -94,6 +94,74 @@ func TestServiceGet(t *testing.T) {
 	})
 }
 
+func TestServiceUpdate(t *testing.T) {
+	t.Run("Should return a not found error", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		id := 2
+		sectionNumber := 123
+		UpdateSection := domain.UpdateSection{
+			ID:          &id,
+			SectionNumber: &sectionNumber,
+		}
+
+		var respositoryResult *domain.Section
+
+		repository.On("Get", id).Return(respositoryResult)
+		result, err := service.Update(context.TODO(), id, UpdateSection)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.ResourceNotFound](err))
+	})
+
+	t.Run("Should return a conflict error", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		id := 1
+		sectionNumber := 456
+		UpdateSection := domain.UpdateSection{
+			ID:          &id,
+			SectionNumber: &sectionNumber,
+		}
+
+		repository.On("Get", id).Return(&mockedSection)
+		repository.On("Exists", sectionNumber).Return(true)
+		result, err := service.Update(context.TODO(), id, UpdateSection)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.ResourceAlreadyExists](err))
+	})
+
+	t.Run("Should return an updated section", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		id := 1
+		sectionNumber := 123
+		currentTemperature := 2
+		UpdateSection := domain.UpdateSection{
+			ID:          &id,
+			CurrentTemperature: &currentTemperature,
+			SectionNumber: &sectionNumber,
+		}
+		updatedSection := mockedSection
+		updatedSection.Overlap(UpdateSection)
+
+		repository.On("Get", id).Return(&mockedSection)
+		repository.On("Exists", sectionNumber).Return(false)
+		repository.On("Update", updatedSection)
+		repository.On("Get", id).Return(&updatedSection)
+		result, err := service.Update(context.TODO(), id, UpdateSection)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, currentTemperature, result.CurrentTemperature)
+	})
+}
+
+
+
 func CreateService(t *testing.T) (section.Service, *mocks.Repository) {
 	t.Helper()
 	repository := new(mocks.Repository)
