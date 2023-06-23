@@ -17,7 +17,8 @@ func (s *Service) GetAll(c context.Context) []domain.Employee {
 }
 
 func (s *Service) Get(c context.Context, id int) (*domain.Employee, error) {
-	return nil, nil
+	args := s.Called(id)
+	return args.Get(0).(*domain.Employee), args.Error(1)
 }
 
 func (s *Service) Create(c context.Context, p domain.Employee) (*domain.Employee, error) {
