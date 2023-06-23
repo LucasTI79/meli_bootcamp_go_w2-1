@@ -20,9 +20,13 @@ func (r *Repository) Get(ctx context.Context, id int) *domain.Warehouse {
 	args := r.Called(id)
 	return args.Get(0).(*domain.Warehouse)
 }
+func (r *Repository) GetByCode(ctx context.Context, warehouseCode string) *domain.Warehouse {
+	args := r.Called(warehouseCode)
+	return args.Get(0).(*domain.Warehouse)
+}
 
-func (r *Repository) Exists(ctx context.Context, productCode string) bool {
-	args := r.Called(productCode)
+func (r *Repository) Exists(ctx context.Context, warehouseCode string) bool {
+	args := r.Called(warehouseCode)
 	return args.Get(0).(bool)
 }
 
