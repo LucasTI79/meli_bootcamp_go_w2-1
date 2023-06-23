@@ -118,6 +118,25 @@ func TestGetEmployee(t *testing.T) {
 	})
 }
 
+func TestUpdateEmployee(t *testing.T) {
+	requestObject := handler.CreateEmployeeRequest {
+		CardNumberID: &mockedEmployee.CardNumberID,
+		FirstName: &mockedEmployee.FirstName,
+		LastName: &mockedEmployee.LastName,
+		WarehouseID: &mockedEmployee.WarehouseID,
+	}
+	t.Run("Should return bad request error when ID is invalid", func(t *testing.T) {
+		server, _, controller := InitEmployeeServer(t)
+
+		server.PATCH(DefinePath(ResourceEmployeesUri)+"/:id", controller.Update())
+		request, response := MakeRequest("PATCH", DefinePath(ResourceEmployeesUri)+"/teste", CreateBody(requestObject))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	})
+}
+
 func InitEmployeeServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Employee) {
 	t.Helper()
 	server := CreateServer()
