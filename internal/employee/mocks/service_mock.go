@@ -12,7 +12,8 @@ type Service struct {
 }
 
 func (s *Service) GetAll(c context.Context) []domain.Employee {
-	return nil
+	args := s.Called()
+	return args.Get(0).([]domain.Employee)
 }
 
 func (s *Service) Get(c context.Context, id int) (*domain.Employee, error) {

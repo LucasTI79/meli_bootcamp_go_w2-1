@@ -61,6 +61,21 @@ func TestCreateEmployee(t *testing.T) {
 	})
 }
 
+func TestGetEmployee(t *testing.T) {
+	t.Run("Should return a list of all employees", func(t *testing.T) {
+		server, service, controller := InitEmployeeServer(t)
+
+		server.GET(DefinePath(ResourceEmployeesUri), controller.GetAll())
+		request, response := MakeRequest("GET", DefinePath(ResourceEmployeesUri), "")
+
+		service.On("GetAll").Return([]domain.Employee{})
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
+}
+
 func InitEmployeeServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Employee) {
 	t.Helper()
 	server := CreateServer()
