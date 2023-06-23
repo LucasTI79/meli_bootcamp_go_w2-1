@@ -176,6 +176,18 @@ func TestServiceDelete(t *testing.T) {
 		assert.Error(t, err)
 		assert.True(t, apperr.Is[*apperr.ResourceNotFound](err))
 	})
+
+	t.Run("Should delete a employee successfully", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		id := 1
+
+		repository.On("Get", id).Return(&e)
+		repository.On("Delete", id)
+		err := service.Delete(context.TODO(), id)
+
+		assert.NoError(t, err)
+	})
 }
 
 func CreateService(t *testing.T) (employee.Service, *mocks.Repository) {
