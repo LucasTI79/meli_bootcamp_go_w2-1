@@ -5,14 +5,14 @@ import (
 	"testing"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	p = domain.Warehouse{
+	w = domain.Warehouse{
 		ID:                 1,
 		Address:            "Address",
 		Telephone:          1,
@@ -27,21 +27,21 @@ func TestWarehouseCreate(t *testing.T) {
 		service, repository := CreateService(t)
 
 		id := 1
-		repository.On("Save", p).Return(id)
-		repository.On("Get", id).Return(&p)
-		repository.On("Exists", p.WarehouseCode).Return(false)
-		result, err := service.Create(context.TODO(), p)
+		repository.On("Save", w).Return(id)
+		repository.On("Get", id).Return(&w)
+		repository.On("Exists", w.WarehouseCode).Return(false)
+		result, err := service.Create(context.TODO(), w)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, p, *result)
+		assert.Equal(t, w, *result)
 	})
 
 	t.Run("Should return a conflict error", func(t *testing.T) {
 		service, repository := CreateService(t)
 
-		repository.On("Exists", p.WarehouseCode).Return(true)
-		result, err := service.Create(context.TODO(), p)
+		repository.On("Exists", w.WarehouseCode).Return(true)
+		result, err := service.Create(context.TODO(), w)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -50,37 +50,37 @@ func TestWarehouseCreate(t *testing.T) {
 }
 
 func TestServiceGet(t *testing.T) {
-	t.Run("Should return a list of products", func(t *testing.T) {
+	t.Run("Should return a list of warehouses", func(t *testing.T) {
 		service, repository := CreateService(t)
 
-		expected := []domain.Product{p}
+		expected := []domain.Warehouse{w}
 
 		repository.On("GetAll").Return(expected)
 		result := service.GetAll(context.TODO())
 
 		assert.NotEmpty(t, result)
 		assert.Equal(t, len(result), 1)
-		assert.Equal(t, result[0], p)
+		assert.Equal(t, result[0], w)
 	})
 
-	t.Run("Should return a product by specified id", func(t *testing.T) {
+	t.Run("Should return a warehouse by specified id", func(t *testing.T) {
 		service, repository := CreateService(t)
 
 		id := 1
 
-		repository.On("Get", id).Return(&p)
+		repository.On("Get", id).Return(&w)
 		result, err := service.Get(context.TODO(), id)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, *result, p)
+		assert.Equal(t, *result, w)
 	})
 
 	t.Run("Should return a not found error", func(t *testing.T) {
 		service, repository := CreateService(t)
 
 		id := 1
-		var respositoryResult *domain.Product
+		var respositoryResult *domain.Warehouse
 
 		repository.On("Get", id).Return(respositoryResult)
 		result, err := service.Get(context.TODO(), id)
@@ -96,16 +96,16 @@ func TestServiceUpdate(t *testing.T) {
 		service, repository := CreateService(t)
 
 		id := 2
-		productCode := "123"
-		updateProduct := domain.UpdateProduct{
-			ID:          &id,
-			ProductCode: &productCode,
+		warehouseCode := "123"
+		updateWarehouse := domain.UpdateWarehouse{
+			ID:            &id,
+			WarehouseCode: &warehouseCode,
 		}
 
-		var respositoryResult *domain.Product
+		var respositoryResult *domain.Warehouse
 
 		repository.On("Get", id).Return(respositoryResult)
-		result, err := service.Update(context.TODO(), id, updateProduct)
+		result, err := service.Update(context.TODO(), id, updateWarehouse)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -116,15 +116,15 @@ func TestServiceUpdate(t *testing.T) {
 		service, repository := CreateService(t)
 
 		id := 1
-		productCode := "456"
-		updateProduct := domain.UpdateProduct{
-			ID:          &id,
-			ProductCode: &productCode,
+		warehouseCode := "456"
+		updateWarehouse := domain.UpdateWarehouse{
+			ID:            &id,
+			WarehouseCode: &warehouseCode,
 		}
 
-		repository.On("Get", id).Return(&p)
-		repository.On("Exists", productCode).Return(true)
-		result, err := service.Update(context.TODO(), id, updateProduct)
+		repository.On("Get", id).Return(&w)
+		repository.On("Exists", warehouseCode).Return(true)
+		result, err := service.Update(context.TODO(), id, updateWarehouse)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -135,24 +135,24 @@ func TestServiceUpdate(t *testing.T) {
 		service, repository := CreateService(t)
 
 		id := 1
-		productCode := "123"
-		description := "Description 2"
-		updateProduct := domain.UpdateProduct{
-			ID:          &id,
-			Description: &description,
-			ProductCode: &productCode,
+		warehouseCode := "123"
+		address := "Address"
+		updateWarehouse := domain.UpdateWarehouse{
+			ID:            &id,
+			Address:       &address,
+			WarehouseCode: &warehouseCode,
 		}
-		updatedProduct := p
-		updatedProduct.Overlap(updateProduct)
+		updatedWarehouse := w
+		updatedWarehouse.Overlap(updateWarehouse)
 
-		repository.On("Get", id).Return(&p)
-		repository.On("Exists", productCode).Return(true)
-		repository.On("Get", id).Return(&updatedProduct)
-		result, err := service.Update(context.TODO(), id, updateProduct)
+		repository.On("Get", id).Return(&w)
+		repository.On("Exists", warehouseCode).Return(true)
+		repository.On("Get", id).Return(&updatedWarehouse)
+		result, err := service.Update(context.TODO(), id, updateWarehouse)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, description, result.Description)
+		assert.Equal(t, address, result.Description)
 	})
 }
 
@@ -161,7 +161,7 @@ func TestServiceDelete(t *testing.T) {
 		service, repository := CreateService(t)
 
 		id := 1
-		var respositoryResult *domain.Product
+		var respositoryResult *domain.Warehouse
 
 		repository.On("Get", id).Return(respositoryResult)
 		err := service.Delete(context.TODO(), id)
@@ -170,21 +170,21 @@ func TestServiceDelete(t *testing.T) {
 		assert.True(t, apperr.Is[*apperr.ResourceNotFound](err))
 	})
 
-	t.Run("Should delete a product with success", func(t *testing.T) {
+	t.Run("Should delete a warehouse with success", func(t *testing.T) {
 		service, repository := CreateService(t)
 
 		id := 1
 
-		repository.On("Get", 1).Return(&p)
+		repository.On("Get", 1).Return(&w)
 		err := service.Delete(context.TODO(), id)
 
 		assert.NoError(t, err)
 	})
 }
 
-func CreateService(t *testing.T) (product.Service, *mocks.Repository) {
+func CreateService(t *testing.T) (warehouse.Service, *mocks.Repository) {
 	t.Helper()
 	repository := new(mocks.Repository)
-	service := product.NewService(repository)
+	service := warehouse.NewService(repository)
 	return service, repository
 }
