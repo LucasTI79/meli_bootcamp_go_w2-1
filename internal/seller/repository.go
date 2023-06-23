@@ -3,19 +3,19 @@ package seller
 import (
 	"context"
 	"database/sql"
-	"strings"
+	"errors"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
 
 // Repository encapsulates the storage of a Seller.
 type Repository interface {
-	GetAll(ctx context.Context) ([]domain.Seller, error)
-	Get(ctx context.Context, id int) (domain.Seller, error)
+	GetAll(ctx context.Context) []domain.Seller
+	Get(ctx context.Context, id int) *domain.Seller
 	Exists(ctx context.Context, cid int) bool
-	Save(ctx context.Context, s domain.CreateSeller) (int, error)
-	Update(ctx context.Context, s domain.UpdateSeller) error
-	Delete(ctx context.Context, id int) error
+	Save(ctx context.Context, s domain.Seller) int
+	Update(ctx context.Context, s domain.Seller)
+	Delete(ctx context.Context, id int)
 }
 
 type repository struct {
@@ -28,11 +28,11 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r *repository) GetAll(ctx context.Context) ([]domain.Seller, error) {
+func (r *repository) GetAll(ctx context.Context) []domain.Seller {
 	query := "SELECT * FROM sellers"
 	rows, err := r.db.Query(query)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	sellers := make([]domain.Seller, 0)
@@ -43,19 +43,22 @@ func (r *repository) GetAll(ctx context.Context) ([]domain.Seller, error) {
 		sellers = append(sellers, s)
 	}
 
-	return sellers, nil
+	return sellers
 }
 
-func (r *repository) Get(ctx context.Context, id int) (domain.Seller, error) {
+func (r *repository) Get(ctx context.Context, id int) *domain.Seller {
 	query := "SELECT * FROM sellers WHERE id=?;"
 	row := r.db.QueryRow(query, id)
 	s := domain.Seller{}
 	err := row.Scan(&s.ID, &s.CID, &s.CompanyName, &s.Address, &s.Telephone)
 	if err != nil {
-		return domain.Seller{}, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		panic(err)
 	}
 
-	return s, nil
+	return &s
 }
 
 func (r *repository) Exists(ctx context.Context, cid int) bool {
@@ -65,95 +68,48 @@ func (r *repository) Exists(ctx context.Context, cid int) bool {
 	return err == nil
 }
 
-func (r *repository) Save(ctx context.Context, s domain.CreateSeller) (int, error) {
+func (r *repository) Save(ctx context.Context, s domain.Seller) int {
 	query := "INSERT INTO sellers (cid, company_name, address, telephone) VALUES (?, ?, ?, ?)"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return 0, err
+		panic(err)
 	}
 
 	res, err := stmt.Exec(s.CID, s.CompanyName, s.Address, s.Telephone)
 	if err != nil {
-		return 0, err
+		panic(err)
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		return 0, err
+		panic(err)
 	}
 
-	return int(id), nil
+	return int(id)
 }
 
-func (r *repository) Update(ctx context.Context, s domain.UpdateSeller) error {
-	query := "UPDATE sellers SET "
-	args := []interface{}{}
-
-	if s.CID != nil {
-		query += "cid=?, "
-		args = append(args, *s.CID)
-	}
-
-	if s.CompanyName != nil {
-		query += "company_name=?, "
-		args = append(args, *s.CompanyName)
-	}
-
-	if s.Address != nil {
-		query += "address=?, "
-		args = append(args, *s.Address)
-	}
-
-	if s.Telephone != nil {
-		query += "telephone=?, "
-		args = append(args, *s.Telephone)
-	}
-
-	query = strings.TrimSuffix(query, ", ")
-
-	query += " WHERE id=?"
-	args = append(args, s.ID)
-
+func (r *repository) Update(ctx context.Context, s domain.Seller) {
+	query := "UPDATE sellers SET cid=?, company_name=?, address=?, telephone=? WHERE id=?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
-	res, err := stmt.Exec(args...)
+	_, err = stmt.Exec(s.CID, s.CompanyName, s.Address, s.Telephone, s.ID)
 	if err != nil {
-		return err
+		panic(err)
 	}
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return ErrNotFound
-	}
-	if rowsAffected == 0 {
-		return ErrNotFound
-	}
-
-	return nil
 }
 
-func (r *repository) Delete(ctx context.Context, id int) error {
+func (r *repository) Delete(ctx context.Context, id int) {
 	query := "DELETE FROM sellers WHERE id=?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
-	res, err := stmt.Exec(id)
+	_, err = stmt.Exec(id)
 	if err != nil {
-		return err
+		panic(err)
 	}
-
-	affect, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	if affect < 1 {
-		return ErrNotFound
-	}
-
-	return nil
 }
