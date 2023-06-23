@@ -32,5 +32,6 @@ func (s *Service) Update(c context.Context, id int, p domain.UpdateEmployee) (*d
 }
 
 func (s *Service) Delete(c context.Context, id int) error {
-	return nil
+	args := s.Called(id)
+	return args.Error(0)
 }

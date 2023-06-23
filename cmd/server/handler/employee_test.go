@@ -210,6 +210,21 @@ func TestDeleteEmployee(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, response.Code)
 	})
+
+	t.Run("Should return not found error", func(t *testing.T) {
+		server, service, controller := InitEmployeeServer(t)
+
+		id := 99
+
+		server.DELETE(DefinePath(ResourceEmployeesUri)+"/:id", controller.Delete())
+		request, response := MakeRequest("DELETE", DefinePathWithId(ResourceEmployeesUri, id), "")
+
+		service.On("Delete", id).Return(apperr.NewResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	})
 }
 
 func InitEmployeeServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Employee) {
