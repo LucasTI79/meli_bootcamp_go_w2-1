@@ -3,6 +3,7 @@ package seller
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
@@ -51,6 +52,9 @@ func (r *repository) Get(ctx context.Context, id int) *domain.Seller {
 	s := domain.Seller{}
 	err := row.Scan(&s.ID, &s.CID, &s.CompanyName, &s.Address, &s.Telephone)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
 		panic(err)
 	}
 
