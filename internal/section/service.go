@@ -1,72 +1,84 @@
 package section
 
 import (
-	"errors"
+	"context"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 )
 
-var (
-	ErrNotFound = errors.New("Seção não encontrada.")
+const (
+	ResourceNotFound      = "produto não encontrado com o id %d"
+	ResourceAlreadyExists = "um produto com o código '%d' já existe"
 )
 
 type Service interface {
-	GetAll() ([]domain.Section, error)
-	Get(id int) (domain.Section, error)
-	Exists(sectionNumber int) (int, error)
-	Save(section_number, current_temperature, minimum_temperature, current_capacity, minimum_capacity, maximum_capacity, warehouse_id, id_product_type int) (int, error)
-	Update(domain.Section) error
-	Delete(id int) error
+	GetAll(context.Context) []domain.Section
+	Get(context.Context, int) (*domain.Section, error)
+	Create(ctx context.Context, sc domain.Section) (*domain.Section, error)
+	Update(context.Context, int, domain.UpdateSection) (*domain.Section, error)
+	Delete(context.Context, int) error
 }
 type service struct {
 	repository Repository
 }
 
 func NewService(r Repository) Service {
-	return &service{
-		repository: r,
-	}
+	return &service{repository: r,}
 }
 
-func (s *service) GetAll() ([]domain.Section, error) {
-	sections, err := s.repository.GetAll()
-	if err != nil {
-		return nil, err
-	}
-
-	return sections, nil
+func (s *service) GetAll(c context.Context) []domain.Section {
+	return s.repository.GetAll(c)
 }
 
-func (s *service) Save(section_number, current_temperature, minimum_temperature, current_capacity, minimum_capacity, maximum_capacity, warehouse_id, id_product_type int) (int, error) {
+func (s *service) Get(c context.Context, id int) (*domain.Section, error) {
+	section := s.repository.Get(c, id)
 
-	sectionId, err := s.repository.Save(section_number, current_temperature, minimum_temperature, current_capacity, minimum_capacity, maximum_capacity, warehouse_id, id_product_type)
-	if err != nil {
-		return 0, err
+	if section == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
 	}
 
-	return sectionId, nil
+	return section, nil
 }
 
-func (s *service) Update(domain.Section) error {
-	err := s.repository.Update(domain.Section{})
+func (s *service) Create(ctx context.Context, sc domain.Section) (*domain.Section, error) {
+	if s.repository.Exists(ctx, sc.SectionNumber) {
+		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, sc.SectionNumber)
+	}
 
-	return err
+	id := s.repository.Save(ctx, sc)
+
+	return s.repository.Get(ctx, id), nil
 }
 
-func (s *service) Exists(section_number int) (int, error) {
-	sectionNumber, err := s.repository.Exists(section_number)
+func (s *service) Update(ctx context.Context, id int, section domain.UpdateSection) (*domain.Section, error) {
+	sectionFound := s.repository.Get(ctx, id)
 
-	return sectionNumber, err
+	if sectionFound == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
+	}
+
+	if section.SectionNumber != nil {
+		sectionNumber := *section.SectionNumber
+		sectionNumberExists := s.repository.Exists(ctx, sectionNumber)
+
+		if sectionNumberExists && sectionNumber != sectionFound.SectionNumber {
+			return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, sectionNumber)
+		}
+	}
+
+	sectionFound.Overlap(section)
+	s.repository.Update(ctx, *sectionFound)
+	return s.repository.Get(ctx, id), nil
 }
 
-func (s *service) Get(id int) (domain.Section, error) {
-	section, err := s.repository.Get(id)
+func (s *service) Delete(ctx context.Context, id int) error {
+	section := s.repository.Get(ctx, id)
 
-	return section, err
+	if section == nil {
+		return apperr.NewResourceNotFound(ResourceNotFound, id)
+	}
 
-}
-
-func (s *service) Delete(id int) error {
-	err := s.repository.Delete(id)
-	return err
+	s.repository.Delete(ctx, id)
+	return nil
 }
