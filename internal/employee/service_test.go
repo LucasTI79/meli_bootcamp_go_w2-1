@@ -134,6 +134,33 @@ func TestServiceUpdate(t *testing.T) {
 		assert.Error(t, err)
 		assert.True(t, apperr.Is[*apperr.ResourceAlreadyExists](err))
 	})
+
+	t.Run("Should return an updated employee", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		id := 1
+		cardNumberID := "123456"
+		firstName := "Cleber"
+		updateEmployee := domain.UpdateEmployee{
+			ID: &id,
+			CardNumberID: &cardNumberID,
+			FirstName: &firstName,
+		}
+
+		updatedEmployee := e
+		
+		repository.On("Get", id).Return(&e)
+		repository.On("Exists", cardNumberID).Return(true)
+		updatedEmployee.Overlap(updateEmployee)
+		repository.On("Update", updatedEmployee)
+		repository.On("Get", id).Return(&updatedEmployee)
+
+		result, err := service.Update(context.TODO(), id, updateEmployee)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, firstName, result.FirstName)
+	})
 }
 
 func CreateService(t *testing.T) (employee.Service, *mocks.Repository) {
