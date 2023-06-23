@@ -7,6 +7,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee/mocks"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,14 +26,25 @@ func TestServiceCreate(t *testing.T) {
 		service, repository := CreateService(t)
 
 		id := 1
+		repository.On("Exists", e.CardNumberID).Return(false)
 		repository.On("Save", e).Return(id)
 		repository.On("Get", id).Return(&e)
-		repository.On("Exists", e.CardNumberID).Return(false)
 		result, err := service.Create(context.TODO(), e)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.Equal(t, e, *result)
+	})
+
+	t.Run("Should return a conflict error", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		repository.On("Exists", e.CardNumberID).Return(true)
+		result, err := service.Create(context.TODO(), e)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.ResourceAlreadyExists](err))
 	})
 }
 
