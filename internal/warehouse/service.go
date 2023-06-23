@@ -69,10 +69,10 @@ func (s *service) Update(ctx context.Context, id int, warehouse domain.UpdateWar
 	}
 
 	if warehouse.WarehouseCode != nil {
-	warehouseCode := *warehouse.WarehouseCode
-	warehouseExists := s.repository.Exists(ctx, warehouseCode)
+		warehouseCode := *warehouse.WarehouseCode
+		warehouseExists := s.repository.Exists(ctx, warehouseCode)
 
-	if warehouseExists && warehouseCode != warehouseFound.WarehouseCode {
+		if warehouseExists && warehouseCode != warehouseFound.WarehouseCode {
 		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, warehouseCode)
 	}
 
