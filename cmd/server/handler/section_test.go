@@ -212,6 +212,49 @@ func TestUpdateSection(t *testing.T) {
 	})
 }
 
+func TestDeleteSection(t *testing.T) {
+
+	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
+		server, _, controller := initSectionServer(t)
+
+		server.DELETE(DefinePath(resourceSectionUri)+"/:id", controller.Delete())
+		request, response := MakeRequest("DELETE", DefinePath(resourceSectionUri)+"/abc", "")
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	})
+
+	t.Run("Should return not found error", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		id := 2
+
+		server.DELETE(DefinePath(resourceSectionUri)+"/:id", controller.Delete())
+		request, response := MakeRequest("DELETE", DefinePathWithId(resourceSectionUri, id), "")
+
+		service.On("Delete", id).Return(apperr.NewResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	})
+
+	t.Run("Should return success", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		id := 1
+
+		server.DELETE(DefinePath(resourceSectionUri)+"/:id", controller.Delete())
+		request, response := MakeRequest("DELETE", DefinePathWithId(resourceSectionUri, id), "")
+
+		service.On("Delete", id).Return(nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusNoContent, response.Code)
+	})
+}
 
 func initSectionServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Section) {
 	t.Helper()
