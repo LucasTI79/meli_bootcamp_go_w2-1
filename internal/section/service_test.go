@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	s = domain.Section{
+	mockedSection = domain.Section{
 		ID: 1,
 		SectionNumber: 1,      
 		CurrentTemperature: 1,
@@ -30,25 +30,67 @@ func TestServiceCreate(t *testing.T) {
 		service, repository := CreateService(t)
 
 		id := 1
-		repository.On("Save", s).Return(id)
-		repository.On("Get", id).Return(&s)
-		repository.On("Exists", s.SectionNumber).Return(false)
-		result, err := service.Create(context.TODO(), s)
+		repository.On("Save", mockedSection).Return(id)
+		repository.On("Get", id).Return(&mockedSection)
+		repository.On("Exists", mockedSection.SectionNumber).Return(false)
+		result, err := service.Create(context.TODO(), mockedSection)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, s, *result)
+		assert.Equal(t, mockedSection, *result)
 	})
 
 	t.Run("Should return a conflict error", func(t *testing.T) {
 		service, repository := CreateService(t)
 
-		repository.On("Exists", s.SectionNumber).Return(true)
-		result, err := service.Create(context.TODO(), s)
+		repository.On("Exists", mockedSection.SectionNumber).Return(true)
+		result, err := service.Create(context.TODO(), mockedSection)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.True(t, apperr.Is[*apperr.ResourceAlreadyExists](err))
+	})
+}
+
+func TestServiceGet(t *testing.T) {
+	t.Run("Should return a list o sections", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		expected := []domain.Section{mockedSection}
+
+		repository.On("GetAll").Return(expected)
+		result := service.GetAll(context.TODO())
+
+		assert.NotEmpty(t, result)
+		assert.Equal(t, len(result), 1)
+		assert.Equal(t, result[0], mockedSection)
+	})
+
+	t.Run("Should return a section by specified id", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		id := 1
+
+		repository.On("Get", id).Return(&mockedSection)
+		result, err := service.Get(context.TODO(), id)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, *result, mockedSection)
+	})
+
+	t.Run("Should return a not found error", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		id := 1
+		var respositoryResult *domain.Section
+
+		repository.On("Get", id).Return(respositoryResult)
+		result, err := service.Get(context.TODO(), id)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.ResourceNotFound](err))
 	})
 }
 
