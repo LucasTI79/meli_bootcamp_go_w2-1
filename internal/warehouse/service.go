@@ -68,11 +68,14 @@ func (s *service) Update(ctx context.Context, id int, warehouse domain.UpdateWar
 		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
 	}
 
+	if warehouse.WarehouseCode != nil {
 	warehouseCode := *warehouse.WarehouseCode
 	warehouseExists := s.repository.Exists(ctx, warehouseCode)
 
 	if warehouseExists && warehouseCode != warehouseFound.WarehouseCode {
 		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, warehouseCode)
+	}
+
 	}
 
 	warehouseFound.Overlap(warehouse)

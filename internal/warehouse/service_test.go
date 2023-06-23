@@ -15,15 +15,15 @@ var (
 	w = domain.Warehouse{
 		ID:                 1,
 		Address:            "Address",
-		Telephone:          1,
+		Telephone:          "12345",
 		WarehouseCode:      "123",
 		MinimumCapacity:    1,
 		MinimumTemperature: 1,
 	}
 )
 
-func TestWarehouseCreate(t *testing.T) {
-	t.Run("Should return a created product", func(t *testing.T) {
+func TestServiceCreate(t *testing.T) {
+	t.Run("Should return a created warehouse", func(t *testing.T) {
 		service, repository := CreateService(t)
 
 		id := 1
@@ -96,12 +96,11 @@ func TestServiceUpdate(t *testing.T) {
 		service, repository := CreateService(t)
 
 		id := 2
-		warehouseCode := "123"
+		warehouseCode := "153"
 		updateWarehouse := domain.UpdateWarehouse{
 			ID:            &id,
 			WarehouseCode: &warehouseCode,
 		}
-
 		var respositoryResult *domain.Warehouse
 
 		repository.On("Get", id).Return(respositoryResult)
@@ -116,7 +115,7 @@ func TestServiceUpdate(t *testing.T) {
 		service, repository := CreateService(t)
 
 		id := 1
-		warehouseCode := "456"
+		warehouseCode := "496"
 		updateWarehouse := domain.UpdateWarehouse{
 			ID:            &id,
 			WarehouseCode: &warehouseCode,
@@ -131,12 +130,12 @@ func TestServiceUpdate(t *testing.T) {
 		assert.True(t, apperr.Is[*apperr.ResourceAlreadyExists](err))
 	})
 
-	t.Run("Should return an updated product", func(t *testing.T) {
+	t.Run("Should return an updated warehouse", func(t *testing.T) {
 		service, repository := CreateService(t)
 
 		id := 1
 		warehouseCode := "123"
-		address := "Address"
+		address := "Address 3"
 		updateWarehouse := domain.UpdateWarehouse{
 			ID:            &id,
 			Address:       &address,
@@ -147,12 +146,13 @@ func TestServiceUpdate(t *testing.T) {
 
 		repository.On("Get", id).Return(&w)
 		repository.On("Exists", warehouseCode).Return(true)
+		repository.On("Update", updatedWarehouse)
 		repository.On("Get", id).Return(&updatedWarehouse)
 		result, err := service.Update(context.TODO(), id, updateWarehouse)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, address, result.Description)
+		assert.Equal(t, address, result.Address)
 	})
 }
 
@@ -176,6 +176,7 @@ func TestServiceDelete(t *testing.T) {
 		id := 1
 
 		repository.On("Get", 1).Return(&w)
+		repository.On("Delete", id)
 		err := service.Delete(context.TODO(), id)
 
 		assert.NoError(t, err)
