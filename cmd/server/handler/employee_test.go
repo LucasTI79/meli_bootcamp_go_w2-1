@@ -198,6 +198,20 @@ func TestUpdateEmployee(t *testing.T) {
 	})
 }
 
+func TestDeleteEmployee(t *testing.T) {
+
+	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
+		server, _, controller := InitEmployeeServer(t)
+
+		server.DELETE(DefinePath(ResourceEmployeesUri)+"/:id", controller.Delete())
+		request, response := MakeRequest("DELETE", DefinePath(ResourceEmployeesUri)+"/teste", "")
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	})
+}
+
 func InitEmployeeServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Employee) {
 	t.Helper()
 	server := CreateServer()
