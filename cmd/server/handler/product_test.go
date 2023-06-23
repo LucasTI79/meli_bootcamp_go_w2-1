@@ -6,7 +6,9 @@ import (
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -263,4 +265,12 @@ func TestDeleteProduct(t *testing.T) {
 
 		assert.Equal(t, http.StatusNoContent, response.Code)
 	})
+}
+
+func InitServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Product) {
+	t.Helper()
+	server := CreateServer()
+	service := new(mocks.Service)
+	controller := handler.NewProduct(service)
+	return server, service, controller
 }

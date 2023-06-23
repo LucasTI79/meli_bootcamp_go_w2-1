@@ -153,6 +153,7 @@ func TestServiceUpdate(t *testing.T) {
 
 		repository.On("Get", id).Return(&p)
 		repository.On("Exists", productCode).Return(true)
+		repository.On("Update", updatedProduct)
 		repository.On("Get", id).Return(&updatedProduct)
 		result, err := service.Update(context.TODO(), id, updateProduct)
 
@@ -181,7 +182,8 @@ func TestServiceDelete(t *testing.T) {
 
 		id := 1
 
-		repository.On("Get", 1).Return(&p)
+		repository.On("Get", id).Return(&p)
+		repository.On("Delete", id)
 		err := service.Delete(context.TODO(), id)
 
 		assert.NoError(t, err)
