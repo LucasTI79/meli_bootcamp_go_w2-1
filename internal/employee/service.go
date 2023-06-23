@@ -73,13 +73,8 @@ func (s *service) Update(ctx context.Context, id int, employee domain.UpdateEmpl
 
 	employeeFound.Overlap(employee)
 	s.repository.Update(ctx, *employeeFound)
-	updated := s.repository.Get(ctx, id)
+	return s.repository.Get(ctx, id), nil
 
-	if updated == nil {
-		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
-	}
-
-	return updated, nil
 }
 
 func (s *service) Delete(ctx context.Context, id int) error {
