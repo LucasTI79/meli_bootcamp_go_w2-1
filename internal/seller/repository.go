@@ -12,8 +12,8 @@ type Repository interface {
 	GetAll(ctx context.Context) []domain.Seller
 	Get(ctx context.Context, id int) *domain.Seller
 	Exists(ctx context.Context, cid int) bool
-	Save(ctx context.Context, s domain.CreateSeller) int
-	Update(ctx context.Context, s domain.UpdateSeller)
+	Save(ctx context.Context, s domain.Seller) int
+	Update(ctx context.Context, s domain.Seller)
 	Delete(ctx context.Context, id int)
 }
 
@@ -64,7 +64,7 @@ func (r *repository) Exists(ctx context.Context, cid int) bool {
 	return err == nil
 }
 
-func (r *repository) Save(ctx context.Context, s domain.CreateSeller) int {
+func (r *repository) Save(ctx context.Context, s domain.Seller) int {
 	query := "INSERT INTO sellers (cid, company_name, address, telephone) VALUES (?, ?, ?, ?)"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -84,7 +84,7 @@ func (r *repository) Save(ctx context.Context, s domain.CreateSeller) int {
 	return int(id)
 }
 
-func (r *repository) Update(ctx context.Context, s domain.UpdateSeller) {
+func (r *repository) Update(ctx context.Context, s domain.Seller) {
 	query := "UPDATE sellers SET cid=?, company_name=?, address=?, telephone=? WHERE id=?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {

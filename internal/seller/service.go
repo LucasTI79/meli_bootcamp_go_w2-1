@@ -2,20 +2,19 @@ package seller
 
 import (
 	"context"
-	"errors"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 )
 
-// Errors
-var (
-	ErrNotFound      = errors.New("seller not found")
-	ErrAlreadyExists = errors.New("already exists")
+const (
+	ResourceNotFound      = "vendedor não encontrado com o id %d"
+	ResourceAlreadyExists = "um vededor com o CID '%s' já existe"
 )
 
 type Service interface {
-	GetAll(ctx context.Context) ([]domain.Seller, error)
-	Get(ctx context.Context, id int) (domain.Seller, error)
+	GetAll(ctx context.Context) []domain.Seller
+	Get(ctx context.Context, id int) (*domain.Seller, error)
 	Save(ctx context.Context, seller domain.CreateSeller) (domain.Seller, error)
 	Update(ctx context.Context, seller domain.UpdateSeller) (domain.UpdateSeller, error)
 	Delete(ctc context.Context, id int) error
@@ -25,55 +24,57 @@ type service struct {
 	repository Repository
 }
 
-func (s *service) GetAll(ctx context.Context) ([]domain.Seller, error) {
+func (s *service) GetAll(ctx context.Context) []domain.Seller {
 	return s.repository.GetAll(ctx)
 }
 
-func (s *service) Get(ctx context.Context, id int) (domain.Seller, error) {
-	seller, err := s.repository.Get(ctx, id)
-	if err != nil {
-		return seller, ErrNotFound
-	}
-	return seller, nil
-}
-func (s *service) Save(ctx context.Context, seller domain.CreateSeller) (domain.Seller, error) {
-	if s.repository.Exists(ctx, seller.CID) {
-		return domain.Seller{}, ErrAlreadyExists
-	}
-	id, err := s.repository.Save(ctx, seller)
-	if err != nil {
-		return domain.Seller{}, err
-	}
-	createdUser, err := s.Get(ctx, id)
-	if err != nil {
-		return domain.Seller{}, err
-	}
-	return createdUser, nil
-}
-func (s *service) Update(ctx context.Context, seller domain.UpdateSeller) (domain.UpdateSeller, error) {
-	if seller.CID != nil {
-		if s.repository.Exists(ctx, *seller.CID) {
-			return domain.UpdateSeller{}, ErrAlreadyExists
-		}
-	}
-	err := s.repository.Update(ctx, seller)
-	if err != nil {
-		if errors.Is(err, ErrNotFound) {
-			return domain.UpdateSeller{}, ErrNotFound
-		} else {
-			return domain.UpdateSeller{}, err
-		}
-	}
-	return seller, nil
+func (s *service) Get(ctx context.Context, id int) (*domain.Seller, error) {
+	seller := s.repository.Get(ctx, id)
 
-}
-func (s *service) Delete(ctx context.Context, id int) error {
-	err := s.repository.Delete(ctx, id)
-	if err != nil {
-		return err
+	if seller == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
 	}
-	return nil
+
+	return seller, nil
 }
-func NewService(r Repository) Service {
-	return &service{repository: r}
+
+func (s *service) Create(ctx context.Context, seller domain.Seller) (*domain.Seller, error) {
+	if s.repository.Exists(ctx, seller.CID) {
+		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, seller.CID)
+	}
+
+	id := s.repository.Save(ctx, seller)
+	return s.repository.Get(ctx, id), nil
+}
+
+func (s *service) Update(ctx context.Context, id int, seller domain.UpdateSeller) (*domain.Seller, error) {
+	sellerFound := s.repository.Get(ctx, id)
+
+	if sellerFound == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
+	}
+
+	if seller.CID != nil {
+		sellerCID := *seller.CID
+		sellerCodeExists := s.repository.Exists(ctx, sellerCID)
+
+		if sellerCodeExists && sellerCID != sellerFound.CID {
+			return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, sellerCID)
+		}
+	}
+
+	sellerFound.Overlap(seller)
+	s.repository.Update(ctx, *sellerFound)
+	return s.repository.Get(ctx, id), nil
+}
+
+func (s *service) Delete(ctx context.Context, id int) error {
+	seller := s.repository.Get(ctx, id)
+
+	if seller == nil {
+		return apperr.NewResourceNotFound(ResourceNotFound, id)
+	}
+
+	s.repository.Delete(ctx, id)
+	return nil
 }
