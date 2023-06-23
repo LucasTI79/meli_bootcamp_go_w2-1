@@ -2,3 +2,4 @@ docs
 .env
 .vscode
 .DS_Store
+coverage.out
