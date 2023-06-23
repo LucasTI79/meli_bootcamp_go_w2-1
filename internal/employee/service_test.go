@@ -78,6 +78,20 @@ func TestServiceGet(t *testing.T) {
 		assert.Equal(t, result.ID, e.ID)
 		assert.Equal(t, *result, e)
 	})
+
+	t.Run("Should return a resource not found error", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		id := 99
+		var emptyEmployee *domain.Employee
+
+		repository.On("Get", id).Return(emptyEmployee)
+		result, err := service.Get(context.TODO(), id)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.ResourceNotFound](err))
+	})
 }
 
 func CreateService(t *testing.T) (employee.Service, *mocks.Repository) {
