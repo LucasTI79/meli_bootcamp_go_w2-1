@@ -62,14 +62,14 @@ func (r *router) buildDocumentationRoutes() {
 func (r *router) buildSellerRoutes() {
 	repo := seller.NewRepository(r.db)
 	service := seller.NewService(repo)
-	handler := handler.NewSeller(service)
+	controller := handler.NewSeller(service)
 	sellerRoutes := r.rg.Group("/sellers")
 
-	sellerRoutes.GET("/", handler.GetAll())
-	sellerRoutes.GET("/:id", handler.Get())
-	sellerRoutes.POST("/", handler.Create())
-	sellerRoutes.PATCH("/:id", handler.Update())
-	sellerRoutes.DELETE("/:id", handler.Delete())
+	sellerRoutes.GET("/", controller.GetAll())
+	sellerRoutes.GET("/:id", controller.Get())
+	sellerRoutes.POST("/", middleware.Validation[handler.CreateSellerRequest](), controller.Create())
+	sellerRoutes.PATCH("/:id", middleware.Validation[handler.UpdateSellerRequest](), controller.Update())
+	sellerRoutes.DELETE("/:id", controller.Delete())
 }
 
 func (r *router) buildProductRoutes() {
