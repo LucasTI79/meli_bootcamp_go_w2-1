@@ -11,7 +11,9 @@ import (
 )
 
 const (
-	BaseUri = "/api/v1"
+	BaseUri               = "/api/v1"
+	ResourceAlreadyExists = "resource already exists"
+	ResourceNotFound      = "resource not found"
 )
 
 func CreateServer() *gin.Engine {
