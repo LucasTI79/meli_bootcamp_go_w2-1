@@ -11,7 +11,8 @@ func InternalError() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
-				web.Error(ctx, http.StatusInternalServerError, "internal server error")
+				web.Error(ctx, http.StatusInternalServerError, "an internal error ocurred")
+				ctx.Abort()
 			}
 		}()
 
