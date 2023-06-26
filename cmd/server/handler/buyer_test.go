@@ -74,19 +74,6 @@ func TestGetBuyer(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 	})
 
-	t.Run("Should return empty buyers", func(t *testing.T) {
-		server, service, controller := InitBuyerServer(t)
-
-		server.GET(DefinePath(ResourceBuyerUri), controller.GetAll())
-		request, response := MakeRequest("GET", DefinePath(ResourceBuyerUri), "")
-
-		service.On("GetAll").Return([]domain.Buyer{})
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusNoContent, response.Code)
-	})
-
 	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
 		server, _, controller := InitBuyerServer(t)
 

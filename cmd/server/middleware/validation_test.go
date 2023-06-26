@@ -53,6 +53,21 @@ func TestValidationMiddleware(t *testing.T) {
 		assert.False(t, context.IsAborted())
 	})
 
+	t.Run("Should have error when try parse a request field with a syntax error", func(t *testing.T) {
+		request := createRequestWithSyntaxError()
+		context, recorder := createValidationContextWithStringRequest(request)
+
+		middleware.Validation[CorrectRequest]()(context)
+
+		var response ErrorResponse
+		json.Unmarshal(recorder.Body.Bytes(), &response)
+
+		assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
+		assert.Len(t, response.Messages, 1)
+		assert.Contains(t, response.Messages[0], "erro de sintaxe na posição")
+		assert.True(t, context.IsAborted())
+	})
+
 	t.Run("Should have error when try parse a request field with a wrong type", func(t *testing.T) {
 		request := createWrongTypeRequest(1, 1)
 		context, recorder := createValidationContext(request)
@@ -126,6 +141,18 @@ func createValidationContext(request interface{}) (*gin.Context, *httptest.Respo
 	return context, recorder
 }
 
+func createValidationContextWithStringRequest(request string) (*gin.Context, *httptest.ResponseRecorder) {
+	recorder := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(recorder)
+	requestInBytes := []byte(request)
+	bodyBuffer := bytes.NewBuffer(requestInBytes)
+	context.Request = &http.Request{
+		Body: io.NopCloser(bodyBuffer),
+	}
+
+	return context, recorder
+}
+
 func createCorrectRequest(fieldA string, fieldB string) CorrectRequest {
 	return CorrectRequest{&fieldA, &fieldB}
 }
@@ -140,4 +167,11 @@ func createMissingRequiredFieldRequest(fieldB string) MissingRequiredFieldReques
 
 func createUnknownValidationTagRequest(fieldA string) UnknownValidationTagRequest {
 	return UnknownValidationTagRequest{&fieldA}
+}
+
+func createRequestWithSyntaxError() string {
+	return `{
+    "field_a": "Field A",,
+    "field_b": "Field B"
+	}`
 }

@@ -19,6 +19,10 @@ func Validation[T any]() gin.HandlerFunc {
 			status := http.StatusUnprocessableEntity
 			errorMessages := make([]string, 0)
 
+			if syntaxError, ok := err.(*json.SyntaxError); ok {
+				errorMessages = append(errorMessages, fmt.Sprintf("erro de sintaxe na posição %d: %v", syntaxError.Offset, syntaxError.Error()))
+			}
+
 			if marshallingError, ok := err.(*json.UnmarshalTypeError); ok {
 				errorMessages = append(errorMessages, fmt.Sprintf("o campo '%s' deve ser '%s'", marshallingError.Field, marshallingError.Type.String()))
 			}
