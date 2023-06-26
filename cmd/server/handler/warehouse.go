@@ -13,7 +13,7 @@ import (
 
 type CreateWarehouseRequest struct {
 	Address            *string `json:"address" binding:"required"`
-	Telephone          *string `json:"telephone" binding:"required"`
+	Telephone          *string `json:"telephone" binding:"required,e164"`
 	WarehouseCode      *string `json:"warehouse_code" binding:"required"`
 	MinimumCapacity    *int    `json:"minimum_capacity" binding:"required"`
 	MinimumTemperature *int    `json:"minimum_temperature" binding:"required"`

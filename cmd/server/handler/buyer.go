@@ -102,12 +102,6 @@ func (b *Buyer) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		buyers := b.buyerService.GetAll(c.Request.Context())
-
-		if len(buyers) == 0 {
-			web.Success(c, http.StatusNoContent, nil)
-			return
-		}
-
 		web.Success(c, http.StatusOK, buyers)
 	}
 }
@@ -128,7 +122,7 @@ func (b *Buyer) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		request := c.MustGet(RequestParamContext).(CreateBuyerRequest)
 
-		buyer, err := b.buyerService.Save(c.Request.Context(), request.ToBuyer())
+		buyer, err := b.buyerService.Create(c.Request.Context(), request.ToBuyer())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
