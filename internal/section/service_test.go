@@ -53,7 +53,7 @@ func TestServiceCreate(t *testing.T) {
 }
 
 func TestServiceGet(t *testing.T) {
-	t.Run("Should return a list o sections", func(t *testing.T) {
+	t.Run("Should return a list of sections", func(t *testing.T) {
 		service, repository := CreateService(t)
 
 		expected := []domain.Section{mockedSection}
