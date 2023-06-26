@@ -131,10 +131,6 @@ func (e *Employee) Create() gin.HandlerFunc {
 		createdEmployee, err := e.service.Create(ctx.Request.Context(), request.ToEmployee())
 
 		if err != nil {
-			if apperr.Is[*apperr.ResourceNotFound](err) {
-				web.Error(ctx, http.StatusNotFound, err.Error())
-				return
-			}
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
 				web.Error(ctx, http.StatusConflict, err.Error())
 				return
