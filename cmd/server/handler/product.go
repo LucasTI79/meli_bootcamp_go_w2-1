@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
@@ -13,8 +12,6 @@ import (
 
 const (
 	RequestParamContext = "Request"
-	InvalidId           = "o id '%s' é inválido"
-	CannotBeBlank       = "pelo menos um campo deve ser informado para modificações"
 )
 
 type Product struct {
@@ -82,20 +79,6 @@ func (r UpdateProductRequest) ToUpdateProduct() domain.UpdateProduct {
 	}
 }
 
-func (productRequest UpdateProductRequest) IsBlank() bool {
-	return productRequest.Description == nil &&
-		productRequest.ExpirationRate == nil &&
-		productRequest.FreezingRate == nil &&
-		productRequest.Height == nil &&
-		productRequest.Length == nil &&
-		productRequest.Netweight == nil &&
-		productRequest.ProductCode == nil &&
-		productRequest.RecomFreezTemp == nil &&
-		productRequest.Width == nil &&
-		productRequest.ProductTypeID == nil &&
-		productRequest.SellerID == nil
-}
-
 func NewProduct(service product.Service) *Product {
 	return &Product{service}
 }
@@ -130,13 +113,7 @@ func (p *Product) GetAll() gin.HandlerFunc {
 // @Router /products/{id} [get]
 func (p *Product) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		requestId := c.Param("id")
-		id, err := strconv.Atoi(requestId)
-
-		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, requestId)
-			return
-		}
+		id := c.MustGet("Id").(int)
 
 		product, err := p.service.Get(c.Request.Context(), id)
 
@@ -198,20 +175,8 @@ func (p *Product) Create() gin.HandlerFunc {
 // @Router /products/{id} [patch]
 func (p *Product) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		requestId := c.Param("id")
-		id, err := strconv.Atoi(requestId)
-
-		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, requestId)
-			return
-		}
-
+		id := c.MustGet("Id").(int)
 		request := c.MustGet(RequestParamContext).(UpdateProductRequest)
-
-		if request.IsBlank() {
-			web.Error(c, http.StatusBadRequest, CannotBeBlank)
-			return
-		}
 
 		response, err := p.service.Update(c.Request.Context(), id, request.ToUpdateProduct())
 
@@ -245,15 +210,9 @@ func (p *Product) Update() gin.HandlerFunc {
 // @Router /products/{id} [delete]
 func (p *Product) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		requestId := c.Param("id")
-		id, err := strconv.Atoi(requestId)
+		id := c.MustGet("Id").(int)
 
-		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, requestId)
-			return
-		}
-
-		err = p.service.Delete(c.Request.Context(), id)
+		err := p.service.Delete(c.Request.Context(), id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {

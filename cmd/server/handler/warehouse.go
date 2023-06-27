@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
@@ -48,14 +47,6 @@ func (w UpdateWarehouseRequest) ToUpdateWarehouse() domain.UpdateWarehouse {
 	}
 }
 
-func (w UpdateWarehouseRequest) IsBlank() bool {
-	return w.Address == nil &&
-		w.Telephone == nil &&
-		w.WarehouseCode == nil &&
-		w.MinimumCapacity == nil &&
-		w.MinimumTemperature == nil
-}
-
 type Warehouse struct {
 	service warehouse.Service
 }
@@ -79,13 +70,7 @@ func NewWarehouse(w warehouse.Service) *Warehouse {
 // @Router /warehouses/{id} [get]
 func (w *Warehouse) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		paramId := c.Param("id")
-		id, err := strconv.Atoi(paramId)
-
-		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, paramId)
-			return
-		}
+		id := c.MustGet("Id").(int)
 
 		warehouse, err := w.service.Get(c.Request.Context(), id)
 
@@ -160,20 +145,8 @@ func (w *Warehouse) Create() gin.HandlerFunc {
 // @Router /warehouses [put]
 func (w *Warehouse) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		paramId := c.Param("id")
-		id, err := strconv.Atoi(paramId)
-
-		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, paramId)
-			return
-		}
-
+		id := c.MustGet("Id").(int)
 		request := c.MustGet(RequestParamContext).(UpdateWarehouseRequest)
-
-		if request.IsBlank() {
-			web.Error(c, http.StatusBadRequest, CannotBeBlank)
-			return
-		}
 
 		updated, err := w.service.Update(c.Request.Context(), id, request.ToUpdateWarehouse())
 
@@ -206,15 +179,9 @@ func (w *Warehouse) Update() gin.HandlerFunc {
 // @Router /warehouses/{id} [delete] "Falha ao excluir o armazem"
 func (w *Warehouse) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		paramId := c.Param("id")
-		id, err := strconv.Atoi(paramId)
+		id := c.MustGet("Id").(int)
 
-		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, paramId)
-			return
-		}
-
-		err = w.service.Delete(c, id)
+		err := w.service.Delete(c, id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {

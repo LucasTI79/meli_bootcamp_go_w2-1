@@ -2,12 +2,11 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,46 +15,37 @@ type Employee struct {
 }
 
 type CreateEmployeeRequest struct {
-	CardNumberID    *string `json:"card_number_id" binding:"required"`
-	FirstName 		*string `json:"first_name" binding:"required"`
-	LastName   		*string `json:"last_name" binding:"required"`
-	WarehouseID     *int 	`json:"warehouse_id" binding:"required"`
+	CardNumberID *string `json:"card_number_id" binding:"required"`
+	FirstName    *string `json:"first_name" binding:"required"`
+	LastName     *string `json:"last_name" binding:"required"`
+	WarehouseID  *int    `json:"warehouse_id" binding:"required"`
 }
 
 func (r CreateEmployeeRequest) ToEmployee() domain.Employee {
 	return domain.Employee{
-		ID:             0,
-		CardNumberID:   *r.CardNumberID,
-		FirstName: 		*r.FirstName,
-		LastName:   	*r.LastName,
-		WarehouseID:    *r.WarehouseID,
+		ID:           0,
+		CardNumberID: *r.CardNumberID,
+		FirstName:    *r.FirstName,
+		LastName:     *r.LastName,
+		WarehouseID:  *r.WarehouseID,
 	}
 }
 
 type UpdateEmployeeRequest struct {
-	CardNumberID    *string `json:"card_number_id"`
-	FirstName 		*string `json:"first_name"`
-	LastName   		*string `json:"last_name"`
-	WarehouseID     *int 	`json:"warehouse_id"`
+	CardNumberID *string `json:"card_number_id"`
+	FirstName    *string `json:"first_name"`
+	LastName     *string `json:"last_name"`
+	WarehouseID  *int    `json:"warehouse_id"`
 }
 
-func (r UpdateEmployeeRequest) ToUpdateEmployee() domain.UpdateEmployee{
+func (r UpdateEmployeeRequest) ToUpdateEmployee() domain.UpdateEmployee {
 	return domain.UpdateEmployee{
-		CardNumberID:   r.CardNumberID,
-		FirstName: 		r.FirstName,
-		LastName:   	r.LastName,
-		WarehouseID:    r.WarehouseID,
+		CardNumberID: r.CardNumberID,
+		FirstName:    r.FirstName,
+		LastName:     r.LastName,
+		WarehouseID:  r.WarehouseID,
 	}
 }
-
-func (employeeRequest UpdateEmployeeRequest) IsBlank() bool {
-	return 	employeeRequest.CardNumberID == nil &&
-			employeeRequest.FirstName == nil &&
-			employeeRequest.LastName == nil &&
-			employeeRequest.WarehouseID == nil
-}
-
-
 
 func NewEmployee(e employee.Service) *Employee {
 	return &Employee{
@@ -90,13 +80,7 @@ func (e *Employee) GetAll() gin.HandlerFunc {
 // @Router /employees/{id} [get]
 func (e *Employee) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		requestId := ctx.Param("id")
-		id, err := strconv.Atoi(requestId)
-
-		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, InvalidId, requestId)
-			return
-		}
+		id := ctx.MustGet("Id").(int)
 
 		employee, err := e.service.Get(ctx.Request.Context(), id)
 
@@ -157,20 +141,8 @@ func (e *Employee) Create() gin.HandlerFunc {
 // @Router /employees/{id} [patch]
 func (e *Employee) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		requestId := ctx.Param("id")
-		id, err := strconv.Atoi(requestId)
-
-		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, InvalidId, requestId)
-			return
-		}
-
+		id := ctx.MustGet("Id").(int)
 		request := ctx.MustGet(RequestParamContext).(UpdateEmployeeRequest)
-
-		if request.IsBlank() {
-			web.Error(ctx, http.StatusBadRequest, CannotBeBlank)
-			return
-		}
 
 		response, err := e.service.Update(ctx.Request.Context(), id, request.ToUpdateEmployee())
 
@@ -190,7 +162,6 @@ func (e *Employee) Update() gin.HandlerFunc {
 	}
 }
 
-
 // Delete godoc
 // @Summary Delete employee
 // @Description Delete employee based on ID
@@ -202,15 +173,9 @@ func (e *Employee) Update() gin.HandlerFunc {
 // @Router /employees/{id} [delete]
 func (e *Employee) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		requestId := ctx.Param("id")
-		id, err := strconv.Atoi(requestId)
+		id := ctx.MustGet("Id").(int)
 
-		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, InvalidId, requestId)
-			return
-		}
-
-		err = e.service.Delete(ctx.Request.Context(), id)
+		err := e.service.Delete(ctx.Request.Context(), id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {

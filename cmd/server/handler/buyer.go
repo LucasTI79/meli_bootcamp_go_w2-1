@@ -68,13 +68,7 @@ func NewBuyer(b buyer.IService) *Buyer {
 // @Router /buyers/{id} [get]
 func (b *Buyer) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
-		idParam := c.Param("id")
-		id, err := strconv.Atoi(idParam)
-		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, idParam)
-			return
-		}
+		id := c.MustGet("Id").(int)
 
 		buyer, err := b.buyerService.Get(c.Request.Context(), id)
 		if err != nil {
@@ -152,13 +146,7 @@ func (b *Buyer) Create() gin.HandlerFunc {
 // @Router /buyers/{id} [patch]
 func (b *Buyer) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		idParam := c.Param("id")
-		id, err := strconv.Atoi(idParam)
-		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, idParam)
-			return
-		}
-
+		id := c.MustGet("Id").(int)
 		request := c.MustGet(RequestParamContext).(UpdateBuyerRequest)
 
 		if request.IsBlank() {
@@ -196,14 +184,9 @@ func (b *Buyer) Update() gin.HandlerFunc {
 // @Router /buyers/{id} [delete]
 func (b *Buyer) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		idParam := c.Param("id")
-		id, err := strconv.Atoi(idParam)
-		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, idParam)
-			return
-		}
+		id := c.MustGet("Id").(int)
 
-		err = b.buyerService.Delete(c.Request.Context(), id)
+		err := b.buyerService.Delete(c.Request.Context(), id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {

@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
@@ -48,13 +47,6 @@ func (r UpdateSellerRequest) ToUpdateSeller() domain.UpdateSeller {
 	}
 }
 
-func (sellerRequest UpdateSellerRequest) IsBlank() bool {
-	return sellerRequest.CID == nil &&
-		sellerRequest.CompanyName == nil &&
-		sellerRequest.Address == nil &&
-		sellerRequest.Telephone == nil
-}
-
 func NewSeller(service seller.Service) *Seller {
 	return &Seller{service}
 }
@@ -89,13 +81,7 @@ func (p *Seller) GetAll() gin.HandlerFunc {
 // @Router /sellers/{id} [get]
 func (p *Seller) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		requestId := c.Param("id")
-		id, err := strconv.Atoi(requestId)
-
-		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, requestId)
-			return
-		}
+		id := c.MustGet("Id").(int)
 
 		seller, err := p.service.Get(c.Request.Context(), id)
 
@@ -157,20 +143,8 @@ func (p *Seller) Create() gin.HandlerFunc {
 // @Router /sellers/{id} [patch]
 func (p *Seller) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		requestId := c.Param("id")
-		id, err := strconv.Atoi(requestId)
-
-		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, requestId)
-			return
-		}
-
+		id := c.MustGet("Id").(int)
 		request := c.MustGet(RequestParamContext).(UpdateSellerRequest)
-
-		if request.IsBlank() {
-			web.Error(c, http.StatusBadRequest, CannotBeBlank)
-			return
-		}
 
 		response, err := p.service.Update(c.Request.Context(), id, request.ToUpdateSeller())
 
@@ -204,15 +178,9 @@ func (p *Seller) Update() gin.HandlerFunc {
 // @Router /sellers/{id} [delete]
 func (p *Seller) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		requestId := c.Param("id")
-		id, err := strconv.Atoi(requestId)
+		id := c.MustGet("Id").(int)
 
-		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, requestId)
-			return
-		}
-
-		err = p.service.Delete(c.Request.Context(), id)
+		err := p.service.Delete(c.Request.Context(), id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
