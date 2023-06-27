@@ -149,11 +149,6 @@ func (b *Buyer) Update() gin.HandlerFunc {
 		id := c.GetInt("Id")
 		request := c.MustGet(RequestParamContext).(UpdateBuyerRequest)
 
-		if request.IsBlank() {
-			web.Error(c, http.StatusBadRequest, CannotBeBlank)
-			return
-		}
-
 		updated, err := b.buyerService.Update(c.Request.Context(), id, request.ToUpdateBuyer())
 
 		if err != nil {
