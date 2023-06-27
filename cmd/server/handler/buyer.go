@@ -68,7 +68,7 @@ func NewBuyer(b buyer.IService) *Buyer {
 // @Router /buyers/{id} [get]
 func (b *Buyer) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.MustGet("Id").(int)
+		id := c.GetInt("Id")
 
 		buyer, err := b.buyerService.Get(c.Request.Context(), id)
 		if err != nil {
@@ -146,7 +146,7 @@ func (b *Buyer) Create() gin.HandlerFunc {
 // @Router /buyers/{id} [patch]
 func (b *Buyer) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.MustGet("Id").(int)
+		id := c.GetInt("Id")
 		request := c.MustGet(RequestParamContext).(UpdateBuyerRequest)
 
 		if request.IsBlank() {
@@ -184,7 +184,7 @@ func (b *Buyer) Update() gin.HandlerFunc {
 // @Router /buyers/{id} [delete]
 func (b *Buyer) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.MustGet("Id").(int)
+		id := c.GetInt("Id")
 
 		err := b.buyerService.Delete(c.Request.Context(), id)
 

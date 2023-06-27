@@ -98,7 +98,7 @@ func (s *Section) GetAll() gin.HandlerFunc {
 // @Router /sections/{id} [get]
 func (s *Section) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id := ctx.MustGet("Id").(int)
+		id := ctx.GetInt("Id")
 
 		section, err := s.service.Get(ctx.Request.Context(), id)
 
@@ -154,7 +154,7 @@ func (s *Section) Create() gin.HandlerFunc {
 // @Router /sections/{id} [patch]
 func (s *Section) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id := ctx.MustGet("Id").(int)
+		id := ctx.GetInt("Id")
 		request := ctx.MustGet(RequestParamContext).(UpdateSectionRequest)
 
 		response, err := s.service.Update(ctx.Request.Context(), id, request.ToUpdateSection())
@@ -188,7 +188,7 @@ func (s *Section) Update() gin.HandlerFunc {
 // @Router /sections/{id} [delete]
 func (s *Section) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id := ctx.MustGet("Id").(int)
+		id := ctx.GetInt("Id")
 
 		err := s.service.Delete(ctx.Request.Context(), id)
 

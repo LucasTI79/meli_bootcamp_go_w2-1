@@ -80,7 +80,7 @@ func (e *Employee) GetAll() gin.HandlerFunc {
 // @Router /employees/{id} [get]
 func (e *Employee) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id := ctx.MustGet("Id").(int)
+		id := ctx.GetInt("Id")
 
 		employee, err := e.service.Get(ctx.Request.Context(), id)
 
@@ -141,7 +141,7 @@ func (e *Employee) Create() gin.HandlerFunc {
 // @Router /employees/{id} [patch]
 func (e *Employee) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id := ctx.MustGet("Id").(int)
+		id := ctx.GetInt("Id")
 		request := ctx.MustGet(RequestParamContext).(UpdateEmployeeRequest)
 
 		response, err := e.service.Update(ctx.Request.Context(), id, request.ToUpdateEmployee())
@@ -173,7 +173,7 @@ func (e *Employee) Update() gin.HandlerFunc {
 // @Router /employees/{id} [delete]
 func (e *Employee) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id := ctx.MustGet("Id").(int)
+		id := ctx.GetInt("Id")
 
 		err := e.service.Delete(ctx.Request.Context(), id)
 

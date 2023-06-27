@@ -70,7 +70,7 @@ func NewWarehouse(w warehouse.Service) *Warehouse {
 // @Router /warehouses/{id} [get]
 func (w *Warehouse) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.MustGet("Id").(int)
+		id := c.GetInt("Id")
 
 		warehouse, err := w.service.Get(c.Request.Context(), id)
 
@@ -145,7 +145,7 @@ func (w *Warehouse) Create() gin.HandlerFunc {
 // @Router /warehouses [put]
 func (w *Warehouse) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.MustGet("Id").(int)
+		id := c.GetInt("Id")
 		request := c.MustGet(RequestParamContext).(UpdateWarehouseRequest)
 
 		updated, err := w.service.Update(c.Request.Context(), id, request.ToUpdateWarehouse())
@@ -179,7 +179,7 @@ func (w *Warehouse) Update() gin.HandlerFunc {
 // @Router /warehouses/{id} [delete] "Falha ao excluir o armazem"
 func (w *Warehouse) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.MustGet("Id").(int)
+		id := c.GetInt("Id")
 
 		err := w.service.Delete(c, id)
 

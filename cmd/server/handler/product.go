@@ -113,7 +113,7 @@ func (p *Product) GetAll() gin.HandlerFunc {
 // @Router /products/{id} [get]
 func (p *Product) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.MustGet("Id").(int)
+		id := c.GetInt("Id")
 
 		product, err := p.service.Get(c.Request.Context(), id)
 
@@ -175,7 +175,7 @@ func (p *Product) Create() gin.HandlerFunc {
 // @Router /products/{id} [patch]
 func (p *Product) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.MustGet("Id").(int)
+		id := c.GetInt("Id")
 		request := c.MustGet(RequestParamContext).(UpdateProductRequest)
 
 		response, err := p.service.Update(c.Request.Context(), id, request.ToUpdateProduct())
@@ -210,7 +210,7 @@ func (p *Product) Update() gin.HandlerFunc {
 // @Router /products/{id} [delete]
 func (p *Product) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.MustGet("Id").(int)
+		id := c.GetInt("Id")
 
 		err := p.service.Delete(c.Request.Context(), id)
 
