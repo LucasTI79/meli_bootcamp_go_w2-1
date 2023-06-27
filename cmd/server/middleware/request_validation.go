@@ -103,7 +103,7 @@ func isBlank(request any) bool {
 	for index := 0; index < valueOfRequest.NumField(); index++ {
 		valueField := valueOfRequest.Field(index)
 
-		if !valueField.IsNil() {
+		if !valueField.IsZero() {
 			return false
 		}
 	}
