@@ -18,6 +18,11 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+const (
+	CreateCanBeBlank = true
+	UpdateCanBeBlank = false
+)
+
 type IRouter interface {
 	MapRoutes()
 }
@@ -51,6 +56,7 @@ func (r *router) setGroup() {
 
 func (r *router) defineGlobalMiddlewares() {
 	r.rg.Use(middleware.InternalError())
+	r.rg.Use(middleware.IdValidation())
 }
 
 func (r *router) buildDocumentationRoutes() {
@@ -67,8 +73,8 @@ func (r *router) buildSellerRoutes() {
 
 	sellerRoutes.GET("/", controller.GetAll())
 	sellerRoutes.GET("/:id", controller.Get())
-	sellerRoutes.POST("/", middleware.Validation[handler.CreateSellerRequest](), controller.Create())
-	sellerRoutes.PATCH("/:id", middleware.Validation[handler.UpdateSellerRequest](), controller.Update())
+	sellerRoutes.POST("/", middleware.RequestValidation[handler.CreateSellerRequest](CreateCanBeBlank), controller.Create())
+	sellerRoutes.PATCH("/:id", middleware.RequestValidation[handler.UpdateSellerRequest](UpdateCanBeBlank), controller.Update())
 	sellerRoutes.DELETE("/:id", controller.Delete())
 }
 
@@ -80,8 +86,8 @@ func (r *router) buildProductRoutes() {
 
 	productRoutes.GET("/", controller.GetAll())
 	productRoutes.GET("/:id", controller.Get())
-	productRoutes.POST("/", middleware.Validation[handler.CreateProductRequest](), controller.Create())
-	productRoutes.PATCH("/:id", middleware.Validation[handler.UpdateProductRequest](), controller.Update())
+	productRoutes.POST("/", middleware.RequestValidation[handler.CreateProductRequest](CreateCanBeBlank), controller.Create())
+	productRoutes.PATCH("/:id", middleware.RequestValidation[handler.UpdateProductRequest](UpdateCanBeBlank), controller.Update())
 	productRoutes.DELETE("/:id", controller.Delete())
 }
 
@@ -90,10 +96,10 @@ func (r *router) buildSectionRoutes() {
 	service := section.NewService(repository)
 	controller := handler.NewSection(service)
 	sectionRoutes := r.rg.Group("/sections")
-	
+
 	sectionRoutes.GET("/", controller.GetAll())
-	sectionRoutes.POST("/", middleware.Validation[handler.CreateSectionRequest](), controller.Create())
-	sectionRoutes.PATCH("/:id", middleware.Validation[handler.UpdateSectionRequest](), controller.Update())
+	sectionRoutes.POST("/", middleware.RequestValidation[handler.CreateSectionRequest](CreateCanBeBlank), controller.Create())
+	sectionRoutes.PATCH("/:id", middleware.RequestValidation[handler.UpdateSectionRequest](UpdateCanBeBlank), controller.Update())
 	sectionRoutes.GET("/:id", controller.Get())
 	sectionRoutes.DELETE("/:id", controller.Delete())
 }
@@ -107,8 +113,8 @@ func (r *router) buildWarehouseRoutes() {
 
 	routes.GET("/", controller.GetAll())
 	routes.GET("/:id", controller.Get())
-	routes.POST("/", middleware.Validation[handler.CreateWarehouseRequest](), controller.Create())
-	routes.PATCH("/:id", middleware.Validation[handler.UpdateWarehouseRequest](), controller.Update())
+	routes.POST("/", middleware.RequestValidation[handler.CreateWarehouseRequest](CreateCanBeBlank), controller.Create())
+	routes.PATCH("/:id", middleware.RequestValidation[handler.UpdateWarehouseRequest](UpdateCanBeBlank), controller.Update())
 	routes.DELETE("/:id", controller.Delete())
 }
 
@@ -120,8 +126,8 @@ func (r *router) buildEmployeeRoutes() {
 
 	employeeRoutes.GET("/", controller.GetAll())
 	employeeRoutes.GET("/:id", controller.Get())
-	employeeRoutes.POST("/", middleware.Validation[handler.CreateEmployeeRequest](), controller.Create())
-	employeeRoutes.PATCH("/:id", middleware.Validation[handler.UpdateEmployeeRequest](), controller.Update())
+	employeeRoutes.POST("/", middleware.RequestValidation[handler.CreateEmployeeRequest](CreateCanBeBlank), controller.Create())
+	employeeRoutes.PATCH("/:id", middleware.RequestValidation[handler.UpdateEmployeeRequest](UpdateCanBeBlank), controller.Update())
 	employeeRoutes.DELETE("/:id", controller.Delete())
 }
 
@@ -133,7 +139,7 @@ func (r *router) buildBuyerRoutes() {
 
 	buyerRoutes.GET("/", controller.GetAll())
 	buyerRoutes.GET("/:id", controller.Get())
-	buyerRoutes.POST("/", middleware.Validation[handler.CreateBuyerRequest](), controller.Create())
-	buyerRoutes.PATCH("/:id", middleware.Validation[handler.UpdateBuyerRequest](), controller.Update())
+	buyerRoutes.POST("/", middleware.RequestValidation[handler.CreateBuyerRequest](CreateCanBeBlank), controller.Create())
+	buyerRoutes.PATCH("/:id", middleware.RequestValidation[handler.UpdateBuyerRequest](UpdateCanBeBlank), controller.Update())
 	buyerRoutes.DELETE("/:id", controller.Delete())
 }

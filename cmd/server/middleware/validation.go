@@ -12,7 +12,11 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func Validation[T any]() gin.HandlerFunc {
+const (
+	CannotBeBlank = "pelo menos um dos seguintes campos deve ser informado para modificações: %v"
+)
+
+func RequestValidation[T any](canBeBlank bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var request T
 		if err := ctx.ShouldBindJSON(&request); err != nil {
@@ -41,6 +45,15 @@ func Validation[T any]() gin.HandlerFunc {
 
 			web.Response(ctx, status, response)
 			ctx.Abort()
+			return
+		}
+
+		if !canBeBlank {
+			if isBlank(request) {
+				web.Error(ctx, http.StatusBadRequest, CannotBeBlank, strings.Join(getFieldNames(request), ", "))
+				ctx.Abort()
+				return
+			}
 		}
 
 		ctx.Set("Request", request)
@@ -51,9 +64,9 @@ func readableMessageFrom(structValue interface{}, fe validator.FieldError) strin
 	var message string
 	switch fe.Tag() {
 	case "required":
-		message = fmt.Sprintf("'%s' é obrigatório", getFieldName(structValue, fe))
+		message = fmt.Sprintf("'%s' é obrigatório", getFieldNameOfFieldError(structValue, fe))
 	case "e164":
-		message = fmt.Sprintf("'%s' precisa estar no formato +<country_code><zone_code><phone_number> sem espaços ou caracteres especiais, por exemplo: +5500123456789", getFieldName(structValue, fe))
+		message = fmt.Sprintf("'%s' precisa estar no formato +<country_code><zone_code><phone_number> sem espaços ou caracteres especiais, por exemplo: +5500123456789", getFieldNameOfFieldError(structValue, fe))
 	default:
 		message = "erro desconhecido"
 	}
@@ -61,7 +74,7 @@ func readableMessageFrom(structValue interface{}, fe validator.FieldError) strin
 	return strings.ToLower(message)
 }
 
-func getFieldName(structValue interface{}, err validator.FieldError) string {
+func getFieldNameOfFieldError(structValue interface{}, err validator.FieldError) string {
 	structType := reflect.TypeOf(structValue)
 	fieldName := strings.SplitN(err.Namespace(), ".", 2)[1]
 	field, _ := structType.FieldByName(fieldName)
@@ -69,4 +82,31 @@ func getFieldName(structValue interface{}, err validator.FieldError) string {
 	jsonTag := field.Tag.Get("json")
 	jsonTag = strings.Split(jsonTag, ",")[0]
 	return jsonTag
+}
+
+func getFieldNames(structValue interface{}) []string {
+	structType := reflect.TypeOf(structValue)
+	fieldNames := make([]string, 0)
+
+	for i := 0; i < structType.NumField(); i++ {
+		jsonTag := structType.Field(i).Tag.Get("json")
+		jsonTag = strings.Split(jsonTag, ",")[0]
+		fieldNames = append(fieldNames, jsonTag)
+	}
+
+	return fieldNames
+}
+
+func isBlank(request any) bool {
+	valueOfRequest := reflect.ValueOf(request)
+
+	for index := 0; index < valueOfRequest.NumField(); index++ {
+		valueField := valueOfRequest.Field(index)
+
+		if !valueField.IsNil() {
+			return false
+		}
+	}
+
+	return true
 }
