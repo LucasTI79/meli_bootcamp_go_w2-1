@@ -45,7 +45,7 @@ func TestValidationMiddleware(t *testing.T) {
 		request := createCorrectRequest(fieldA, fieldB)
 		context, recorder := createValidationContext(request)
 
-		middleware.Validation[CorrectRequest]()(context)
+		middleware.RequestValidation[CorrectRequest](true)(context)
 		gotRequest := context.MustGet("Request").(CorrectRequest)
 
 		assert.Equal(t, http.StatusOK, recorder.Code)
@@ -57,7 +57,7 @@ func TestValidationMiddleware(t *testing.T) {
 		request := createRequestWithSyntaxError()
 		context, recorder := createValidationContextWithStringRequest(request)
 
-		middleware.Validation[CorrectRequest]()(context)
+		middleware.RequestValidation[CorrectRequest](true)(context)
 
 		var response ErrorResponse
 		json.Unmarshal(recorder.Body.Bytes(), &response)
@@ -72,7 +72,7 @@ func TestValidationMiddleware(t *testing.T) {
 		request := createWrongTypeRequest(1, 1)
 		context, recorder := createValidationContext(request)
 
-		middleware.Validation[CorrectRequest]()(context)
+		middleware.RequestValidation[CorrectRequest](true)(context)
 
 		var response ErrorResponse
 		json.Unmarshal(recorder.Body.Bytes(), &response)
@@ -87,7 +87,7 @@ func TestValidationMiddleware(t *testing.T) {
 		request := createMissingRequiredFieldRequest(fieldB)
 		context, recorder := createValidationContext(request)
 
-		middleware.Validation[CorrectRequest]()(context)
+		middleware.RequestValidation[CorrectRequest](true)(context)
 
 		var response ErrorResponse
 		json.Unmarshal(recorder.Body.Bytes(), &response)
@@ -102,7 +102,7 @@ func TestValidationMiddleware(t *testing.T) {
 		request := createCorrectRequest(fieldA, "Phone")
 		context, recorder := createValidationContext(request)
 
-		middleware.Validation[CorrectRequest]()(context)
+		middleware.RequestValidation[CorrectRequest](true)(context)
 
 		var response ErrorResponse
 		json.Unmarshal(recorder.Body.Bytes(), &response)
@@ -117,7 +117,7 @@ func TestValidationMiddleware(t *testing.T) {
 		request := createUnknownValidationTagRequest(fieldA)
 		context, recorder := createValidationContext(request)
 
-		middleware.Validation[UnknownValidationTagRequest]()(context)
+		middleware.RequestValidation[UnknownValidationTagRequest](true)(context)
 
 		var response ErrorResponse
 		json.Unmarshal(recorder.Body.Bytes(), &response)
@@ -125,6 +125,21 @@ func TestValidationMiddleware(t *testing.T) {
 		assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 		assert.Len(t, response.Messages, 1)
 		assert.Equal(t, "erro desconhecido", response.Messages[0])
+		assert.True(t, context.IsAborted())
+	})
+
+	t.Run("Should have error when request that cannot be blank is blank", func(t *testing.T) {
+		request := createEmptyRequest()
+		context, recorder := createValidationContextWithStringRequest(request)
+
+		middleware.RequestValidation[MissingRequiredFieldRequest](false)(context)
+
+		var response ErrorResponse
+		json.Unmarshal(recorder.Body.Bytes(), &response)
+
+		assert.Equal(t, http.StatusBadRequest, recorder.Code)
+		assert.Len(t, response.Messages, 1)
+		assert.Contains(t, response.Messages[0], "pelo menos um dos seguintes campos deve ser informado para modificações:")
 		assert.True(t, context.IsAborted())
 	})
 }
@@ -173,5 +188,10 @@ func createRequestWithSyntaxError() string {
 	return `{
     "field_a": "Field A",,
     "field_b": "Field B"
+	}`
+}
+
+func createEmptyRequest() string {
+	return `{
 	}`
 }
