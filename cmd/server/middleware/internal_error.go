@@ -13,6 +13,7 @@ func InternalError() gin.HandlerFunc {
 			if err := recover(); err != nil {
 				web.Error(ctx, http.StatusInternalServerError, "an internal error ocurred")
 				ctx.Abort()
+				return
 			}
 		}()
 
