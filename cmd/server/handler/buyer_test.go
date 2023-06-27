@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
@@ -123,25 +124,7 @@ func TestUpdateBuyer(t *testing.T) {
 		FirstName:    &mockedBuyer.FirstName,
 		LastName:     &mockedBuyer.LastName,
 	}
-	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
-		server, _, controller := InitBuyerServer(t)
 
-		server.PATCH(DefinePath(ResourceBuyerUri)+"/:id", controller.Update())
-		request, response := MakeRequest("PATCH", DefinePath(ResourceBuyerUri)+"/abc", CreateBody(requestObject))
-		server.ServeHTTP(response, request)
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
-	t.Run("Should return bad request error when request is blank", func(t *testing.T) {
-		server, _, controller := InitBuyerServer(t)
-
-		var requestObject handler.UpdateBuyerRequest
-		server.PATCH(DefinePath(ResourceBuyerUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
-		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceBuyerUri, 1), CreateBody(requestObject))
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
 	t.Run("Should return not found error", func(t *testing.T) {
 		server, service, controller := InitBuyerServer(t)
 
@@ -159,6 +142,7 @@ func TestUpdateBuyer(t *testing.T) {
 
 		assert.Equal(t, http.StatusNotFound, response.Code)
 	})
+
 	t.Run("Should return conflict error", func(t *testing.T) {
 		server, service, controller := InitBuyerServer(t)
 
@@ -196,18 +180,6 @@ func TestUpdateBuyer(t *testing.T) {
 }
 
 func TestDeleteBuyer(t *testing.T) {
-
-	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
-		server, _, controller := InitBuyerServer(t)
-
-		server.DELETE(DefinePath(ResourceBuyerUri)+"/:id", controller.Delete())
-		request, response := MakeRequest("DELETE", DefinePath(ResourceBuyerUri)+"/abc", "")
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
-
 	t.Run("Should return not found error", func(t *testing.T) {
 		server, service, controller := InitBuyerServer(t)
 
@@ -242,6 +214,7 @@ func TestDeleteBuyer(t *testing.T) {
 func InitBuyerServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Buyer) {
 	t.Helper()
 	server := CreateServer()
+	server.Use(middleware.IdValidation())
 	service := new(mocks.Service)
 	controller := handler.NewBuyer(service)
 	return server, service, controller

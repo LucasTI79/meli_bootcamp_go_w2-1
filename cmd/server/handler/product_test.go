@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
@@ -90,17 +91,6 @@ func TestGetProduct(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 	})
 
-	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
-		server, _, controller := InitServer(t)
-
-		server.GET(DefinePath(ResourceProductsUri)+"/:id", controller.Get())
-		request, response := MakeRequest("GET", DefinePath(ResourceProductsUri)+"/abc", "")
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
-
 	t.Run("Should return not found error", func(t *testing.T) {
 		server, service, controller := InitServer(t)
 
@@ -147,27 +137,7 @@ func TestUpdateProduct(t *testing.T) {
 		ProductTypeID:  &mockedProduct.ProductTypeID,
 		SellerID:       &mockedProduct.SellerID,
 	}
-	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
-		server, _, controller := InitServer(t)
 
-		server.PATCH(DefinePath(ResourceProductsUri)+"/:id", controller.Update())
-		request, response := MakeRequest("PATCH", DefinePath(ResourceProductsUri)+"/abc", CreateBody(requestObject))
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
-	t.Run("Should return bad request error when request is blank", func(t *testing.T) {
-		server, _, controller := InitServer(t)
-
-		var requestObject handler.UpdateProductRequest
-		server.PATCH(DefinePath(ResourceProductsUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
-		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceProductsUri, 1), CreateBody(requestObject))
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
 	t.Run("Should return not found error", func(t *testing.T) {
 		server, service, controller := InitServer(t)
 
@@ -185,6 +155,7 @@ func TestUpdateProduct(t *testing.T) {
 
 		assert.Equal(t, http.StatusNotFound, response.Code)
 	})
+
 	t.Run("Should return conflict error", func(t *testing.T) {
 		server, service, controller := InitServer(t)
 
@@ -222,18 +193,6 @@ func TestUpdateProduct(t *testing.T) {
 }
 
 func TestDeleteProduct(t *testing.T) {
-
-	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
-		server, _, controller := InitServer(t)
-
-		server.DELETE(DefinePath(ResourceProductsUri)+"/:id", controller.Delete())
-		request, response := MakeRequest("DELETE", DefinePath(ResourceProductsUri)+"/abc", "")
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
-
 	t.Run("Should return not found error", func(t *testing.T) {
 		server, service, controller := InitServer(t)
 
@@ -268,6 +227,7 @@ func TestDeleteProduct(t *testing.T) {
 func InitServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Product) {
 	t.Helper()
 	server := CreateServer()
+	server.Use(middleware.IdValidation())
 	service := new(mocks.Service)
 	controller := handler.NewProduct(service)
 	return server, service, controller

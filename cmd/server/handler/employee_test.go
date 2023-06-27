@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
@@ -18,20 +19,20 @@ const (
 
 var (
 	mockedEmployee = domain.Employee{
-		ID: 1,
+		ID:           1,
 		CardNumberID: "123456",
-		FirstName: "PrimeiroNome",
-		LastName: "Sobrenome",
-		WarehouseID: 2,
+		FirstName:    "PrimeiroNome",
+		LastName:     "Sobrenome",
+		WarehouseID:  2,
 	}
 )
 
 func TestCreateEmployee(t *testing.T) {
 	requestObject := handler.CreateEmployeeRequest{
 		CardNumberID: &mockedEmployee.CardNumberID,
-		FirstName: &mockedEmployee.FirstName,
-		LastName: &mockedEmployee.LastName,
-		WarehouseID: &mockedEmployee.WarehouseID,
+		FirstName:    &mockedEmployee.FirstName,
+		LastName:     &mockedEmployee.LastName,
+		WarehouseID:  &mockedEmployee.WarehouseID,
 	}
 
 	t.Run("Should return conflict error", func(t *testing.T) {
@@ -75,17 +76,6 @@ func TestGetEmployee(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 	})
 
-	t.Run("Should return bad request error when ID is invalid", func(t *testing.T) {
-		server, _, controller := InitEmployeeServer(t)
-
-		server.GET(DefinePath(ResourceEmployeesUri)+"/:id", controller.Get())
-		request, response := MakeRequest("GET", DefinePath(ResourceEmployeesUri)+"/teste", "")
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
-
 	t.Run("Should return employee not found error", func(t *testing.T) {
 		server, service, controller := InitEmployeeServer(t)
 
@@ -119,36 +109,12 @@ func TestGetEmployee(t *testing.T) {
 }
 
 func TestUpdateEmployee(t *testing.T) {
-	requestObject := handler.UpdateEmployeeRequest {
+	requestObject := handler.UpdateEmployeeRequest{
 		CardNumberID: &mockedEmployee.CardNumberID,
-		FirstName: &mockedEmployee.FirstName,
-		LastName: &mockedEmployee.LastName,
-		WarehouseID: &mockedEmployee.WarehouseID,
+		FirstName:    &mockedEmployee.FirstName,
+		LastName:     &mockedEmployee.LastName,
+		WarehouseID:  &mockedEmployee.WarehouseID,
 	}
-	t.Run("Should return bad request error when ID is invalid", func(t *testing.T) {
-		server, _, controller := InitEmployeeServer(t)
-
-		server.PATCH(DefinePath(ResourceEmployeesUri)+"/:id", controller.Update())
-		request, response := MakeRequest("PATCH", DefinePath(ResourceEmployeesUri)+"/teste", CreateBody(requestObject))
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
-
-	t.Run("Should return bad request error when request is blank", func(t *testing.T) {
-		server, _, controller := InitEmployeeServer(t)
-
-		id := 1
-		var requestObject handler.UpdateEmployeeRequest
-
-		server.PATCH(DefinePath(ResourceEmployeesUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
-		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceEmployeesUri, id), CreateBody(requestObject))
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
 
 	t.Run("Should return employee not found error", func(t *testing.T) {
 		server, service, controller := InitEmployeeServer(t)
@@ -199,18 +165,6 @@ func TestUpdateEmployee(t *testing.T) {
 }
 
 func TestDeleteEmployee(t *testing.T) {
-
-	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
-		server, _, controller := InitEmployeeServer(t)
-
-		server.DELETE(DefinePath(ResourceEmployeesUri)+"/:id", controller.Delete())
-		request, response := MakeRequest("DELETE", DefinePath(ResourceEmployeesUri)+"/teste", "")
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
-
 	t.Run("Should return not found error", func(t *testing.T) {
 		server, service, controller := InitEmployeeServer(t)
 
@@ -245,6 +199,7 @@ func TestDeleteEmployee(t *testing.T) {
 func InitEmployeeServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Employee) {
 	t.Helper()
 	server := CreateServer()
+	server.Use(middleware.IdValidation())
 	service := new(mocks.Service)
 	controller := handler.NewEmployee(service)
 	return server, service, controller

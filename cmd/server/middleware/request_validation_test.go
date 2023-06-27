@@ -124,7 +124,7 @@ func TestValidationMiddleware(t *testing.T) {
 		assert.True(t, context.IsAborted())
 	})
 
-	t.Run("Should have error when request that cannot be blank is blank", func(t *testing.T) {
+	t.Run("Should have error when request that 'cannot be blank' is blank", func(t *testing.T) {
 		request := createEmptyRequest()
 		context, recorder, _ := createValidationContext(request, getStringRequestInBytes)
 
@@ -137,6 +137,18 @@ func TestValidationMiddleware(t *testing.T) {
 		assert.Len(t, response.Messages, 1)
 		assert.Contains(t, response.Messages[0], "pelo menos um dos seguintes campos deve ser informado para modificações:")
 		assert.True(t, context.IsAborted())
+	})
+
+	t.Run("Should have success when request that 'cannot be blank' is not blank", func(t *testing.T) {
+		request := createMissingRequiredFieldRequest(fieldB)
+		context, recorder, _ := createValidationContext(request, getMarshaledRequestInBytes[MissingRequiredFieldRequest])
+
+		middleware.RequestValidation[MissingRequiredFieldRequest](false)(context)
+		gotRequest := context.MustGet("Request").(MissingRequiredFieldRequest)
+
+		assert.Equal(t, http.StatusOK, recorder.Code)
+		assert.Equal(t, request, gotRequest)
+		assert.False(t, context.IsAborted())
 	})
 }
 

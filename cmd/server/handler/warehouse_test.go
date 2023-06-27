@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
@@ -78,17 +79,6 @@ func TestGetWarehouse(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 	})
 
-	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
-		server, _, controller := InitWarehouseServer(t)
-
-		server.GET(DefinePath(ResourceWarehouseUri)+"/:id", controller.Get())
-		request, response := MakeRequest("GET", DefinePath(ResourceWarehouseUri)+"/abc", "")
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
-
 	t.Run("Should return not found error", func(t *testing.T) {
 		server, service, controller := InitWarehouseServer(t)
 
@@ -129,27 +119,7 @@ func TestUpdateWarehouse(t *testing.T) {
 		MinimumCapacity:    &w.MinimumCapacity,
 		MinimumTemperature: &w.MinimumTemperature,
 	}
-	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
-		server, _, controller := InitWarehouseServer(t)
 
-		server.PATCH(DefinePath(ResourceWarehouseUri)+"/:id", controller.Update())
-		request, response := MakeRequest("PATCH", DefinePath(ResourceWarehouseUri)+"/abc", CreateBody(requestObject))
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
-	t.Run("Should return bad request error when request is blank", func(t *testing.T) {
-		server, _, controller := InitWarehouseServer(t)
-
-		var reqObject handler.UpdateWarehouseRequest
-		server.PATCH(DefinePath(ResourceWarehouseUri)+"/:id", ValidationMiddleware(reqObject), controller.Update())
-		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceWarehouseUri, 1), CreateBody(reqObject))
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
 	t.Run("Should return not found error", func(t *testing.T) {
 		server, service, controller := InitWarehouseServer(t)
 
@@ -167,6 +137,7 @@ func TestUpdateWarehouse(t *testing.T) {
 
 		assert.Equal(t, http.StatusNotFound, response.Code)
 	})
+
 	t.Run("Should return conflict error", func(t *testing.T) {
 		server, service, controller := InitWarehouseServer(t)
 
@@ -204,18 +175,6 @@ func TestUpdateWarehouse(t *testing.T) {
 }
 
 func TestDeleteWarehouse(t *testing.T) {
-
-	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
-		server, _, controller := InitWarehouseServer(t)
-
-		server.DELETE(DefinePath(ResourceWarehouseUri)+"/:id", controller.Delete())
-		request, response := MakeRequest("DELETE", DefinePath(ResourceWarehouseUri)+"/abc", "")
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
-
 	t.Run("Should return not found error", func(t *testing.T) {
 		server, service, controller := InitWarehouseServer(t)
 
@@ -250,6 +209,7 @@ func TestDeleteWarehouse(t *testing.T) {
 func InitWarehouseServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Warehouse) {
 	t.Helper()
 	server := CreateServer()
+	server.Use(middleware.IdValidation())
 	service := new(mocks.Service)
 	controller := handler.NewWarehouse(service)
 	return server, service, controller
