@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
@@ -18,28 +19,28 @@ const (
 
 var (
 	s = domain.Section{
-		ID: 1,
-		SectionNumber: 1,      
+		ID:                 1,
+		SectionNumber:      1,
 		CurrentTemperature: 1,
 		MinimumTemperature: 1,
-		CurrentCapacity: 1,
-		MinimumCapacity: 1,
-		MaximumCapacity: 1,
-		WarehouseID: 1,
-		ProductTypeID: 1,      
+		CurrentCapacity:    1,
+		MinimumCapacity:    1,
+		MaximumCapacity:    1,
+		WarehouseID:        1,
+		ProductTypeID:      1,
 	}
 )
 
 func TestCreateSection(t *testing.T) {
 	requestObject := handler.CreateSectionRequest{
-		SectionNumber: &s.SectionNumber,      
+		SectionNumber:      &s.SectionNumber,
 		CurrentTemperature: &s.CurrentTemperature,
 		MinimumTemperature: &s.MinimumTemperature,
-		CurrentCapacity: &s.CurrentCapacity,
-		MinimumCapacity: &s.MinimumCapacity,
-		MaximumCapacity: &s.MaximumCapacity,
-		WarehouseID: &s.WarehouseID,
-		ProductTypeID: &s.ProductTypeID,
+		CurrentCapacity:    &s.CurrentCapacity,
+		MinimumCapacity:    &s.MinimumCapacity,
+		MaximumCapacity:    &s.MaximumCapacity,
+		WarehouseID:        &s.WarehouseID,
+		ProductTypeID:      &s.ProductTypeID,
 	}
 
 	t.Run("Should return conflict error", func(t *testing.T) {
@@ -84,17 +85,6 @@ func TestGetSection(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 	})
 
-	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
-		server, _, controller := initSectionServer(t)
-
-		server.GET(DefinePath(resourceSectionUri)+"/:id", controller.Get())
-		request, response := MakeRequest("GET", DefinePath(resourceSectionUri)+"/abc", "")
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
-
 	t.Run("Should return not found error", func(t *testing.T) {
 		server, service, controller := initSectionServer(t)
 
@@ -129,36 +119,16 @@ func TestGetSection(t *testing.T) {
 
 func TestUpdateSection(t *testing.T) {
 	requestObject := handler.UpdateSectionRequest{
-		SectionNumber: &s.SectionNumber,      
+		SectionNumber:      &s.SectionNumber,
 		CurrentTemperature: &s.CurrentTemperature,
 		MinimumTemperature: &s.MinimumTemperature,
-		CurrentCapacity: &s.CurrentCapacity,
-		MinimumCapacity: &s.MinimumCapacity,
-		MaximumCapacity: &s.MaximumCapacity,
-		WarehouseID: &s.WarehouseID,
-		ProductTypeID: &s.ProductTypeID, 
+		CurrentCapacity:    &s.CurrentCapacity,
+		MinimumCapacity:    &s.MinimumCapacity,
+		MaximumCapacity:    &s.MaximumCapacity,
+		WarehouseID:        &s.WarehouseID,
+		ProductTypeID:      &s.ProductTypeID,
 	}
-	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
-		server, _, controller := initSectionServer(t)
 
-		server.PATCH(DefinePath(resourceSectionUri)+"/:id", controller.Update())
-		request, response := MakeRequest("PATCH", DefinePath(resourceSectionUri)+"/abc", CreateBody(requestObject))
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
-	t.Run("Should return bad request error when request is blank", func(t *testing.T) {
-		server, _, controller := initSectionServer(t)
-
-		var requestObject handler.UpdateSectionRequest
-		server.PATCH(DefinePath(resourceSectionUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
-		request, response := MakeRequest("PATCH", DefinePathWithId(resourceSectionUri, 1), CreateBody(requestObject))
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
 	t.Run("Should return not found error", func(t *testing.T) {
 		server, service, controller := initSectionServer(t)
 
@@ -176,6 +146,7 @@ func TestUpdateSection(t *testing.T) {
 
 		assert.Equal(t, http.StatusNotFound, response.Code)
 	})
+
 	t.Run("Should return conflict error", func(t *testing.T) {
 		server, service, controller := initSectionServer(t)
 
@@ -213,18 +184,6 @@ func TestUpdateSection(t *testing.T) {
 }
 
 func TestDeleteSection(t *testing.T) {
-
-	t.Run("Should return bad request error when id is invalid", func(t *testing.T) {
-		server, _, controller := initSectionServer(t)
-
-		server.DELETE(DefinePath(resourceSectionUri)+"/:id", controller.Delete())
-		request, response := MakeRequest("DELETE", DefinePath(resourceSectionUri)+"/abc", "")
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	})
-
 	t.Run("Should return not found error", func(t *testing.T) {
 		server, service, controller := initSectionServer(t)
 
@@ -259,6 +218,7 @@ func TestDeleteSection(t *testing.T) {
 func initSectionServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Section) {
 	t.Helper()
 	server := CreateServer()
+	server.Use(middleware.IdValidation())
 	service := new(mocks.Service)
 	controller := handler.NewSection(service)
 	return server, service, controller

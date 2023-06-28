@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
@@ -68,13 +67,7 @@ func NewBuyer(b buyer.IService) *Buyer {
 // @Router /buyers/{id} [get]
 func (b *Buyer) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
-		idParam := c.Param("id")
-		id, err := strconv.Atoi(idParam)
-		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, idParam)
-			return
-		}
+		id := c.GetInt("Id")
 
 		buyer, err := b.buyerService.Get(c.Request.Context(), id)
 		if err != nil {
@@ -100,7 +93,6 @@ func (b *Buyer) Get() gin.HandlerFunc {
 // @Router /buyers [get]
 func (b *Buyer) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		buyers := b.buyerService.GetAll(c.Request.Context())
 		web.Success(c, http.StatusOK, buyers)
 	}
@@ -152,19 +144,8 @@ func (b *Buyer) Create() gin.HandlerFunc {
 // @Router /buyers/{id} [patch]
 func (b *Buyer) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		idParam := c.Param("id")
-		id, err := strconv.Atoi(idParam)
-		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, idParam)
-			return
-		}
-
+		id := c.GetInt("Id")
 		request := c.MustGet(RequestParamContext).(UpdateBuyerRequest)
-
-		if request.IsBlank() {
-			web.Error(c, http.StatusBadRequest, CannotBeBlank)
-			return
-		}
 
 		updated, err := b.buyerService.Update(c.Request.Context(), id, request.ToUpdateBuyer())
 
@@ -196,14 +177,9 @@ func (b *Buyer) Update() gin.HandlerFunc {
 // @Router /buyers/{id} [delete]
 func (b *Buyer) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		idParam := c.Param("id")
-		id, err := strconv.Atoi(idParam)
-		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, idParam)
-			return
-		}
+		id := c.GetInt("Id")
 
-		err = b.buyerService.Delete(c.Request.Context(), id)
+		err := b.buyerService.Delete(c.Request.Context(), id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
