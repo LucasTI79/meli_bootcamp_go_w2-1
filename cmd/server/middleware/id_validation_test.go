@@ -9,10 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	InvalidId = "o id '%s' é inválido"
-)
-
 func TestIdValidationMiddleware(t *testing.T) {
 	t.Run("Should not set id on context", func(t *testing.T) {
 		context, recorder, router := createValidationContext("", getStringRequestInBytes)
@@ -39,7 +35,7 @@ func TestIdValidationMiddleware(t *testing.T) {
 		router.ServeHTTP(recorder, request)
 
 		var response ErrorResponse
-		json.Unmarshal(recorder.Body.Bytes(), &response)
+		_ = json.Unmarshal(recorder.Body.Bytes(), &response)
 
 		assert.Equal(t, http.StatusBadRequest, recorder.Code)
 		assert.Len(t, response.Messages, 1)

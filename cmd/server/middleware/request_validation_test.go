@@ -56,7 +56,7 @@ func TestValidationMiddleware(t *testing.T) {
 		middleware.RequestValidation[CorrectRequest](true)(context)
 
 		var response ErrorResponse
-		json.Unmarshal(recorder.Body.Bytes(), &response)
+		_ = json.Unmarshal(recorder.Body.Bytes(), &response)
 
 		assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 		assert.Len(t, response.Messages, 1)
@@ -71,7 +71,7 @@ func TestValidationMiddleware(t *testing.T) {
 		middleware.RequestValidation[CorrectRequest](true)(context)
 
 		var response ErrorResponse
-		json.Unmarshal(recorder.Body.Bytes(), &response)
+		_ = json.Unmarshal(recorder.Body.Bytes(), &response)
 
 		assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 		assert.Len(t, response.Messages, 1)
@@ -86,7 +86,7 @@ func TestValidationMiddleware(t *testing.T) {
 		middleware.RequestValidation[CorrectRequest](true)(context)
 
 		var response ErrorResponse
-		json.Unmarshal(recorder.Body.Bytes(), &response)
+		_ = json.Unmarshal(recorder.Body.Bytes(), &response)
 
 		assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 		assert.Len(t, response.Messages, 1)
@@ -101,7 +101,7 @@ func TestValidationMiddleware(t *testing.T) {
 		middleware.RequestValidation[CorrectRequest](true)(context)
 
 		var response ErrorResponse
-		json.Unmarshal(recorder.Body.Bytes(), &response)
+		_ = json.Unmarshal(recorder.Body.Bytes(), &response)
 
 		assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 		assert.Len(t, response.Messages, 1)
@@ -116,7 +116,7 @@ func TestValidationMiddleware(t *testing.T) {
 		middleware.RequestValidation[UnknownValidationTagRequest](true)(context)
 
 		var response ErrorResponse
-		json.Unmarshal(recorder.Body.Bytes(), &response)
+		_ = json.Unmarshal(recorder.Body.Bytes(), &response)
 
 		assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 		assert.Len(t, response.Messages, 1)
@@ -131,7 +131,7 @@ func TestValidationMiddleware(t *testing.T) {
 		middleware.RequestValidation[MissingRequiredFieldRequest](false)(context)
 
 		var response ErrorResponse
-		json.Unmarshal(recorder.Body.Bytes(), &response)
+		_ = json.Unmarshal(recorder.Body.Bytes(), &response)
 
 		assert.Equal(t, http.StatusBadRequest, recorder.Code)
 		assert.Len(t, response.Messages, 1)
