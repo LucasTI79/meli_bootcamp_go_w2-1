@@ -48,6 +48,7 @@ func TestCreateEmployee(t *testing.T) {
 
 		assert.Equal(t, http.StatusConflict, response.Code)
 	})
+
 	t.Run("Should return a created employee", func(t *testing.T) {
 		server, service, controller := InitEmployeeServer(t)
 

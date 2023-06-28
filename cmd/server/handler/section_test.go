@@ -146,6 +146,7 @@ func TestUpdateSection(t *testing.T) {
 
 		assert.Equal(t, http.StatusNotFound, response.Code)
 	})
+
 	t.Run("Should return conflict error", func(t *testing.T) {
 		server, service, controller := initSectionServer(t)
 

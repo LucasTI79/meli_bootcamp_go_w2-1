@@ -2,7 +2,6 @@ package middleware_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -13,10 +12,6 @@ import (
 const (
 	InvalidId = "o id '%s' é inválido"
 )
-
-func MessageError(message string, args ...interface{}) string {
-	return fmt.Sprintf(message, args...)
-}
 
 func TestIdValidationMiddleware(t *testing.T) {
 	t.Run("Should not set id on context", func(t *testing.T) {

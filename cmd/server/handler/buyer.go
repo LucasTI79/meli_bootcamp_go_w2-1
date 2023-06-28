@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
@@ -94,7 +93,6 @@ func (b *Buyer) Get() gin.HandlerFunc {
 // @Router /buyers [get]
 func (b *Buyer) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		buyers := b.buyerService.GetAll(c.Request.Context())
 		web.Success(c, http.StatusOK, buyers)
 	}
