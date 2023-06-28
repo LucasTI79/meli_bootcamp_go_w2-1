@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
@@ -16,28 +15,27 @@ type Section struct {
 }
 
 type CreateSectionRequest struct {
-		SectionNumber      *int `json:"section_number" binding:"required"`
-		CurrentTemperature *int `json:"current_temperature" binding:"required"`
-		MinimumTemperature *int `json:"minimum_temperature" binding:"required"`
-		CurrentCapacity    *int `json:"current_capacity" binding:"required"`
-		MinimumCapacity    *int `json:"minimum_capacity" binding:"required"`
-		MaximumCapacity    *int `json:"maximum_capacity" binding:"required"`
-		WarehouseID        *int `json:"warehouse_id" binding:"required"`
-		ProductTypeID      *int `json:"product_type_id" binding:"required"`
-
+	SectionNumber      *int `json:"section_number" binding:"required"`
+	CurrentTemperature *int `json:"current_temperature" binding:"required"`
+	MinimumTemperature *int `json:"minimum_temperature" binding:"required"`
+	CurrentCapacity    *int `json:"current_capacity" binding:"required"`
+	MinimumCapacity    *int `json:"minimum_capacity" binding:"required"`
+	MaximumCapacity    *int `json:"maximum_capacity" binding:"required"`
+	WarehouseID        *int `json:"warehouse_id" binding:"required"`
+	ProductTypeID      *int `json:"product_type_id" binding:"required"`
 }
 
 func (r CreateSectionRequest) ToSection() domain.Section {
 	return domain.Section{
-		ID: 0,
-		SectionNumber: *r.SectionNumber,
+		ID:                 0,
+		SectionNumber:      *r.SectionNumber,
 		CurrentTemperature: *r.CurrentTemperature,
 		MinimumTemperature: *r.MinimumTemperature,
-		CurrentCapacity: *r.CurrentCapacity,
-		MinimumCapacity: *r.MinimumCapacity,
-		MaximumCapacity: *r.MaximumCapacity,
-		WarehouseID: *r.WarehouseID,
-		ProductTypeID: *r.ProductTypeID,
+		CurrentCapacity:    *r.CurrentCapacity,
+		MinimumCapacity:    *r.MinimumCapacity,
+		MaximumCapacity:    *r.MaximumCapacity,
+		WarehouseID:        *r.WarehouseID,
+		ProductTypeID:      *r.ProductTypeID,
 	}
 }
 
@@ -53,27 +51,16 @@ type UpdateSectionRequest struct {
 }
 
 func (r UpdateSectionRequest) ToUpdateSection() domain.UpdateSection {
-	return domain.UpdateSection {
-		SectionNumber: r.SectionNumber,
+	return domain.UpdateSection{
+		SectionNumber:      r.SectionNumber,
 		CurrentTemperature: r.CurrentTemperature,
 		MinimumTemperature: r.MinimumTemperature,
-		CurrentCapacity: r.CurrentCapacity,
-		MinimumCapacity: r.MinimumCapacity,
-		MaximumCapacity: r.MaximumCapacity,
-		WarehouseID: r.WarehouseID,
-		ProductTypeID: r.ProductTypeID,
+		CurrentCapacity:    r.CurrentCapacity,
+		MinimumCapacity:    r.MinimumCapacity,
+		MaximumCapacity:    r.MaximumCapacity,
+		WarehouseID:        r.WarehouseID,
+		ProductTypeID:      r.ProductTypeID,
 	}
-}
-
-func (r UpdateSectionRequest) IsBlank() bool {
-	return r.SectionNumber == nil &&
-	r.CurrentTemperature == nil &&
-	r.MinimumTemperature == nil &&
-	r.CurrentCapacity == nil &&
-	r.MinimumCapacity == nil &&
-	r.MaximumCapacity == nil &&
-	r.WarehouseID == nil &&
-	r.ProductTypeID == nil 
 }
 
 func NewSection(s section.Service) *Section {
@@ -111,13 +98,7 @@ func (s *Section) GetAll() gin.HandlerFunc {
 // @Router /sections/{id} [get]
 func (s *Section) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		requestId := ctx.Param("id")
-		id, err := strconv.Atoi(requestId)
-
-		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, InvalidId, requestId)
-			return
-		}
+		id := ctx.GetInt("Id")
 
 		section, err := s.service.Get(ctx.Request.Context(), id)
 
@@ -173,20 +154,8 @@ func (s *Section) Create() gin.HandlerFunc {
 // @Router /sections/{id} [patch]
 func (s *Section) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		requestId := ctx.Param("id")
-		id, err := strconv.Atoi(requestId)
-
-		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, InvalidId, requestId)
-			return
-		}
-
+		id := ctx.GetInt("Id")
 		request := ctx.MustGet(RequestParamContext).(UpdateSectionRequest)
-
-		if request.IsBlank() {
-			web.Error(ctx, http.StatusBadRequest, CannotBeBlank)
-			return
-		}
 
 		response, err := s.service.Update(ctx.Request.Context(), id, request.ToUpdateSection())
 
@@ -219,15 +188,9 @@ func (s *Section) Update() gin.HandlerFunc {
 // @Router /sections/{id} [delete]
 func (s *Section) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		requestId := ctx.Param("id")
-		id, err := strconv.Atoi(requestId)
+		id := ctx.GetInt("Id")
 
-		if err != nil {
-			web.Error(ctx, http.StatusBadRequest, InvalidId, requestId)
-			return
-		}
-
-		err = s.service.Delete(ctx.Request.Context(), id)
+		err := s.service.Delete(ctx.Request.Context(), id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {

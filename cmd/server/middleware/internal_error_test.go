@@ -31,7 +31,7 @@ func TestInternalErrorMiddleware(t *testing.T) {
 
 		router.ServeHTTP(recorder, request)
 		var response ErrorResponse
-		json.Unmarshal(recorder.Body.Bytes(), &response)
+		_ = json.Unmarshal(recorder.Body.Bytes(), &response)
 
 		assert.Equal(t, http.StatusInternalServerError, recorder.Code)
 		assert.Len(t, response.Messages, 1)
