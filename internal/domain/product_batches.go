@@ -13,3 +13,9 @@ type ProductBatches struct {
 	ProductID          int     `json:"product_id"`
 	SectionID          int     `json:"section_id"`
 }
+
+type CountProductBatchesBySection struct {
+	SectionID     int `json:"section_id"`
+	SectionNumber int `json:"section_number"`
+	ProductsCount int `json:"products_count"`
+}
