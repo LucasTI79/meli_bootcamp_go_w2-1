@@ -28,7 +28,7 @@ const (
 type Repository interface {
 	Get(id int) *domain.Locality
 	Exists(localityName string) bool
-	Save(l domain.Locality) int
+	Save(locality domain.Locality) int
 	CountSellersByAllLocalities() []domain.SellersByLocalityReport
 	CountSellersByLocality(id int) *domain.SellersByLocalityReport
 }
