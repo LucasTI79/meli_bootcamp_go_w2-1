@@ -1,7 +1,6 @@
 package buyer
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 
@@ -9,26 +8,26 @@ import (
 )
 
 // Repository encapsulates the storage of a buyer.
-type IRepository interface {
-	GetAll(ctx context.Context) []domain.Buyer
-	Get(ctx context.Context, id int) *domain.Buyer
-	Exists(ctx context.Context, cardNumberID string) bool
-	Save(ctx context.Context, b domain.Buyer) int
-	Update(ctx context.Context, b domain.Buyer)
-	Delete(ctx context.Context, id int)
+type Repository interface {
+	GetAll() []domain.Buyer
+	Get(id int) *domain.Buyer
+	Exists(cardNumberID string) bool
+	Save(b domain.Buyer) int
+	Update(b domain.Buyer)
+	Delete(id int)
 }
 
 type repository struct {
 	db *sql.DB
 }
 
-func NewRepository(db *sql.DB) IRepository {
+func NewRepository(db *sql.DB) Repository {
 	return &repository{
 		db: db,
 	}
 }
 
-func (r *repository) GetAll(ctx context.Context) []domain.Buyer {
+func (r *repository) GetAll() []domain.Buyer {
 	query := "SELECT * FROM buyers"
 	rows, err := r.db.Query(query)
 	if err != nil {
@@ -46,7 +45,7 @@ func (r *repository) GetAll(ctx context.Context) []domain.Buyer {
 	return buyers
 }
 
-func (r *repository) Get(ctx context.Context, id int) *domain.Buyer {
+func (r *repository) Get(id int) *domain.Buyer {
 	query := "SELECT * FROM buyers WHERE id = ?;"
 	row := r.db.QueryRow(query, id)
 	b := domain.Buyer{}
@@ -61,14 +60,14 @@ func (r *repository) Get(ctx context.Context, id int) *domain.Buyer {
 	return &b
 }
 
-func (r *repository) Exists(ctx context.Context, cardNumberID string) bool {
+func (r *repository) Exists(cardNumberID string) bool {
 	query := "SELECT card_number_id FROM buyers WHERE card_number_id=?;"
 	row := r.db.QueryRow(query, cardNumberID)
 	err := row.Scan(&cardNumberID)
 	return err == nil
 }
 
-func (r *repository) Save(ctx context.Context, b domain.Buyer) int {
+func (r *repository) Save(b domain.Buyer) int {
 	query := "INSERT INTO buyers(card_number_id,first_name,last_name) VALUES (?,?,?)"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -88,7 +87,7 @@ func (r *repository) Save(ctx context.Context, b domain.Buyer) int {
 	return int(id)
 }
 
-func (r *repository) Update(ctx context.Context, b domain.Buyer) {
+func (r *repository) Update(b domain.Buyer) {
 	query := "UPDATE buyers SET card_number_id=?, first_name=?, last_name=?  WHERE id=?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -101,7 +100,7 @@ func (r *repository) Update(ctx context.Context, b domain.Buyer) {
 	}
 }
 
-func (r *repository) Delete(ctx context.Context, id int) {
+func (r *repository) Delete(id int) {
 	query := "DELETE FROM buyers WHERE id = ?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
