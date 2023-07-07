@@ -70,7 +70,8 @@ func (r *router) buildDocumentationRoutes() {
 
 func (r *router) buildSellerRoutes() {
 	repo := seller.NewRepository(r.db)
-	service := seller.NewService(repo)
+	localityRepo := locality.NewRepository(r.db)
+	service := seller.NewService(repo, localityRepo)
 	controller := handler.NewSeller(service)
 	sellerRoutes := r.rg.Group("/sellers")
 
