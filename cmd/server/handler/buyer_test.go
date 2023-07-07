@@ -28,9 +28,9 @@ var (
 
 func TestCreateBuyer(t *testing.T) {
 	requestObject := handler.CreateBuyerRequest{
-		CardNumberID: &mockedBuyer.CardNumberID,
-		FirstName:    &mockedBuyer.FirstName,
-		LastName:     &mockedBuyer.LastName,
+		CardNumberID: mockedBuyer.CardNumberID,
+		FirstName:    mockedBuyer.FirstName,
+		LastName:     mockedBuyer.LastName,
 	}
 
 	t.Run("Should return conflict error", func(t *testing.T) {

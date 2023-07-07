@@ -11,16 +11,16 @@ import (
 )
 
 type CreateBuyerRequest struct {
-	CardNumberID *string `json:"card_number_id" binding:"required"`
-	FirstName    *string `json:"first_name" binding:"required"`
-	LastName     *string `json:"last_name" binding:"required"`
+	CardNumberID string `json:"card_number_id" binding:"required"`
+	FirstName    string `json:"first_name" binding:"required"`
+	LastName     string `json:"last_name" binding:"required"`
 }
 
 func (r CreateBuyerRequest) ToBuyer() domain.Buyer {
 	return domain.Buyer{
-		CardNumberID: *r.CardNumberID,
-		FirstName:    *r.FirstName,
-		LastName:     *r.LastName,
+		CardNumberID: r.CardNumberID,
+		FirstName:    r.FirstName,
+		LastName:     r.LastName,
 	}
 }
 
