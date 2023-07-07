@@ -102,7 +102,7 @@ func TestRepositoryExists(t *testing.T) {
 		assert.True(t, result)
 	})
 
-	t.Run("Should return false when there is not query result", func(t *testing.T) {
+	t.Run("Should return false when there are no query results", func(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
@@ -157,14 +157,9 @@ func TestRepositorySave(t *testing.T) {
 		assert.Equal(t, lastInsertId, result)
 	})
 
-	t.Run("Should throw panic when expect prepare fails", func(t *testing.T) {
+	t.Run("Should throw panic when expected prepare fails", func(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
-
-		columns := []string{"locality_name"}
-		rows := sqlmock.NewRows(columns)
-		localityName := "Locality"
-		rows.AddRow(localityName)
 
 		mockedLocality := mockedLocalityTemplate
 		mock.ExpectPrepare(regexp.QuoteMeta(locality.InsertQuery)).WillReturnError(sql.ErrConnDone)
@@ -174,14 +169,9 @@ func TestRepositorySave(t *testing.T) {
 		assert.Panics(t, func() { repository.Save(mockedLocality) })
 	})
 
-	t.Run("Should throw panic when expect exec fails", func(t *testing.T) {
+	t.Run("Should throw panic when expected exec fails", func(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
-
-		columns := []string{"locality_name"}
-		rows := sqlmock.NewRows(columns)
-		localityName := "Locality"
-		rows.AddRow(localityName)
 
 		mockedLocality := mockedLocalityTemplate
 		mock.ExpectPrepare(regexp.QuoteMeta(locality.InsertQuery))
