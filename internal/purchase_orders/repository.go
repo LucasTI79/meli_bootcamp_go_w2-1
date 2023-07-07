@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/helpers"
 )
 
 const (
@@ -32,7 +33,9 @@ func NewRepository(db *sql.DB) Repository {
 func (r *repository) Get(id int) *domain.PurchaseOrders {
 	row := r.db.QueryRow(GetQuery, id)
 	po := domain.PurchaseOrders{}
-	err := row.Scan(&po.ID, &po.OrderNumber, &po.OrderDate, &po.TrackingCode, &po.BuyerID, &po.CarrierID, &po.ProductRecordID, &po.OrderStatusID, &po.WarehouseID)
+	var orderDate string
+	err := row.Scan(&po.ID, &po.OrderNumber, &orderDate, &po.TrackingCode, &po.BuyerID, &po.CarrierID, &po.ProductRecordID, &po.OrderStatusID, &po.WarehouseID)
+	po.OrderDate = helpers.ToDateTime(orderDate)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
