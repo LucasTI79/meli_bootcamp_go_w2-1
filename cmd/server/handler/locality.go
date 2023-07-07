@@ -75,8 +75,8 @@ func (p *Locality) Create() gin.HandlerFunc {
 // Create godoc
 // @Summary Seller count by locality
 // @Description Seller count by location.
-// If no query param is given, bring the report to all localities.
-// If a location id is specified, bring the number of sellers for this locality.
+// @Description If no query param is given, bring the report to all localities.
+// @Description If a location id is specified, bring the number of sellers for this locality.
 // @Tags Localities
 // @Accept json
 // @Produce json
