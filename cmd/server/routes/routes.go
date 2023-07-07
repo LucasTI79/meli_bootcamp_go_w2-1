@@ -165,7 +165,8 @@ func (r *router) buildPurchaseOrdersRoutes() {
 	repo := purchase_orders.NewRepository(r.db)
 	buyerRepo := buyer.NewRepository(r.db)
 	orderStatusRepo := order_status.NewRepository(r.db)
-	service := purchase_orders.NewService(repo, buyerRepo, orderStatusRepo)
+	warehouseRepo := warehouse.NewRepository(r.db)
+	service := purchase_orders.NewService(repo, buyerRepo, orderStatusRepo, warehouseRepo)
 	controller := handler.NewPurchaseOrder(service)
 	purchaseOrdersRoutes := r.rg.Group("/purchaseOrders")
 
