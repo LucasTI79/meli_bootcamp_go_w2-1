@@ -51,11 +51,11 @@ func NewLocality(service locality.Service) *Locality {
 // @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /localities [post]
-func (p *Locality) Create() gin.HandlerFunc {
+func (l *Locality) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		request := c.MustGet(RequestParamContext).(CreateLocalityRequest)
 
-		created, err := p.service.Create(request.ToLocality())
+		created, err := l.service.Create(request.ToLocality())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
@@ -81,17 +81,16 @@ func (p *Locality) Create() gin.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Success 200 {object} []domain.SellersByLocalityReport "List of localities"
-// @Success 200 {object} domain.SellersByLocalityReport "Specified locality by id"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /localities [get]
-func (p *Locality) ReportSellers() gin.HandlerFunc {
+func (l *Locality) ReportSellers() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Request.URL.Query().Get("id")
 
 		if idParam == "" {
-			result := p.service.CountSellersByAllLocalities()
+			result := l.service.CountSellersByAllLocalities()
 			web.Success(c, http.StatusOK, result)
 			return
 		}
@@ -103,7 +102,7 @@ func (p *Locality) ReportSellers() gin.HandlerFunc {
 			return
 		}
 
-		localities, err := p.service.CountSellersByLocality(id)
+		localities, err := l.service.CountSellersByLocality(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {

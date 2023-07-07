@@ -69,9 +69,9 @@ func NewSeller(service seller.Service) *Seller {
 // @Success 200 {object} []domain.Seller "List of sellers"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sellers [get]
-func (p *Seller) GetAll() gin.HandlerFunc {
+func (s *Seller) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		sellers := p.service.GetAll()
+		sellers := s.service.GetAll()
 		web.Success(c, http.StatusOK, sellers)
 	}
 }
@@ -88,11 +88,11 @@ func (p *Seller) GetAll() gin.HandlerFunc {
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sellers/{id} [get]
-func (p *Seller) Get() gin.HandlerFunc {
+func (s *Seller) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 
-		seller, err := p.service.Get(id)
+		seller, err := s.service.Get(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -118,11 +118,11 @@ func (p *Seller) Get() gin.HandlerFunc {
 // @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sellers [post]
-func (p *Seller) Create() gin.HandlerFunc {
+func (s *Seller) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		request := c.MustGet(RequestParamContext).(CreateSellerRequest)
 
-		created, err := p.service.Create(request.ToSeller())
+		created, err := s.service.Create(request.ToSeller())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
@@ -154,12 +154,12 @@ func (p *Seller) Create() gin.HandlerFunc {
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sellers/{id} [patch]
-func (p *Seller) Update() gin.HandlerFunc {
+func (s *Seller) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 		request := c.MustGet(RequestParamContext).(UpdateSellerRequest)
 
-		response, err := p.service.Update(id, request.ToUpdateSeller())
+		response, err := s.service.Update(id, request.ToUpdateSeller())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -194,11 +194,11 @@ func (p *Seller) Update() gin.HandlerFunc {
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sellers/{id} [delete]
-func (p *Seller) Delete() gin.HandlerFunc {
+func (s *Seller) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 
-		err := p.service.Delete(id)
+		err := s.service.Delete(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
