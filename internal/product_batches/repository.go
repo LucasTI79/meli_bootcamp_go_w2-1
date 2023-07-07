@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	CreateQuery = "INSERT INTO product_batches (batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minimum_temperature, product_id, section_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-	GetQuery    = "SELECT id, batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minimum_temperature, product_id, section_id FROM product_batches WHERE id=?"
-	ExistsQuery = "SELECT batch_number FROM product_batches WHERE batch_number=?"
-	InsertQuery = "INSERT INTO product_batches (batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minimum_temperature, product_id, section_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+	CreateQuery                       = "INSERT INTO product_batches (batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minimum_temperature, product_id, section_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+	GetQuery                          = "SELECT id, batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minimum_temperature, product_id, section_id FROM product_batches WHERE id=?"
+	ExistsQuery                       = "SELECT batch_number FROM product_batches WHERE batch_number=?"
+	InsertQuery                       = "INSERT INTO product_batches (batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minimum_temperature, product_id, section_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+	CountProductBatchesBySectionQuery = "SELECT pb.section_id, s.section_number, COUNT(s.id) 'products_count' FROM product_batches pb JOIN products p ON p.id = pb.product_id JOIN sections s ON s.id = pb.section_id GROUP BY s.id"
 )
 
 // Repository encapsulates the storage of a product_batches.
@@ -21,6 +22,7 @@ type Repository interface {
 	Exists(BatchNumber string) bool
 	CheckSectionExists(id int) bool
 	CheckProductExists(id int) bool
+	CountProductBatchesBySection() []domain.CountProductBatchesBySection
 }
 
 type repository struct {
@@ -106,4 +108,18 @@ func (r *repository) CheckProductExists(id int) bool {
 		panic(err)
 	}
 	return count > 0
+}
+func (r *repository) CountProductBatchesBySection() []domain.CountProductBatchesBySection {
+	rows, err := r.db.Query(CountProductBatchesBySectionQuery)
+	if err != nil {
+		panic(err)
+	}
+	productsBatcherBySections := make([]domain.CountProductBatchesBySection, 0)
+
+	for rows.Next() {
+		s := domain.CountProductBatchesBySection{}
+		_ = rows.Scan(&s.SectionID, &s.SectionNumber, &s.ProductsCount)
+		productsBatcherBySections = append(productsBatcherBySections, s)
+	}
+	return productsBatcherBySections
 }

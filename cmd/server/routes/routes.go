@@ -6,11 +6,11 @@ import (
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/locality"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batches"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/province"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
@@ -18,6 +18,7 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/swag/example/basic/docs"
 )
 
 const (
@@ -51,7 +52,7 @@ func (r *router) MapRoutes() {
 	r.buildEmployeeRoutes()
 	r.buildBuyerRoutes()
 	r.buildLocalityRoutes()
-	r.buildProductBatchRoutes()
+	r.buildProductBtachesRoutes()
 }
 
 func (r *router) setGroup() {
@@ -159,13 +160,13 @@ func (r *router) buildLocalityRoutes() {
 	localityRoutes.GET("/report-sellers", controller.ReportSellers())
 }
 
-func (r *router) buildProductBatchRoutes() {
-	repo := productbatches.NewRepository(r.db)
-	service := productbatches.NewService(repo)
-	controller := handler.NewProductBatch(service)
-	productBatchRoutes := r.rg.Group("/product-batches")
+func (r *router) buildProductBtachesRoutes() {
 
-	productBatchRoutes.GET("/", controller.GetAll())
-	productBatchRoutes.GET("/:id", controller.Get())
-	productBatchRoutes.POST("/", middleware.RequestValidation[handler.CreateProductBatchRequest](CreateCanBeBlank), controller.Create())
+	repo := product_batches.NewRepository(r.db)
+	service := product_batches.NewService(repo)
+	controller := handler.NewProductBatches(service)
+	productRoutes := r.rg.Group("/products-batches")
+
+	//productRoutes.GET("/", controller.Get())
+	productRoutes.POST("/", middleware.RequestValidation[handler.CreateProductBatchesRequest](CreateCanBeBlank), controller.Create())
 }
