@@ -37,3 +37,9 @@ func (s *Section) Overlap(section UpdateSection) {
 	s.WarehouseID = helpers.Fill(section.WarehouseID, s.WarehouseID).(int)
 	s.ProductTypeID = helpers.Fill(section.ProductTypeID, s.ProductTypeID).(int)
 }
+
+type ProductsBySectionReport struct {
+	section_id     int `json:"section_id"`
+	section_number int `json:"section_number"`
+	products_count int `json:"products_count"`
+}
