@@ -8,29 +8,17 @@ import (
 )
 
 const (
-	GetQuery    = "SELECT id, locality_name, province_id FROM localities WHERE id=?"
-	ExistsQuery = "SELECT locality_name FROM localities WHERE locality_name=?"
-	InsertQuery = "INSERT INTO localities (locality_name, province_id) VALUES (?, ?)"
-
-	CountSellersByAllLocalitiesQuery = `SELECT s.locality_id, l.locality_name, count(s.id) "sellers_count"
-		FROM localities l
-		JOIN sellers s ON l.id = s.locality_id
-		GROUP BY l.id`
-
-	CountSellersByLocalityQuery = `SELECT s.locality_id, l.locality_name, count(s.id) "sellers_count"
-		FROM localities l
-		JOIN sellers s ON l.id = s.locality_id
-		WHERE l.id=?
-		GROUP BY l.id`
+	CreateQuery = "INSERT INTO product_batches (batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minimum_temperature, product_id, section_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+	GetQuery    = "SELECT id, batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minimum_temperature, product_id, section_id FROM product_batches WHERE id=?"
+	ExistsQuery = "SELECT batch_number FROM product_batches WHERE batch_number=?"
+	InsertQuery = "INSERT INTO product_batches (batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minimum_temperature, product_id, section_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 )
 
 // Repository encapsulates the storage of a product_batches.
 type Repository interface {
-	Create(pb domain.ProductBatches) int
+	Save(pb domain.ProductBatches) int //save
 	Get(id int) *domain.ProductBatches
 	Exists(name string) bool
-	Update(id int, pb domain.ProductBatches) *domain.ProductBatches
-	Delete(id int) *domain.ProductBatches
 }
 
 type repository struct {
@@ -43,7 +31,12 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r *repository) Create(pb domain.ProductBatches) int {
+func (r *repository) Save(pb domain.ProductBatches) int {
+
+	if !r.sectionExists(pb.SectionID) {
+		panic("section does not exist")
+	}
+
 	stmt, err := r.db.Prepare(InsertQuery)
 	if err != nil {
 		panic(err)
@@ -82,33 +75,13 @@ func (r *repository) Exists(name string) bool {
 	return err == nil
 }
 
-func (r *repository) Update(id int, pb domain.ProductBatches) *domain.ProductBatches {
-	stmt, err := r.db.Prepare(InsertQuery)
-	if err != nil {
-		panic(err)
-	}
+func (r *repository) sectionExists(id int) bool {
 
-	res, err := stmt.Exec(pb.BatchNumber)
+	query := `SELECT id FROM sections WHERE id=?`
+	var count int
+	err := r.db.QueryRow(query, id).Scan(&count)
 	if err != nil {
 		panic(err)
 	}
-
-	id, err := res.LastInsertId()
-	if err != nil {
-		panic(err)
-	}
-	return &pb
-}
-
-func (r *repository) Delete(id int) *domain.ProductBatches {
-	row := r.db.QueryRow(GetQuery, id)
-	pb := domain.ProductBatches{}
-	err := row.Scan(&pb.ID, &pb.BatchNumber, &pb.CurrentQuantity, &pb.CurrentTemperature, &pb.DueDate, &pb.InitialQuantity, &pb.ManufacturingDate, &pb.ManufacturingHour, &pb.MinimumTemperature, &pb.ProductID, &pb.SectionID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil
-		}
-		panic(err)
-	}
-	return &pb
+	return count > 0
 }
