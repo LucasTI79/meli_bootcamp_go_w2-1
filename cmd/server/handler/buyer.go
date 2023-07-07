@@ -38,12 +38,6 @@ func (r UpdateBuyerRequest) ToUpdateBuyer() domain.UpdateBuyer {
 	}
 }
 
-func (buyerRequest UpdateBuyerRequest) IsBlank() bool {
-	return buyerRequest.CardNumberID == nil &&
-		buyerRequest.FirstName == nil &&
-		buyerRequest.LastName == nil
-}
-
 type Buyer struct {
 	buyerService buyer.IService
 }
