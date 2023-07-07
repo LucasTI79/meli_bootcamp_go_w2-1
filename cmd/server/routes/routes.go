@@ -51,6 +51,7 @@ func (r *router) MapRoutes() {
 	r.buildEmployeeRoutes()
 	r.buildBuyerRoutes()
 	r.buildLocalityRoutes()
+	r.buildProductBatchRoutes()
 }
 
 func (r *router) setGroup() {
@@ -156,4 +157,15 @@ func (r *router) buildLocalityRoutes() {
 
 	localityRoutes.POST("/", middleware.RequestValidation[handler.CreateLocalityRequest](CreateCanBeBlank), controller.Create())
 	localityRoutes.GET("/report-sellers", controller.ReportSellers())
+}
+
+func (r *router) buildProductBatchRoutes() {
+	repo := productbatches.NewRepository(r.db)
+	service := productbatches.NewService(repo)
+	controller := handler.NewProductBatch(service)
+	productBatchRoutes := r.rg.Group("/product-batches")
+
+	productBatchRoutes.GET("/", controller.GetAll())
+	productBatchRoutes.GET("/:id", controller.Get())
+	productBatchRoutes.POST("/", middleware.RequestValidation[handler.CreateProductBatchRequest](CreateCanBeBlank), controller.Create())
 }

@@ -1,4 +1,4 @@
-package productbatches
+package product_batches
 
 import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"

@@ -1,4 +1,4 @@
-package productbatches
+package product_batches
 
 import (
 	"database/sql"
