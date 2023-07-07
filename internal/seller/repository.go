@@ -7,7 +7,15 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
 
-// Repository encapsulates the storage of a Seller.
+const (
+	GetAllQuery = "SELECT id, cid, company_name, address, telephone, locality_id FROM sellers"
+	GetQuery    = "SELECT id, cid, company_name, address, telephone, locality_id FROM sellers WHERE id=?"
+	ExistsQuery = "SELECT cid FROM sellers WHERE cid=?"
+	InsertQuery = "INSERT INTO sellers (cid, company_name, address, telephone, locality_id) VALUES (?, ?, ?, ?, ?)"
+	UpdateQuery = "UPDATE sellers SET cid=?, company_name=?, address=?, telephone=?, locality_id=? WHERE id=?"
+	DeleteQuery = "DELETE FROM sellers WHERE id=?"
+)
+
 type Repository interface {
 	GetAll() []domain.Seller
 	Get(id int) *domain.Seller
@@ -28,8 +36,7 @@ func NewRepository(db *sql.DB) Repository {
 }
 
 func (r *repository) GetAll() []domain.Seller {
-	query := "SELECT id, cid, company_name, address, telephone, locality_id FROM sellers"
-	rows, err := r.db.Query(query)
+	rows, err := r.db.Query(GetAllQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -46,8 +53,7 @@ func (r *repository) GetAll() []domain.Seller {
 }
 
 func (r *repository) Get(id int) *domain.Seller {
-	query := "SELECT id, cid, company_name, address, telephone, locality_id FROM sellers WHERE id=?;"
-	row := r.db.QueryRow(query, id)
+	row := r.db.QueryRow(GetQuery, id)
 	s := domain.Seller{}
 	err := row.Scan(&s.ID, &s.CID, &s.CompanyName, &s.Address, &s.Telephone, &s.LocalityID)
 	if err != nil {
@@ -61,15 +67,13 @@ func (r *repository) Get(id int) *domain.Seller {
 }
 
 func (r *repository) Exists(cid int) bool {
-	query := "SELECT cid FROM sellers WHERE cid=?;"
-	row := r.db.QueryRow(query, cid)
+	row := r.db.QueryRow(ExistsQuery, cid)
 	err := row.Scan(&cid)
 	return err == nil
 }
 
 func (r *repository) Save(s domain.Seller) int {
-	query := "INSERT INTO sellers (cid, company_name, address, telephone, locality_id) VALUES (?, ?, ?, ?, ?)"
-	stmt, err := r.db.Prepare(query)
+	stmt, err := r.db.Prepare(InsertQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -88,8 +92,7 @@ func (r *repository) Save(s domain.Seller) int {
 }
 
 func (r *repository) Update(s domain.Seller) {
-	query := "UPDATE sellers SET cid=?, company_name=?, address=?, telephone=?, locality_id=? WHERE id=?"
-	stmt, err := r.db.Prepare(query)
+	stmt, err := r.db.Prepare(UpdateQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -101,8 +104,7 @@ func (r *repository) Update(s domain.Seller) {
 }
 
 func (r *repository) Delete(id int) {
-	query := "DELETE FROM sellers WHERE id=?"
-	stmt, err := r.db.Prepare(query)
+	stmt, err := r.db.Prepare(DeleteQuery)
 	if err != nil {
 		panic(err)
 	}
