@@ -47,9 +47,8 @@ func NewLocality(service locality.Service) *Locality {
 // @Produce json
 // @Param request body CreateLocalityRequest true "Locality data"
 // @Success 201 {object} domain.Locality "Created locality"
-// @Failure 422 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "Not found error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /localities [post]
 func (p *Locality) Create() gin.HandlerFunc {
@@ -74,12 +73,17 @@ func (p *Locality) Create() gin.HandlerFunc {
 }
 
 // Create godoc
-// @Summary List localities
-// @Description List all localities
+// @Summary Seller count by locality
+// @Description Seller count by location.
+// If no query param is given, bring the report to all localities.
+// If a location id is specified, bring the number of sellers for this locality.
 // @Tags Localities
 // @Accept json
 // @Produce json
-// @Success 200 {object} []domain.Locality "List of localities"
+// @Success 200 {object} []domain.SellersByLocalityReport "List of localities"
+// @Success 200 {object} domain.SellersByLocalityReport "Specified locality by id"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /localities [get]
 func (p *Locality) ReportSellers() gin.HandlerFunc {

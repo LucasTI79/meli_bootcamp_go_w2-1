@@ -113,9 +113,9 @@ func (p *Seller) Get() gin.HandlerFunc {
 // @Produce json
 // @Param request body CreateSellerRequest true "Seller data"
 // @Success 201 {object} domain.Seller "Created seller"
-// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Not found error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sellers [post]
 func (p *Seller) Create() gin.HandlerFunc {
