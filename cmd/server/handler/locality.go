@@ -67,10 +67,6 @@ func (p *Locality) Create() gin.HandlerFunc {
 				web.Error(c, http.StatusConflict, err.Error())
 				return
 			}
-			if apperr.Is[*apperr.ResourceNotFound](err) {
-				web.Error(c, http.StatusNotFound, err.Error())
-				return
-			}
 		}
 
 		web.Success(c, http.StatusCreated, created)
