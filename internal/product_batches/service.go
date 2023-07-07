@@ -2,8 +2,6 @@ package product_batches
 
 import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 )
 
@@ -19,16 +17,15 @@ type Service interface {
 	CheckSectionExists(id int) bool
 	CheckProductExists(id int) bool
 	Create(productBatch domain.ProductBatches) (*domain.ProductBatches, error)
+	CountProductBatchesBySection() []domain.CountProductBatchesBySection
 }
 
 type service struct {
-	repository     Repository
-	sectionService section.Service
-	productService product.Service
+	repository Repository
 }
 
-func NewService(repository Repository, sectionService section.Service, productService product.Service) Service {
-	return &service{repository, sectionService, productService}
+func NewService(repository Repository) Service {
+	return &service{repository}
 }
 
 func (s *service) Exists(BatchNumber string) bool {
@@ -58,4 +55,8 @@ func (s *service) Create(productBatch domain.ProductBatches) (*domain.ProductBat
 
 	id := s.repository.Save(productBatch)
 	return s.repository.Get(id), nil
+}
+
+func (s *service) CountProductBatchesBySection() []domain.CountProductBatchesBySection {
+	return s.repository.CountProductBatchesBySection()
 }
