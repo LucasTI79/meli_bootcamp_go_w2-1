@@ -16,9 +16,11 @@ const (
 
 // Repository encapsulates the storage of a product_batches.
 type Repository interface {
-	Save(pb domain.ProductBatches) int //save
+	Save(pb domain.ProductBatches) int
 	Get(id int) *domain.ProductBatches
-	Exists(name string) bool
+	Exists(BatchNumber string) bool
+	CheckSectionExists(id int) bool
+	CheckProductExists(id int) bool
 }
 
 type repository struct {
@@ -69,15 +71,35 @@ func (r *repository) Get(id int) *domain.ProductBatches {
 	return &pb
 }
 
-func (r *repository) Exists(name string) bool {
-	row := r.db.QueryRow(ExistsQuery, name)
-	err := row.Scan(&name)
+func (r *repository) Exists(BatchNumber string) bool {
+	row := r.db.QueryRow(ExistsQuery, BatchNumber)
+	err := row.Scan(&BatchNumber)
 	return err == nil
 }
 
 func (r *repository) sectionExists(id int) bool {
 
 	query := `SELECT id FROM sections WHERE id=?`
+	var count int
+	err := r.db.QueryRow(query, id).Scan(&count)
+	if err != nil {
+		panic(err)
+	}
+	return count > 0
+}
+
+func (r *repository) CheckSectionExists(id int) bool {
+	query := `SELECT id FROM sections WHERE id=?`
+	var count int
+	err := r.db.QueryRow(query, id).Scan(&count)
+	if err != nil {
+		panic(err)
+	}
+	return count > 0
+}
+
+func (r *repository) CheckProductExists(id int) bool {
+	query := `SELECT id FROM products WHERE id=?`
 	var count int
 	err := r.db.QueryRow(query, id).Scan(&count)
 	if err != nil {
