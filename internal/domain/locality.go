@@ -7,7 +7,7 @@ type Locality struct {
 }
 
 type SellersByLocalityReport struct {
-	ID           *int    `json:"locality_id"`
-	LocalityName *string `json:"locality_name"`
-	SellersCount *int    `json:"sellers_count"`
+	ID           int    `json:"locality_id"`
+	LocalityName string `json:"locality_name"`
+	SellersCount int    `json:"sellers_count"`
 }

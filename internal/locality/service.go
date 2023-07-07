@@ -41,16 +41,6 @@ func (s *service) CountSellersByLocality(id int) (*domain.SellersByLocalityRepor
 	return s.repository.CountSellersByLocality(id), nil
 }
 
-func (s *service) Get(id int) (*domain.Locality, error) {
-	locality := s.repository.Get(id)
-
-	if locality == nil {
-		return nil, apperr.NewResourceNotFound(LocalityNotFound, id)
-	}
-
-	return locality, nil
-}
-
 func (s *service) Create(locality domain.Locality) (*domain.Locality, error) {
 	if s.repository.Exists(locality.LocalityName) {
 		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, locality.LocalityName)
