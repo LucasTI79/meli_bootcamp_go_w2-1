@@ -9,6 +9,7 @@ import (
 type Repository interface {
 	Get(id int) *domain.Carrier
 	Save(c domain.Carrier) int
+	Exists(cid string) bool
 }
 
 type repository struct {
@@ -44,7 +45,7 @@ func (r *repository) Save(c domain.Carrier) int {
 		panic(err)
 	}
 
-	res, err := stmt.Exec(c.CID, c.CompanyName)
+	res, err := stmt.Exec(c.CID, c.CompanyName, c.Address, c.Telephone, c.LocalityID)
 	if err != nil {
 		panic(err)
 	}
@@ -55,4 +56,11 @@ func (r *repository) Save(c domain.Carrier) int {
 	}
 
 	return int(id)
+}
+
+func (r *repository) Exists(cid string) bool {
+	query := "SELECT cid FROM products WHERE cid=?;"
+	row := r.db.QueryRow(query, cid)
+	err := row.Scan(&cid)
+	return err == nil
 }

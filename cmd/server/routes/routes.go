@@ -2,11 +2,12 @@ package routes
 
 import (
 	"database/sql"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/carrier"
+	"github.com/swaggo/swag/example/basic/docs"
 	"os"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/locality"
@@ -51,6 +52,7 @@ func (r *router) MapRoutes() {
 	r.buildEmployeeRoutes()
 	r.buildBuyerRoutes()
 	r.buildLocalityRoutes()
+	r.buildCarriersRoutes()
 }
 
 func (r *router) setGroup() {
@@ -156,4 +158,13 @@ func (r *router) buildLocalityRoutes() {
 
 	localityRoutes.POST("/", middleware.RequestValidation[handler.CreateLocalityRequest](CreateCanBeBlank), controller.Create())
 	localityRoutes.GET("/report-sellers", controller.ReportSellers())
+}
+
+func (r *router) buildCarriersRoutes() {
+	repository := carrier.NewRepository(r.db)
+	service := carrier.NewService(repository)
+	controller := handler.NewCarrier(service)
+	carrierGroups := r.rg.Group("carriers")
+	carrierGroups.POST("/", middleware.RequestValidation[handler.CreateCarrierRequest](CreateCanBeBlank), controller.Create())
+
 }

@@ -6,12 +6,13 @@ import (
 )
 
 const (
-	ResourceNotFound = "transportadora não encontrada com o id %d"
+	ResourceNotFound      = "transportadora não encontrada com o id %d"
+	ResourceAlreadyExists = "uma transportadora com cid '%s' já existe"
 )
 
 type Service interface {
 	Get(id int) (*domain.Carrier, error)
-	Create(domain.Employee) (*domain.Carrier, error)
+	Create(carrier domain.Carrier) (*domain.Carrier, error)
 }
 
 type service struct {
@@ -32,8 +33,12 @@ func (s *service) Get(id int) (*domain.Carrier, error) {
 	return carrier, nil
 }
 
-func (s *service) Create(employee domain.Employee) (*domain.Carrier, error) {
+func (s *service) Create(carrier domain.Carrier) (*domain.Carrier, error) {
+	if s.repository.Exists(carrier.CID) {
+		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, carrier.CID)
+	}
+	id := s.repository.Save(carrier)
+	c := s.repository.Get(id)
+	return c, nil
 
-	//TODO implement me
-	panic("implement me")
 }
