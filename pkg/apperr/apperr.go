@@ -18,6 +18,18 @@ func NewResourceNotFound(message string, args ...interface{}) *ResourceNotFound 
 	return &ResourceNotFound{message: fmt.Sprintf(message, args...)}
 }
 
+type DependentResourceNotFound struct {
+	message string
+}
+
+func (e DependentResourceNotFound) Error() string {
+	return e.message
+}
+
+func NewDependentResourceNotFound(message string, args ...interface{}) *DependentResourceNotFound {
+	return &DependentResourceNotFound{message: fmt.Sprintf(message, args...)}
+}
+
 // Resource Already Exists
 type ResourceAlreadyExists struct {
 	message string

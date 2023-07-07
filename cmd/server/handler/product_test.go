@@ -50,7 +50,7 @@ func TestCreateProduct(t *testing.T) {
 	}
 
 	t.Run("Should return conflict error", func(t *testing.T) {
-		server, service, controller := InitServer(t)
+		server, service, controller := InitProductServer(t)
 
 		server.POST(DefinePath(ResourceProductsUri), ValidationMiddleware(requestObject), controller.Create())
 		request, response := MakeRequest("POST", DefinePath(ResourceProductsUri), CreateBody(requestObject))
@@ -64,7 +64,7 @@ func TestCreateProduct(t *testing.T) {
 	})
 
 	t.Run("Should return a created product", func(t *testing.T) {
-		server, service, controller := InitServer(t)
+		server, service, controller := InitProductServer(t)
 
 		server.POST(DefinePath(ResourceProductsUri), ValidationMiddleware(requestObject), controller.Create())
 		request, response := MakeRequest("POST", DefinePath(ResourceProductsUri), CreateBody(requestObject))
@@ -79,7 +79,7 @@ func TestCreateProduct(t *testing.T) {
 
 func TestGetProduct(t *testing.T) {
 	t.Run("Should return all products", func(t *testing.T) {
-		server, service, controller := InitServer(t)
+		server, service, controller := InitProductServer(t)
 
 		server.GET(DefinePath(ResourceProductsUri), controller.GetAll())
 		request, response := MakeRequest("GET", DefinePath(ResourceProductsUri), "")
@@ -92,7 +92,7 @@ func TestGetProduct(t *testing.T) {
 	})
 
 	t.Run("Should return not found error", func(t *testing.T) {
-		server, service, controller := InitServer(t)
+		server, service, controller := InitProductServer(t)
 
 		id := 1
 
@@ -108,7 +108,7 @@ func TestGetProduct(t *testing.T) {
 	})
 
 	t.Run("Should return the found product", func(t *testing.T) {
-		server, service, controller := InitServer(t)
+		server, service, controller := InitProductServer(t)
 
 		id := 1
 
@@ -139,7 +139,7 @@ func TestUpdateProduct(t *testing.T) {
 	}
 
 	t.Run("Should return not found error", func(t *testing.T) {
-		server, service, controller := InitServer(t)
+		server, service, controller := InitProductServer(t)
 
 		id := 1
 
@@ -157,7 +157,7 @@ func TestUpdateProduct(t *testing.T) {
 	})
 
 	t.Run("Should return conflict error", func(t *testing.T) {
-		server, service, controller := InitServer(t)
+		server, service, controller := InitProductServer(t)
 
 		id := 1
 
@@ -175,7 +175,7 @@ func TestUpdateProduct(t *testing.T) {
 	})
 
 	t.Run("Should return updated product", func(t *testing.T) {
-		server, service, controller := InitServer(t)
+		server, service, controller := InitProductServer(t)
 
 		id := 1
 
@@ -194,7 +194,7 @@ func TestUpdateProduct(t *testing.T) {
 
 func TestDeleteProduct(t *testing.T) {
 	t.Run("Should return not found error", func(t *testing.T) {
-		server, service, controller := InitServer(t)
+		server, service, controller := InitProductServer(t)
 
 		id := 1
 
@@ -209,7 +209,7 @@ func TestDeleteProduct(t *testing.T) {
 	})
 
 	t.Run("Should return success", func(t *testing.T) {
-		server, service, controller := InitServer(t)
+		server, service, controller := InitProductServer(t)
 
 		id := 1
 
@@ -224,7 +224,7 @@ func TestDeleteProduct(t *testing.T) {
 	})
 }
 
-func InitServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Product) {
+func InitProductServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Product) {
 	t.Helper()
 	server := CreateServer()
 	server.Use(middleware.IdValidation())

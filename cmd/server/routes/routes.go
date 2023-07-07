@@ -9,7 +9,9 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/locality"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/province"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
@@ -48,6 +50,7 @@ func (r *router) MapRoutes() {
 	r.buildWarehouseRoutes()
 	r.buildEmployeeRoutes()
 	r.buildBuyerRoutes()
+	r.buildLocalityRoutes()
 }
 
 func (r *router) setGroup() {
@@ -67,7 +70,8 @@ func (r *router) buildDocumentationRoutes() {
 
 func (r *router) buildSellerRoutes() {
 	repo := seller.NewRepository(r.db)
-	service := seller.NewService(repo)
+	localityRepo := locality.NewRepository(r.db)
+	service := seller.NewService(repo, localityRepo)
 	controller := handler.NewSeller(service)
 	sellerRoutes := r.rg.Group("/sellers")
 
@@ -141,4 +145,15 @@ func (r *router) buildBuyerRoutes() {
 	buyerRoutes.POST("/", middleware.RequestValidation[handler.CreateBuyerRequest](CreateCanBeBlank), controller.Create())
 	buyerRoutes.PATCH("/:id", middleware.RequestValidation[handler.UpdateBuyerRequest](UpdateCanBeBlank), controller.Update())
 	buyerRoutes.DELETE("/:id", controller.Delete())
+}
+
+func (r *router) buildLocalityRoutes() {
+	repo := locality.NewRepository(r.db)
+	provinceRepo := province.NewRepository(r.db)
+	service := locality.NewService(repo, provinceRepo)
+	controller := handler.NewLocality(service)
+	localityRoutes := r.rg.Group("/localities")
+
+	localityRoutes.POST("/", middleware.RequestValidation[handler.CreateLocalityRequest](CreateCanBeBlank), controller.Create())
+	localityRoutes.GET("/report-sellers", controller.ReportSellers())
 }
