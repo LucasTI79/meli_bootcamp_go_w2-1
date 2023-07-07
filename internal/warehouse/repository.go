@@ -1,19 +1,18 @@
 package warehouse
 
 import (
-	"context"
 	"database/sql"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
 
 type Repository interface {
-	GetAll(ctx context.Context) []domain.Warehouse
-	Get(ctx context.Context, id int) *domain.Warehouse
-	Exists(ctx context.Context, warehouseCode string) bool
-	Save(ctx context.Context, w domain.Warehouse) int
-	Update(ctx context.Context, w domain.Warehouse)
-	Delete(ctx context.Context, id int)
+	GetAll() []domain.Warehouse
+	Get(id int) *domain.Warehouse
+	Exists(warehouseCode string) bool
+	Save(w domain.Warehouse) int
+	Update(w domain.Warehouse)
+	Delete(id int)
 }
 
 type repository struct {
@@ -26,9 +25,9 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r *repository) GetAll(ctx context.Context) []domain.Warehouse {
+func (r *repository) GetAll() []domain.Warehouse {
 	query := "SELECT * FROM warehouses"
-	rows, err := r.db.QueryContext(ctx, query)
+	rows, err := r.db.Query(query)
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +43,7 @@ func (r *repository) GetAll(ctx context.Context) []domain.Warehouse {
 	return warehouses
 }
 
-func (r *repository) Get(ctx context.Context, id int) *domain.Warehouse {
+func (r *repository) Get(id int) *domain.Warehouse {
 	query := "SELECT * FROM warehouses WHERE id=?;"
 	row := r.db.QueryRow(query, id)
 	w := domain.Warehouse{}
@@ -59,14 +58,14 @@ func (r *repository) Get(ctx context.Context, id int) *domain.Warehouse {
 	return &w
 }
 
-func (r *repository) Exists(ctx context.Context, warehouseCode string) bool {
+func (r *repository) Exists(warehouseCode string) bool {
 	query := "SELECT warehouse_code FROM warehouses WHERE warehouse_code=?;"
 	row := r.db.QueryRow(query, warehouseCode)
 	err := row.Scan(&warehouseCode)
 	return err == nil
 }
 
-func (r *repository) Save(ctx context.Context, w domain.Warehouse) int {
+func (r *repository) Save(w domain.Warehouse) int {
 	query := "INSERT INTO warehouses (address, telephone, warehouse_code, minimum_capacity, minimum_temperature) VALUES (?, ?, ?, ?, ?)"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -86,7 +85,7 @@ func (r *repository) Save(ctx context.Context, w domain.Warehouse) int {
 	return int(id)
 }
 
-func (r *repository) Update(ctx context.Context, w domain.Warehouse) {
+func (r *repository) Update(w domain.Warehouse) {
 	query := "UPDATE warehouses SET address=?, telephone=?, warehouse_code=?, minimum_capacity=?, minimum_temperature=? WHERE id=?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -99,7 +98,7 @@ func (r *repository) Update(ctx context.Context, w domain.Warehouse) {
 	}
 }
 
-func (r *repository) Delete(ctx context.Context, id int) {
+func (r *repository) Delete(id int) {
 	query := "DELETE FROM warehouses WHERE id=?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
