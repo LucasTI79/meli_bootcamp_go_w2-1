@@ -12,6 +12,8 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/locality"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/province"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/purchase_orders"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/order_status"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
@@ -51,6 +53,7 @@ func (r *router) MapRoutes() {
 	r.buildEmployeeRoutes()
 	r.buildBuyerRoutes()
 	r.buildLocalityRoutes()
+	r.buildPurchaseOrdersRoutes()
 }
 
 func (r *router) setGroup() {
@@ -156,4 +159,15 @@ func (r *router) buildLocalityRoutes() {
 
 	localityRoutes.POST("/", middleware.RequestValidation[handler.CreateLocalityRequest](CreateCanBeBlank), controller.Create())
 	localityRoutes.GET("/report-sellers", controller.ReportSellers())
+}
+
+func (r *router) buildPurchaseOrdersRoutes() {
+	repo := purchase_orders.NewRepository(r.db)
+	buyerRepo := buyer.NewRepository(r.db)
+	orderStatusRepo := order_status.NewRepository(r.db)
+	service := purchase_orders.NewService(repo, buyerRepo, orderStatusRepo)
+	controller := handler.NewPurchaseOrder(service)
+	purchaseOrdersRoutes := r.rg.Group("/purchaseOrders")
+
+	purchaseOrdersRoutes.POST("/", middleware.RequestValidation[handler.CreatePurchaseOrderRequest](CreateCanBeBlank), controller.Create())
 }
