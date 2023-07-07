@@ -1,6 +1,11 @@
 package helpers
 
-import "reflect"
+import (
+	"reflect"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+)
 
 func Fill(first interface{}, second interface{}) interface{} {
 	valueOfFirst := reflect.ValueOf(first)
@@ -9,4 +14,9 @@ func Fill(first interface{}, second interface{}) interface{} {
 	}
 
 	return valueOfFirst.Elem().Interface()
+}
+
+func ToFormattedAddress(address string) string {
+	caser := cases.Title(language.BrazilianPortuguese)
+	return caser.String(address)
 }
