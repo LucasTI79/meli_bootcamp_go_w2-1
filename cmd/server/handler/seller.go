@@ -83,7 +83,7 @@ func (p *Seller) GetAll() gin.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param id path int true "Seller Id"
-// @Success 200 {object} []domain.Seller "Created seller"
+// @Success 200 {object} []domain.Seller "Obtained seller"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"

@@ -58,15 +58,15 @@ func NewWarehouse(w warehouse.Service) *Warehouse {
 }
 
 // Get godoc
-// @Summary Get warehouse by ID
+// @Summary Get a warehouse by id
 // @Tags Warehouses
-// @Description This endpoint retrieves the information of a warehouse by its ID
+// @Description Get a warehouse based on the provided id
 // @Accept  json
 // @Produce  json
-// @Param id path string true "Warehouse ID"
-// @Success 200 {object} domain.Warehouse
-// @Failure 400 {object} web.ErrorResponse "ID de armazem invalido"
-// @Failure 404 {object} web.ErrorResponse "Armazem nao encontrado"
+// @Param id path string true "Warehouse id"
+// @Success 200 {object} domain.Warehouse "Obtained warehouse"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Router /warehouses/{id} [get]
 func (w *Warehouse) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -86,13 +86,13 @@ func (w *Warehouse) Get() gin.HandlerFunc {
 }
 
 // GetAll godoc
-// @Summary Get all warehouses
+// @Summary List warehouses
 // @Tags Warehouses
-// @Description Get all warehouses
+// @Description List all warehouses
 // @Accept  json
 // @Produce  json
-// @Success 200 {array} domain.Warehouse
-// @Failure 500 {object} web.ErrorResponse "Falha ao obter os armazéns"
+// @Success 200 {array} domain.Warehouse "List of warehouses"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /warehouses [get]
 func (w *Warehouse) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -104,10 +104,11 @@ func (w *Warehouse) GetAll() gin.HandlerFunc {
 // Create godoc
 // @Summary Create a warehouse
 // @Tags Warehouses
-// @Description Create a new warehouse
+// @Description Create a new warehouse based on the provided JSON payload
 // @Accept  json
 // @Produce  json
-// @Success 201 {object} domain.Warehouse
+// @Param request body CreateWarehouseRequest true "Warehouse data"
+// @Success 201 {object} domain.Warehouse "Created warehouse"
 // @Failure 400 {object} web.ErrorResponse "Invalid data"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 422 {object} web.ErrorResponse "Unprocessable Entity"
@@ -133,16 +134,17 @@ func (w *Warehouse) Create() gin.HandlerFunc {
 // Update godoc
 // @Summary Update a warehouse
 // @Tags Warehouses
-// @Description This endpoint allows updating the information of an existing warehouse
+// @Description Update an existent warehouse based on the provided id and JSON payload
 // @Accept  json
 // @Produce  json
-// @Param token header string true "Authentication token"
-// @Success 200 {object} domain.Warehouse "Warehouse updated successfully"
-// @Failure 400 {object} web.ErrorResponse "Corpo da requisição inválido"
-// @Failure 404 {object} web.ErrorResponse "Not found"
-// @Failure 409 {object} web.ErrorResponse "Codigo de armazem ja registrado!"
-// @Failure 500 {object} web.ErrorResponse "Erro interno no servidor."
-// @Router /warehouses [put]
+// @Param id path string true "Warehouse id"
+// @Param request body UpdateWarehouseRequest true "Warehouse data"
+// @Success 200 {object} domain.Warehouse "Updated warehouse"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /warehouses [patch]
 func (w *Warehouse) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
@@ -166,17 +168,17 @@ func (w *Warehouse) Update() gin.HandlerFunc {
 }
 
 // Delete godoc
-// @Summary Delete a warehouse by ID
+// @Summary Delete a warehouse
 // @Tags Warehouses
-// @Description This endpoint allows deleting a warehouse by its ID
+// @Description Delete a warehouse based on the provided id
 // @Accept  json
 // @Produce  json
-// @Param id path string true "Warehouse ID"
-// @Success 204 {object} domain.Warehouse "No Content"
-// @Failure 400 {object} web.ErrorResponse "ID invalido"
-// @Failure 404 {object} web.ErrorResponse "Armazém não encontrado!"
-// @Failure 500 {object} web.ErrorResponse "Falha ao excluir o armazem"
-// @Router /warehouses/{id} [delete] "Falha ao excluir o armazem"
+// @Param id path string true "Warehouse id"
+// @Success 204
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /warehouses/{id} [delete]
 func (w *Warehouse) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
