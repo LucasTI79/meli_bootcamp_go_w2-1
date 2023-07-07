@@ -63,6 +63,10 @@ func (p *Locality) Create() gin.HandlerFunc {
 				web.Error(c, http.StatusConflict, err.Error())
 				return
 			}
+			if apperr.Is[*apperr.DependentResourceNotFound](err) {
+				web.Error(c, http.StatusConflict, err.Error())
+				return
+			}
 			if apperr.Is[*apperr.ResourceNotFound](err) {
 				web.Error(c, http.StatusNotFound, err.Error())
 				return
@@ -102,8 +106,8 @@ func (p *Locality) ReportSellers() gin.HandlerFunc {
 		localities, err := p.service.CountSellersByLocality(id)
 
 		if err != nil {
-			if apperr.Is[*apperr.DependentResourceNotFound](err) {
-				web.Error(c, http.StatusConflict, err.Error())
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(c, http.StatusNotFound, err.Error())
 				return
 			}
 		}
