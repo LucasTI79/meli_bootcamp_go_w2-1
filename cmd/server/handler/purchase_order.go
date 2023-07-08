@@ -56,7 +56,7 @@ func NewPurchaseOrder(service purchase_orders.Service) *PurchaseOrder{
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /purchaseOrders [post]
+// @Router /purchase-orders [post]
 func (po *PurchaseOrder) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		request := c.MustGet(RequestParamContext).(CreatePurchaseOrderRequest)

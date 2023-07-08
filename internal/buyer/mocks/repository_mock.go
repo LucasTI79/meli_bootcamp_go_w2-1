@@ -38,3 +38,13 @@ func (r *Repository) Update(buyer domain.Buyer) {
 func (r *Repository) Delete(id int) {
 	r.Called(id)
 }
+
+func (r *Repository) CountPuchasesbyAllBuyers() []domain.PuchasesByBuyerReport {
+	args := r.Called()
+	return args.Get(0).([]domain.PuchasesByBuyerReport)
+}
+
+func (r *Repository) CountPuchasesbyBuyer(id int) *domain.PuchasesByBuyerReport {
+	args := r.Called()
+	return args.Get(0).(*domain.PuchasesByBuyerReport)
+}

@@ -148,6 +148,7 @@ func (r *router) buildBuyerRoutes() {
 	buyerRoutes.POST("/", middleware.RequestValidation[handler.CreateBuyerRequest](CreateCanBeBlank), controller.Create())
 	buyerRoutes.PATCH("/:id", middleware.RequestValidation[handler.UpdateBuyerRequest](UpdateCanBeBlank), controller.Update())
 	buyerRoutes.DELETE("/:id", controller.Delete())
+	buyerRoutes.GET("/report-purchase-orders", controller.ReportPuchases())
 }
 
 func (r *router) buildLocalityRoutes() {
@@ -168,7 +169,7 @@ func (r *router) buildPurchaseOrdersRoutes() {
 	warehouseRepo := warehouse.NewRepository(r.db)
 	service := purchase_orders.NewService(repo, buyerRepo, orderStatusRepo, warehouseRepo)
 	controller := handler.NewPurchaseOrder(service)
-	purchaseOrdersRoutes := r.rg.Group("/purchaseOrders")
+	purchaseOrdersRoutes := r.rg.Group("/purchase-orders")
 
 	purchaseOrdersRoutes.POST("/", middleware.RequestValidation[handler.CreatePurchaseOrderRequest](CreateCanBeBlank), controller.Create())
 }

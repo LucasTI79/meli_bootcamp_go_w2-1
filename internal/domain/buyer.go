@@ -16,6 +16,15 @@ type UpdateBuyer struct {
 	LastName     *string `json:"last_name"`
 }
 
+type PuchasesByBuyerReport struct {
+	ID           	int    	`json:"id"`
+	CardNumberID 	string 	`json:"card_number_id"`
+	FirstName   	string 	`json:"first_name"`
+	LastName    	string 	`json:"last_name"`
+	PurchasesCount 	int		`json:"purchases_count"`
+}
+
+
 func (p *Buyer) Overlap(product UpdateBuyer) {
 	p.ID = helpers.Fill(product.ID, p.ID).(int)
 	p.CardNumberID = helpers.Fill(product.CardNumberID, p.CardNumberID).(string)

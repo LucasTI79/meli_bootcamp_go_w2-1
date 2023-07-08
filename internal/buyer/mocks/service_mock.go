@@ -34,3 +34,13 @@ func (s *Service) Delete(id int) error {
 	args := s.Called(id)
 	return args.Error(0)
 }
+
+func (s *Service) CountPuchasesbyAllBuyers() []domain.PuchasesByBuyerReport {
+	args := s.Called()
+	return args.Get(0).([]domain.PuchasesByBuyerReport)
+}
+
+func (s *Service) CountPuchasesbyBuyer(id int) (*domain.PuchasesByBuyerReport, error) {
+	args := s.Called()
+	return args.Get(0).(*domain.PuchasesByBuyerReport), args.Error(1)
+}

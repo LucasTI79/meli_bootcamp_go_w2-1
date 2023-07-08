@@ -17,6 +17,8 @@ type Service interface {
 	Create(b domain.Buyer) (*domain.Buyer, error)
 	Update(id int, b domain.UpdateBuyer) (*domain.Buyer, error)
 	Delete(id int) error
+	CountPuchasesbyAllBuyers() []domain.PuchasesByBuyerReport
+	CountPuchasesbyBuyer(id int) (*domain.PuchasesByBuyerReport, error)
 }
 
 type service struct {
@@ -27,6 +29,20 @@ func NewService(r Repository) Service {
 	return &service{
 		repository: r,
 	}
+}
+
+func (s *service) CountPuchasesbyAllBuyers() []domain.PuchasesByBuyerReport {
+	return s.repository.CountPuchasesbyAllBuyers()
+}
+
+func (s *service) CountPuchasesbyBuyer(id int) (*domain.PuchasesByBuyerReport, error) {
+	buyer := s.repository.Get(id)
+
+	if buyer == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
+	}
+
+	return s.repository.CountPuchasesbyBuyer(id), nil
 }
 
 func (s *service) GetAll() []domain.Buyer {
