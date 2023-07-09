@@ -201,15 +201,14 @@ func TestRepositorySave(t *testing.T) {
 	})
 }
 
-func TestRepositoryCountSellersByAllLocalities(t *testing.T) {
-	t.Run("Should return sellers count report by all localities", func(t *testing.T) {
+func TestRepositoryCountCountRecordsByAllProducts(t *testing.T) {
+	t.Run("Should return records count report by all products", func(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		columns := []string{"record_id", "record_name", "sellers_count"}
+		columns := []string{"product_id", "description", "records_count"}
 		rows := sqlmock.NewRows(columns)
-		recordId := 1
-		rows.AddRow(recordId, "", 1)
+		rows.AddRow(1, "", 1)
 
 		mock.ExpectQuery(regexp.QuoteMeta(record.CountRecordsByAllProductsQuery)).WillReturnRows(rows)
 
@@ -232,23 +231,23 @@ func TestRepositoryCountSellersByAllLocalities(t *testing.T) {
 	})
 }
 
-func TestRepositoryCountSellersByProductRecord(t *testing.T) {
-	t.Run("Should return sellers count report by specified record id", func(t *testing.T) {
+func TestRepositoryCountCountRecordsByProduct(t *testing.T) {
+	t.Run("Should return records count report by specified product id", func(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		columns := []string{"record_id", "record_name", "sellers_count"}
+		columns := []string{"product_id", "description", "records_count"}
 		rows := sqlmock.NewRows(columns)
-		recordId := 1
-		rows.AddRow(recordId, "", 1)
+		productId := 1
+		rows.AddRow(1, "", 1)
 
 		mock.ExpectQuery(regexp.QuoteMeta(record.CountRecordsByProductQuery)).
-			WithArgs(recordId).
+			WithArgs(productId).
 			WillReturnRows(rows)
 
 		repository := record.NewRepository(db)
 
-		result := repository.CountRecordsByProduct(recordId)
+		result := repository.CountRecordsByProduct(productId)
 
 		assert.NotNil(t, result)
 	})

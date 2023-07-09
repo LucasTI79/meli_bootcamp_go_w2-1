@@ -112,7 +112,7 @@ func TestValidationMiddleware(t *testing.T) {
 		assert.True(t, context.IsAborted())
 	})
 
-	t.Run("Should have error when try parse a request with a wrong phone format", func(t *testing.T) {
+	t.Run("Should have error when try parse a request with a wrong datetime format", func(t *testing.T) {
 		request := createCorrectRequest(fieldA, fieldB, "Date")
 		context, recorder, _ := createValidationContext(request, getMarshaledRequestInBytes[CorrectRequest])
 
