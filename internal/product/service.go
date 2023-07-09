@@ -2,7 +2,6 @@ package product
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
@@ -19,7 +18,6 @@ type Service interface {
 	Create(context.Context, domain.Product) (*domain.Product, error)
 	Update(context.Context, int, domain.UpdateProduct) (*domain.Product, error)
 	Delete(context.Context, int) error
-	Exists(productID int) error
 }
 
 type service struct {
@@ -82,13 +80,5 @@ func (s *service) Delete(ctx context.Context, id int) error {
 	}
 
 	s.repository.Delete(ctx, id)
-	return nil
-}
-
-func (s *service) Exists(productID int) error {
-	productExists := s.repository.Exists(context.Background(), strconv.Itoa(productID))
-	if !productExists {
-		return apperr.NewResourceNotFound(ResourceNotFound, productID)
-	}
 	return nil
 }

@@ -163,9 +163,9 @@ func (r *router) buildLocalityRoutes() {
 func (r *router) buildProductBtachesRoutes() {
 
 	repo := product_batches.NewRepository(r.db)
-	service := product_batches.NewService(repo, productRepo, sectionRepo)
+	service := product_batches.NewService(repo)
 	controller := handler.NewProductBatches(service)
 	productRoutes := r.rg.Group("/product-batches")
 
-	productRoutes.POST("/", middleware.RequestValidation[handler.CountProductBatchesBySection](CreateCanBeBlank), controller.Create())
+	productRoutes.POST("/", middleware.RequestValidation[handler.CreateProductBatchesRequest](CreateCanBeBlank), controller.Create())
 }
