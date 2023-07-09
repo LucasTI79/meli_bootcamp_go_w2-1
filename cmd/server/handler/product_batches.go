@@ -45,12 +45,15 @@ func (s *ProductBatches) Create() gin.HandlerFunc {
 			web.Error(c, http.StatusBadRequest, err.Error())
 			return
 		}
-
 		if err := request.Validate(); err != nil {
 			web.Error(c, http.StatusUnprocessableEntity, err.Error())
 			return
 		}
-
-		err := s.productService.ValidateProductID(request.ProductID)
+		err := s.productService.Exists(request.ProductID)
+		if err != nil {
+			web.Error(c, http.StatusNotFound, err.Error())
+			return
+		}
+		err := 
 	}
 }
