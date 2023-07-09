@@ -22,7 +22,7 @@ type CreateWarehouseRequest struct {
 func (w CreateWarehouseRequest) ToWarehouse() domain.Warehouse {
 	return domain.Warehouse{
 		ID:                 0,
-		Address:            *w.Address,
+		Address:            helpers.ToFormattedAddress(*w.Address),
 		Telephone:          *w.Telephone,
 		WarehouseCode:      *w.WarehouseCode,
 		MinimumCapacity:    *w.MinimumCapacity,
@@ -63,13 +63,14 @@ func NewWarehouse(w warehouse.Service) *Warehouse {
 // Get godoc
 // @Summary Get a warehouse by id
 // @Tags Warehouses
-// @Description Get a warehouse based on the provided id
+// @Description Get a warehouse based on the provided id. Returns a not found error if the warehouse does not exist.
 // @Accept  json
 // @Produce  json
 // @Param id path string true "Warehouse id"
 // @Success 200 {object} domain.Warehouse "Obtained warehouse"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /warehouses/{id} [get]
 func (w *Warehouse) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -89,12 +90,12 @@ func (w *Warehouse) Get() gin.HandlerFunc {
 }
 
 // GetAll godoc
-// @Summary List warehouses
+// @Summary List all warehouses
 // @Tags Warehouses
-// @Description List all warehouses
+// @Description Returns a collection of existing warehouses.
 // @Accept  json
 // @Produce  json
-// @Success 200 {array} domain.Warehouse "List of warehouses"
+// @Success 200 {array} domain.Warehouse "List of all warehouses"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /warehouses [get]
 func (w *Warehouse) GetAll() gin.HandlerFunc {
@@ -107,14 +108,14 @@ func (w *Warehouse) GetAll() gin.HandlerFunc {
 // Create godoc
 // @Summary Create a warehouse
 // @Tags Warehouses
-// @Description Create a new warehouse based on the provided JSON payload
+// @Description Create a new warehouse based on the provided JSON payload.
+// @Tags Warehouses
 // @Accept  json
 // @Produce  json
-// @Param request body CreateWarehouseRequest true "Warehouse data"
+// @Param request body CreateWarehouseRequest true "Warehouse to be created"
 // @Success 201 {object} domain.Warehouse "Created warehouse"
-// @Failure 400 {object} web.ErrorResponse "Invalid data"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
-// @Failure 422 {object} web.ErrorResponse "Unprocessable Entity"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /warehouses [post]
 func (w *Warehouse) Create() gin.HandlerFunc {
@@ -140,12 +141,14 @@ func (w *Warehouse) Create() gin.HandlerFunc {
 // @Description Update an existent warehouse based on the provided id and JSON payload
 // @Accept  json
 // @Produce  json
+// @Param warehouse body domain.UpdateWarehouse true "Warehouse data to be updated"
 // @Param id path string true "Warehouse id"
-// @Param request body UpdateWarehouseRequest true "Warehouse data"
+// @Param request body UpdateWarehouseRequest true "Warehouse with updated information"
 // @Success 200 {object} domain.Warehouse "Updated warehouse"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /warehouses [patch]
 func (w *Warehouse) Update() gin.HandlerFunc {

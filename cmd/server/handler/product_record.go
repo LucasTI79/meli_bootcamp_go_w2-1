@@ -38,12 +38,12 @@ func NewProductRecord(service record.Service) *ProductRecord {
 }
 
 // Create godoc
-// @Summary Create a new product record
-// @Description Create a new product record based on the provided JSON payload
+// @Summary Create a product record
+// @Description Create a new product record based on the provided JSON payload.
 // @Tags Product Records
 // @Accept json
 // @Produce json
-// @Param request body CreateProductRecordRequest true "ProductRecord data"
+// @Param request body CreateProductRecordRequest true "Product Record to be created"
 // @Success 201 {object} domain.ProductRecord "Created product record"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 422 {object} web.ErrorResponse "Validation error"
@@ -71,10 +71,10 @@ func (pr *ProductRecord) Create() gin.HandlerFunc {
 }
 
 // Create godoc
-// @Summary Count sellers by productRecord
-// @Description Seller count by location.
-// @Description If no query param is given, bring the report to all productRecords.
-// @Description If a location id is specified, bring the number of sellers for this productRecord.
+// @Summary Count records by products
+// @Description Record count by product.
+// @Description If no query param is given, it brings the report to all product records.
+// @Description If a product id is specified, it brings the number of records for this product.
 // @Tags ProductRecords
 // @Accept json
 // @Produce json

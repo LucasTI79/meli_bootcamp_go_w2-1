@@ -38,12 +38,12 @@ func NewLocality(service locality.Service) *Locality {
 }
 
 // Create godoc
-// @Summary Create a new locality
-// @Description Create a new locality based on the provided JSON payload
+// @Summary Create a locality
+// @Description Create a new locality based on the provided JSON payloads
 // @Tags Localities
 // @Accept json
 // @Produce json
-// @Param request body CreateLocalityRequest true "Locality data"
+// @Param request body CreateLocalityRequest true "Locality to be created"
 // @Success 201 {object} domain.Locality "Created locality"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 422 {object} web.ErrorResponse "Validation error"
@@ -72,9 +72,9 @@ func (l *Locality) Create() gin.HandlerFunc {
 
 // Create godoc
 // @Summary Count sellers by locality
-// @Description Seller count by location.
-// @Description If no query param is given, bring the report to all localities.
-// @Description If a location id is specified, bring the number of sellers for this locality.
+// @Description Seller count by locality.
+// @Description If no query param is given, it brings the report to all localities.
+// @Description If a location id is specified, it brings the number of sellers for this locality.
 // @Tags Localities
 // @Accept json
 // @Produce json
