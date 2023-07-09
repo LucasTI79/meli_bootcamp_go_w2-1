@@ -9,31 +9,27 @@ type Repository struct {
 	mock.Mock
 }
 
-func (r *Repository) Get(id int) *domain.Locality {
+func (r *Repository) Get(id int) *domain.ProductBatches {
 	args := r.Called(id)
-	return args.Get(0).(*domain.Locality)
+	return args.Get(0).(*domain.ProductBatches)
 }
-func (r *Repository) Exists(localityName string) bool {
-	args := r.Called(localityName)
+func (r *Repository) Exists(BatchNumber string) bool {
+	args := r.Called(BatchNumber)
 	return args.Get(0).(bool)
 }
-func (r *Repository) Save(locality domain.Locality) int {
-	args := r.Called(locality)
+func (r *Repository) Save(pb domain.ProductBatches) int {
+	args := r.Called(pb)
 	return args.Get(0).(int)
 }
-func (r *Repository) CountSellersByAllLocalities() []domain.SellersByLocalityReport {
-	args := r.Called()
-	return args.Get(0).([]domain.SellersByLocalityReport)
-}
-func (r *Repository) CountSellersByLocality(id int) *domain.SellersByLocalityReport {
+func (r *Repository) CheckSectionExists(id int) bool {
 	args := r.Called(id)
-	return args.Get(0).(*domain.SellersByLocalityReport)
+	return args.Get(0).(bool)
 }
-
-
-Save(pb domain.ProductBatches) int
-	Get(id int) *domain.ProductBatches
-	Exists(BatchNumber string) bool
-	CheckSectionExists(id int) bool
-	CheckProductExists(id int) bool
-	CountProductBatchesBySection() []domain.CountProductBatchesBySection
+func (r *Repository) CheckProductExists(id int) bool {
+	args := r.Called(id)
+	return args.Get(0).(bool)
+}
+func (r *Repository) CountProductBatchesBySection() []domain.CountProductBatchesBySection {
+	args := r.Called()
+	return args.Get(0).([]domain.CountProductBatchesBySection)
+}

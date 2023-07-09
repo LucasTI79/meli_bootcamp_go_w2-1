@@ -183,7 +183,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `melisprint`.`product_batches` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `batch_number` INT NOT NULL,
+  `batch_number` VARCHAR(255) NOT NULL,
   `current_quantity` INT NOT NULL,
   `current_temperature` DECIMAL(19,2) NOT NULL,
   `due_date` DATETIME(6) NOT NULL,
