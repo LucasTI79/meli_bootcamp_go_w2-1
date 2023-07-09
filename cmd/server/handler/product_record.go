@@ -88,7 +88,7 @@ func (pr *ProductRecord) ReportSellers() gin.HandlerFunc {
 		idParam := c.Request.URL.Query().Get("id")
 
 		if idParam == "" {
-			result := pr.service.CountSellersByAllProductRecords()
+			result := pr.service.CountRecordsByAllProducts()
 			web.Success(c, http.StatusOK, result)
 			return
 		}
@@ -100,7 +100,7 @@ func (pr *ProductRecord) ReportSellers() gin.HandlerFunc {
 			return
 		}
 
-		productRecords, err := pr.service.CountSellersByProductRecord(id)
+		productRecords, err := pr.service.CountRecordsByProduct(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {

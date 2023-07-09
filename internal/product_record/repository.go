@@ -74,14 +74,17 @@ func (r *repository) Get(id int) *domain.ProductRecord {
 	row := r.db.QueryRow(GetQuery, id)
 	productRecord := domain.ProductRecord{}
 	var lastUpdateDate string
+
 	err := row.Scan(&productRecord.ID, &lastUpdateDate, &productRecord.PurchasePrice, &productRecord.SalePrice, &productRecord.ProductID)
-	productRecord.LastUpdateDate = helpers.ToDateTime(lastUpdateDate)
+
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
 		}
 		panic(err)
 	}
+
+	productRecord.LastUpdateDate = helpers.ToDateTime(lastUpdateDate)
 
 	return &productRecord
 }
