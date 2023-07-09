@@ -59,12 +59,12 @@ func NewSeller(service seller.Service) *Seller {
 }
 
 // Create godoc
-// @Summary List sellers
-// @Description List all sellers
+// @Summary List all sellers
+// @Description Returns a collection of existing sellers.
 // @Tags Sellers
 // @Accept json
 // @Produce json
-// @Success 200 {object} []domain.Seller "List of sellers"
+// @Success 200 {object} []domain.Seller "List of all sellers"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sellers [get]
 func (s *Seller) GetAll() gin.HandlerFunc {
@@ -76,7 +76,7 @@ func (s *Seller) GetAll() gin.HandlerFunc {
 
 // Get godoc
 // @Summary Get a seller by id
-// @Description Get a seller based on the provided id
+// @Description Get a seller based on the provided id. Returns a not found error if the seller does not exist.
 // @Tags Sellers
 // @Accept json
 // @Produce json
@@ -104,14 +104,13 @@ func (s *Seller) Get() gin.HandlerFunc {
 }
 
 // Create godoc
-// @Summary Create a new seller
-// @Description Create a new seller based on the provided JSON payload
+// @Summary Create a seller
+// @Description Create a new seller based on the provided JSON payload.
 // @Tags Sellers
 // @Accept json
 // @Produce json
-// @Param request body CreateSellerRequest true "Seller data"
+// @Param request body CreateSellerRequest true "Seller to be created"
 // @Success 201 {object} domain.Seller "Created seller"
-// @Failure 404 {object} web.ErrorResponse "Not found error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
@@ -139,17 +138,17 @@ func (s *Seller) Create() gin.HandlerFunc {
 
 // Update godoc
 // @Summary Update a seller
-// @Description Update an existent seller based on the provided JSON payload
+// @Description Update an existent seller based on the provided id and JSON payload.
 // @Tags Sellers
 // @Accept json
 // @Produce json
 // @Param id path int true "Seller id"
-// @Param request body UpdateSellerRequest true "Seller data"
+// @Param seller body UpdateSellerRequest true "Seller data to be updated"
 // @Success 200 {object} domain.Seller "Updated seller"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sellers/{id} [patch]
 func (s *Seller) Update() gin.HandlerFunc {
@@ -182,7 +181,7 @@ func (s *Seller) Update() gin.HandlerFunc {
 
 // Delete godoc
 // @Summary Delete a seller
-// @Description Delete a seller based on the provided JSON payload
+// @Description Delete a seller based on the provided id.
 // @Tags Sellers
 // @Accept json
 // @Produce json

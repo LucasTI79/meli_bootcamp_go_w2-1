@@ -141,12 +141,12 @@ func (w *Warehouse) Create() gin.HandlerFunc {
 // @Description Update an existent warehouse based on the provided id and JSON payload.
 // @Accept  json
 // @Produce  json
-// @Param warehouse body domain.UpdateWarehouse true "Warehouse data to be updated"
 // @Param id path string true "Warehouse id"
+// @Param warehouse body domain.UpdateWarehouse true "Warehouse data to be updated"
 // @Param request body UpdateWarehouseRequest true "Warehouse with updated information"
 // @Success 200 {object} domain.Warehouse "Updated warehouse"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "Resource not found"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
