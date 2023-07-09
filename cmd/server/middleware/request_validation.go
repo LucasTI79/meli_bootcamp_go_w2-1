@@ -67,6 +67,8 @@ func readableMessageFrom(structValue interface{}, fe validator.FieldError) strin
 		message = fmt.Sprintf("'%s' é obrigatório", getFieldNameOfFieldError(structValue, fe))
 	case "e164":
 		message = fmt.Sprintf("'%s' precisa estar no formato +<country_code><zone_code><phone_number> sem espaços ou caracteres especiais, por exemplo: +5500123456789", getFieldNameOfFieldError(structValue, fe))
+	case "datetime":
+		message = fmt.Sprintf("'%s' precisa estar no formato yyyy-mm-dd hh:mm:ss", getFieldNameOfFieldError(structValue, fe))
 	default:
 		message = "erro desconhecido"
 	}
