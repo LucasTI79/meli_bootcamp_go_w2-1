@@ -21,17 +21,15 @@ type Locality struct {
 }
 
 type CreateLocalityRequest struct {
-	LocalityName string `json:"locality_name" binding:"required"`
-	ProvinceID   int    `json:"province_id" binding:"required"`
+	LocalityName *string `json:"locality_name" binding:"required"`
+	ProvinceID   *int    `json:"province_id" binding:"required"`
 }
 
 func (s CreateLocalityRequest) ToLocality() domain.Locality {
-	s.LocalityName = helpers.ToFormattedAddress(s.LocalityName)
-
 	return domain.Locality{
 		ID:           0,
-		LocalityName: s.LocalityName,
-		ProvinceID:   s.ProvinceID,
+		LocalityName: helpers.ToFormattedAddress(*s.LocalityName),
+		ProvinceID:   *s.ProvinceID,
 	}
 }
 
@@ -80,7 +78,7 @@ func (l *Locality) Create() gin.HandlerFunc {
 // @Tags Localities
 // @Accept json
 // @Produce json
-// @Success 200 {object} []domain.SellersByLocalityReport "List of localities"
+// @Success 200 {object} []domain.SellersByLocalityReport "Report of sellers by locality"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
