@@ -163,7 +163,7 @@ func (r *router) buildLocalityRoutes() {
 func (r *router) buildProductBtachesRoutes() {
 
 	repo := product_batches.NewRepository(r.db)
-	service := product_batches.NewService(repo)
+	service := product_batches.NewService(repo, productRepo, sectionRepo)
 	controller := handler.NewProductBatches(service)
 	productRoutes := r.rg.Group("/product-batches")
 
