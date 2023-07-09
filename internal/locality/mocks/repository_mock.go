@@ -9,6 +9,16 @@ type Repository struct {
 	mock.Mock
 }
 
+func (r *Repository) CountCarriersByLocality(id int) *domain.CarriersByLocalityReport {
+	args := r.Called(id)
+	return args.Get(0).(*domain.CarriersByLocalityReport)
+}
+
+func (r *Repository) CountCarriersByAllLocalities() []domain.CarriersByLocalityReport {
+	args := r.Called()
+	return args.Get(0).([]domain.CarriersByLocalityReport)
+}
+
 func (r *Repository) Get(id int) *domain.Locality {
 	args := r.Called(id)
 	return args.Get(0).(*domain.Locality)

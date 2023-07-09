@@ -15,6 +15,8 @@ const (
 type Service interface {
 	CountSellersByAllLocalities() []domain.SellersByLocalityReport
 	CountSellersByLocality(id int) (*domain.SellersByLocalityReport, error)
+	CountCarriersByAllLocalities() []domain.CarriersByLocalityReport
+	CountCarriersByLocality(id int) (*domain.CarriersByLocalityReport, error)
 	Create(locality domain.Locality) (*domain.Locality, error)
 }
 
@@ -54,4 +56,16 @@ func (s *service) Create(locality domain.Locality) (*domain.Locality, error) {
 
 	id := s.repository.Save(locality)
 	return s.repository.Get(id), nil
+}
+
+func (s *service) CountCarriersByAllLocalities() []domain.CarriersByLocalityReport {
+	return s.repository.CountCarriersByAllLocalities()
+}
+
+func (s *service) CountCarriersByLocality(id int) (*domain.CarriersByLocalityReport, error) {
+	locality := s.repository.Get(id)
+	if locality == nil {
+		return nil, apperr.NewResourceNotFound(LocalityNotFound, id)
+	}
+	return s.repository.CountCarriersByLocality(id), nil
 }

@@ -158,6 +158,7 @@ func (r *router) buildLocalityRoutes() {
 
 	localityRoutes.POST("/", middleware.RequestValidation[handler.CreateLocalityRequest](CreateCanBeBlank), controller.Create())
 	localityRoutes.GET("/report-sellers", controller.ReportSellers())
+	localityRoutes.GET("/report-carriers", controller.ReportCarriers())
 }
 
 func (r *router) buildCarriersRoutes() {

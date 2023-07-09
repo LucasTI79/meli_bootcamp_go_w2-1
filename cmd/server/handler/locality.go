@@ -114,3 +114,33 @@ func (l *Locality) ReportSellers() gin.HandlerFunc {
 		web.Success(c, http.StatusOK, localities)
 	}
 }
+
+func (l Locality) ReportCarriers() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		idParam := ctx.Request.URL.Query().Get("id")
+
+		if idParam == "" {
+			result := l.service.CountCarriersByAllLocalities()
+			web.Success(ctx, http.StatusOK, result)
+			return
+		}
+
+		id, err := strconv.Atoi(idParam)
+
+		if err != nil {
+			web.Error(ctx, http.StatusBadRequest, InvalidId, idParam)
+			return
+		}
+
+		localities, err := l.service.CountCarriersByLocality(id)
+		if err != nil {
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(ctx, http.StatusNotFound, err.Error())
+				return
+			}
+		}
+
+		web.Success(ctx, http.StatusOK, localities)
+
+	}
+}
