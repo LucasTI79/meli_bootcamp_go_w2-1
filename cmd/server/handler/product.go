@@ -94,7 +94,7 @@ func NewProduct(service product.Service) *Product {
 // @Router /products [get]
 func (p *Product) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		products := p.service.GetAll(c.Request.Context())
+		products := p.service.GetAll()
 		web.Success(c, http.StatusOK, products)
 	}
 }
@@ -115,7 +115,7 @@ func (p *Product) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 
-		product, err := p.service.Get(c.Request.Context(), id)
+		product, err := p.service.Get(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -145,7 +145,7 @@ func (p *Product) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		request := c.MustGet(RequestParamContext).(CreateProductRequest)
 
-		created, err := p.service.Create(c.Request.Context(), request.ToProduct())
+		created, err := p.service.Create(request.ToProduct())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
@@ -178,7 +178,7 @@ func (p *Product) Update() gin.HandlerFunc {
 		id := c.GetInt("Id")
 		request := c.MustGet(RequestParamContext).(UpdateProductRequest)
 
-		response, err := p.service.Update(c.Request.Context(), id, request.ToUpdateProduct())
+		response, err := p.service.Update(id, request.ToUpdateProduct())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -212,7 +212,7 @@ func (p *Product) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 
-		err := p.service.Delete(c.Request.Context(), id)
+		err := p.service.Delete(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
