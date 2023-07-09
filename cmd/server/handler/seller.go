@@ -16,23 +16,21 @@ type Seller struct {
 }
 
 type CreateSellerRequest struct {
-	CID         int    `json:"cid" binding:"required"`
-	CompanyName string `json:"company_name" binding:"required"`
-	Address     string `json:"address" binding:"required"`
-	Telephone   string `json:"telephone" binding:"required,e164"`
-	LocalityID  int    `json:"locality_id" binding:"required"`
+	CID         *int    `json:"cid" binding:"required"`
+	CompanyName *string `json:"company_name" binding:"required"`
+	Address     *string `json:"address" binding:"required"`
+	Telephone   *string `json:"telephone" binding:"required,e164"`
+	LocalityID  *int    `json:"locality_id" binding:"required"`
 }
 
 func (s CreateSellerRequest) ToSeller() domain.Seller {
-	s.Address = helpers.ToFormattedAddress(s.Address)
-
 	return domain.Seller{
 		ID:          0,
-		CID:         s.CID,
-		CompanyName: s.CompanyName,
-		Address:     s.Address,
-		Telephone:   s.Telephone,
-		LocalityID:  s.LocalityID,
+		CID:         *s.CID,
+		CompanyName: *s.CompanyName,
+		Address:     helpers.ToFormattedAddress(*s.Address),
+		Telephone:   *s.Telephone,
+		LocalityID:  *s.LocalityID,
 	}
 }
 
