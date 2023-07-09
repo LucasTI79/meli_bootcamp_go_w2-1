@@ -6,6 +6,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/helpers"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
 )
@@ -38,6 +39,8 @@ type UpdateWarehouseRequest struct {
 }
 
 func (w UpdateWarehouseRequest) ToUpdateWarehouse() domain.UpdateWarehouse {
+	*w.Address = helpers.ToFormattedAddress(*w.Address)
+
 	return domain.UpdateWarehouse{
 		Address:            w.Address,
 		Telephone:          w.Telephone,
