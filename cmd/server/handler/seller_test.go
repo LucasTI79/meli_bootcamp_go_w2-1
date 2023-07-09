@@ -24,6 +24,7 @@ var (
 		CompanyName: "Company Name",
 		Address:     "Address",
 		Telephone:   "Telephone",
+		LocalityID:  1,
 	}
 )
 
@@ -33,6 +34,7 @@ func TestCreateSeller(t *testing.T) {
 		CompanyName: &mockedSeller.CompanyName,
 		Address:     &mockedSeller.Address,
 		Telephone:   &mockedSeller.Telephone,
+		LocalityID:  &mockedSeller.LocalityID,
 	}
 
 	t.Run("Should return conflict error when cid already exists", func(t *testing.T) {
