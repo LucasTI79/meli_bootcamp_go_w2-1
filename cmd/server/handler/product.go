@@ -84,12 +84,12 @@ func NewProduct(service product.Service) *Product {
 }
 
 // Create godoc
-// @Summary List products
-// @Description List all products
+// @Summary List all products
+// @Description Returns a collection of existing products.
 // @Tags Products
 // @Accept json
 // @Produce json
-// @Success 200 {object} []domain.Product "List of products"
+// @Success 200 {object} []domain.Product "List of all products"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /products [get]
 func (p *Product) GetAll() gin.HandlerFunc {
@@ -101,7 +101,7 @@ func (p *Product) GetAll() gin.HandlerFunc {
 
 // Get godoc
 // @Summary Get a product by id
-// @Description Get a product based on the provided id
+// @Description Get a product based on the provided id. Returns a not found error if the warehouse does not exist.
 // @Tags Products
 // @Accept json
 // @Produce json
@@ -129,16 +129,15 @@ func (p *Product) Get() gin.HandlerFunc {
 }
 
 // Create godoc
-// @Summary Create a new product
-// @Description Create a new product based on the provided JSON payload
+// @Summary Create a product
+// @Description Create a new product based on the provided JSON payload.
 // @Tags Products
 // @Accept json
 // @Produce json
-// @Param request body CreateProductRequest true "Product data"
+// @Param request body CreateProductRequest true "Product to be created"
 // @Success 201 {object} domain.Product "Created product"
-// @Failure 422 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "Not found error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /products [post]
 func (p *Product) Create() gin.HandlerFunc {
@@ -160,7 +159,7 @@ func (p *Product) Create() gin.HandlerFunc {
 
 // Update godoc
 // @Summary Update a product
-// @Description Update an existent product based on the provided JSON payload
+// @Description Update an existent product based on the provided id and JSON payload.
 // @Tags Products
 // @Accept json
 // @Produce json
@@ -198,7 +197,7 @@ func (p *Product) Update() gin.HandlerFunc {
 
 // Delete godoc
 // @Summary Delete a product
-// @Description Delete a product based on the provided JSON payload
+// @Description Delete a product based on the provided id.
 // @Tags Products
 // @Accept json
 // @Produce json

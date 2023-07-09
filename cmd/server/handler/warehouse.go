@@ -138,7 +138,7 @@ func (w *Warehouse) Create() gin.HandlerFunc {
 // Update godoc
 // @Summary Update a warehouse
 // @Tags Warehouses
-// @Description Update an existent warehouse based on the provided id and JSON payload
+// @Description Update an existent warehouse based on the provided id and JSON payload.
 // @Accept  json
 // @Produce  json
 // @Param warehouse body domain.UpdateWarehouse true "Warehouse data to be updated"
@@ -176,7 +176,7 @@ func (w *Warehouse) Update() gin.HandlerFunc {
 // Delete godoc
 // @Summary Delete a warehouse
 // @Tags Warehouses
-// @Description Delete a warehouse based on the provided id
+// @Description Delete a warehouse based on the provided id.
 // @Accept  json
 // @Produce  json
 // @Param id path string true "Warehouse id"
