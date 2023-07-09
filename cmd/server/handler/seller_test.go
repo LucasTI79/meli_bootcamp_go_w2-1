@@ -29,10 +29,10 @@ var (
 
 func TestCreateSeller(t *testing.T) {
 	requestObject := handler.CreateSellerRequest{
-		CID:         mockedSeller.CID,
-		CompanyName: mockedSeller.CompanyName,
-		Address:     mockedSeller.Address,
-		Telephone:   mockedSeller.Telephone,
+		CID:         &mockedSeller.CID,
+		CompanyName: &mockedSeller.CompanyName,
+		Address:     &mockedSeller.Address,
+		Telephone:   &mockedSeller.Telephone,
 	}
 
 	t.Run("Should return conflict error when cid already exists", func(t *testing.T) {
