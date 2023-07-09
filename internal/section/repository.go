@@ -8,6 +8,10 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
 
+const (
+	SectionExists = "SELECT id FROM sections WHERE id=?"
+)
+
 type Repository interface {
 	GetAll(ctx context.Context) []domain.Section
 	Get(ctx context.Context, id int) *domain.Section
@@ -15,6 +19,7 @@ type Repository interface {
 	Save(ctx context.Context, sc domain.Section) int
 	Update(ctx context.Context, s domain.Section)
 	Delete(ctx context.Context, id int)
+	ExistSectionID(sectionID int) bool
 }
 
 type repository struct {
@@ -111,4 +116,10 @@ func (r *repository) Delete(ctx context.Context, id int) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (r *repository) ExistSectionID(sectionID int) bool {
+	row := r.db.QueryRow(SectionExists, sectionID)
+	err := row.Scan(&sectionID)
+	return err == nil
 }

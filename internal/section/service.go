@@ -18,13 +18,14 @@ type Service interface {
 	Create(ctx context.Context, sc domain.Section) (*domain.Section, error)
 	Update(context.Context, int, domain.UpdateSection) (*domain.Section, error)
 	Delete(context.Context, int) error
+	ExistsSectionID(productID int) error
 }
 type service struct {
 	repository Repository
 }
 
 func NewService(r Repository) Service {
-	return &service{repository: r,}
+	return &service{repository: r}
 }
 
 func (s *service) GetAll(c context.Context) []domain.Section {
@@ -80,5 +81,13 @@ func (s *service) Delete(ctx context.Context, id int) error {
 	}
 
 	s.repository.Delete(ctx, id)
+	return nil
+}
+
+func (s *service) ExistsSectionID(productID int) error {
+	sectionExists := s.repository.Exists(context.Background(), productID)
+	if !sectionExists {
+		return apperr.NewResourceNotFound(ResourceNotFound, productID)
+	}
 	return nil
 }
