@@ -11,6 +11,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/locality"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_record"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/province"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
@@ -51,6 +52,7 @@ func (r *router) MapRoutes() {
 	r.buildEmployeeRoutes()
 	r.buildBuyerRoutes()
 	r.buildLocalityRoutes()
+	r.buildProductRecordRoutes()
 }
 
 func (r *router) setGroup() {
@@ -156,4 +158,15 @@ func (r *router) buildLocalityRoutes() {
 
 	localityRoutes.POST("/", middleware.RequestValidation[handler.CreateLocalityRequest](CreateCanBeBlank), controller.Create())
 	localityRoutes.GET("/report-sellers", controller.ReportSellers())
+}
+
+func (r *router) buildProductRecordRoutes() {
+	repo := product_record.NewRepository(r.db)
+	productRepo := product.NewRepository(r.db)
+	service := product_record.NewService(repo, productRepo)
+	controller := handler.NewProductRecord(service)
+	productRecordRoutes := r.rg.Group("/product-records")
+
+	productRecordRoutes.POST("/", middleware.RequestValidation[handler.CreateProductRecordRequest](CreateCanBeBlank), controller.Create())
+	productRecordRoutes.GET("/report-records", controller.ReportSellers())
 }
