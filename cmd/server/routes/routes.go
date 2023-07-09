@@ -168,5 +168,5 @@ func (r *router) buildProductRecordRoutes() {
 	productRecordRoutes := r.rg.Group("/product-records")
 
 	productRecordRoutes.POST("/", middleware.RequestValidation[handler.CreateProductRecordRequest](CreateCanBeBlank), controller.Create())
-	productRecordRoutes.GET("/report-records", controller.ReportSellers())
+	productRecordRoutes.GET("/report-records", controller.ReportProductRecords())
 }
