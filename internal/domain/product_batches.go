@@ -2,7 +2,7 @@ package domain
 
 type ProductBatches struct {
 	ID                 int     `json:"id"`
-	BatchNumber        string  `json:"batch_number"`
+	BatchNumber        int     `json:"batch_number"`
 	CurrentQuantity    int     `json:"current_quantity"`
 	CurrentTemperature float64 `json:"current_temperature"`
 	DueDate            string  `json:"due_date"`
