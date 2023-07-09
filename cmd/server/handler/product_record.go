@@ -83,7 +83,7 @@ func (pr *ProductRecord) Create() gin.HandlerFunc {
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /product-records [get]
-func (pr *ProductRecord) ReportSellers() gin.HandlerFunc {
+func (pr *ProductRecord) ReportProductRecords() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Request.URL.Query().Get("id")
 
