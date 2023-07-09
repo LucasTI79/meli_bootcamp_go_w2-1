@@ -167,6 +167,5 @@ func (r *router) buildProductBtachesRoutes() {
 	controller := handler.NewProductBatches(service)
 	productRoutes := r.rg.Group("/product-batches")
 
-	productRoutes.GET("/report-products?id=1", controller.Get())
-	productRoutes.POST("/", middleware.RequestValidation[handler.CreateProductBatchesRequest](CreateCanBeBlank), controller.Create())
+	productRoutes.POST("/", middleware.RequestValidation[handler.CountProductBatchesBySection](CreateCanBeBlank), controller.Create())
 }

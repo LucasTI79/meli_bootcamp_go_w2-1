@@ -17,6 +17,12 @@ type ProductBatches struct {
 	productService      product.Service
 }
 
+type CountProductBatchesBySection struct {
+	SectionID     int `json:"section_id"`
+	SectionNumber int `json:"section_number"`
+	ProductsCount int `json:"products_count"`
+}
+
 func NewProductBatches(pb product_batches.Service, sectionService section.Service, productService product.Service) *ProductBatches {
 	return &ProductBatches{
 		productBatchService: pb,
@@ -26,16 +32,16 @@ func NewProductBatches(pb product_batches.Service, sectionService section.Servic
 }
 
 // Create godoc
-// @Summary Create a new product batches
+// @Summary Create/ Save a new product batches
 // @Description Create a new product batches based on the provided JSON payload
 // @Tags ProductBatches
 // @Accept json
 // @Produce json
 // @Param request body CreateProductBatchesRequest true "Product Batches data"
 // @Success 201 {object} domain.ProductBatches "Created product batches"
+// @Failure 400 {object} web.ErrorResponse "Bad request"
 // @Failure 404 {object} web.ErrorResponse "Not found"
-// @Failure 409 {object} web.ErrorResponse "Conflict error"
-// @Failure 422 {object} web.ErrorResponse "Validation error"
+// @Failure 422 {object} web.ErrorResponse "Unprocessable Entity"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /product-batches [post]
 func (s *ProductBatches) Create() gin.HandlerFunc {
@@ -59,7 +65,12 @@ func (s *ProductBatches) Create() gin.HandlerFunc {
 			web.Error(c, http.StatusNotFound, err.Error())
 			return
 		}
-		productBatchesID, err := s.productBatchService.Save(c, request)
-
+		productBatchesID, err := s.productBatchService.Save(request)
+		if err != nil {
+			web.Error(c, http.StatusInternalServerError, err.Error())
+			return
+		}
+		request.ID = productBatchesID
+		web.Success(c, http.StatusCreated, request)
 	}
 }
