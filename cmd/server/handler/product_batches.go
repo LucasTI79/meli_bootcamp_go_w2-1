@@ -54,7 +54,12 @@ func (s *ProductBatches) Create() gin.HandlerFunc {
 			web.Error(c, http.StatusNotFound, err.Error())
 			return
 		}
-		err = s.sectionService.Exists(ctx, request.ProductID)
+		err = s.sectionService.ExistsSectionID(request.SectionID)
+		if err != nil {
+			web.Error(c, http.StatusNotFound, err.Error())
+			return
+		}
+		productBatchesID, err := s.productBatchService.Save(c, request)
 
 	}
 }
