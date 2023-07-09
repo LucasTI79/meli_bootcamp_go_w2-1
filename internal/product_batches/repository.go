@@ -46,7 +46,6 @@ func (r *repository) Save(pb domain.ProductBatches) int {
 	if err != nil {
 		panic(err)
 	}
-
 	return int(id)
 }
 
