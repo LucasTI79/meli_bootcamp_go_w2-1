@@ -1,7 +1,6 @@
 package mocks
 
 import (
-
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/stretchr/testify/mock"
 )
@@ -35,12 +34,12 @@ func (s *Service) Delete(id int) error {
 	return args.Error(0)
 }
 
-func (s *Service) CountPuchasesbyAllBuyers() []domain.PuchasesByBuyerReport {
+func (s *Service) CountPurchasesByAllBuyers() []domain.PurchasesByBuyerReport {
 	args := s.Called()
-	return args.Get(0).([]domain.PuchasesByBuyerReport)
+	return args.Get(0).([]domain.PurchasesByBuyerReport)
 }
 
-func (s *Service) CountPuchasesbyBuyer(id int) (*domain.PuchasesByBuyerReport, error) {
-	args := s.Called()
-	return args.Get(0).(*domain.PuchasesByBuyerReport), args.Error(1)
+func (s *Service) CountPurchasesByBuyer(id int) (*domain.PurchasesByBuyerReport, error) {
+	args := s.Called(id)
+	return args.Get(0).(*domain.PurchasesByBuyerReport), args.Error(1)
 }

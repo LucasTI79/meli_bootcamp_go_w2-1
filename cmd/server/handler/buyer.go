@@ -209,7 +209,7 @@ func (b *Buyer) ReportPuchases() gin.HandlerFunc {
 		idParam := c.Request.URL.Query().Get("id")
 
 		if idParam == "" {
-			result := b.buyerService.CountPuchasesbyAllBuyers()
+			result := b.buyerService.CountPurchasesByAllBuyers()
 			web.Success(c, http.StatusOK, result)
 			return
 		}
@@ -221,7 +221,7 @@ func (b *Buyer) ReportPuchases() gin.HandlerFunc {
 			return
 		}
 
-		purchases, err := b.buyerService.CountPuchasesbyBuyer(id)
+		purchases, err := b.buyerService.CountPurchasesByBuyer(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {

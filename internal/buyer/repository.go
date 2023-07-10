@@ -9,18 +9,18 @@ import (
 
 const (
 	GetAllQuery = "SELECT id, card_number_id, first_name, last_name FROM buyers"
-	GetQuery = "SELECT id, card_number_id, first_name, last_name FROM buyers WHERE id = ?;"
+	GetQuery    = "SELECT id, card_number_id, first_name, last_name FROM buyers WHERE id = ?;"
 	ExistsQuery = "SELECT card_number_id FROM buyers WHERE card_number_id=?;"
 	InsertQuery = "INSERT INTO buyers(card_number_id,first_name,last_name) VALUES (?,?,?)"
 	UpdateQuery = "UPDATE buyers SET card_number_id=?, first_name=?, last_name=?  WHERE id=?"
 	DeleteQuery = "DELETE FROM buyers WHERE id = ?"
 
-	CountPuchasesbyAllBuyers = `SELECT b.id, b.card_number_id, b.first_name, b.last_name, count(po.id) "purchase_orders_count"
+	CountPurchasesByAllBuyers = `SELECT b.id, b.card_number_id, b.first_name, b.last_name, count(po.id) "purchase_orders_count"
 		FROM buyers b
 		JOIN purchase_orders po ON b.id = po.buyer_id
 		GROUP BY b.id`
 
-	CountPuchasesbyBuyer = `SELECT b.id, b.card_number_id, b.first_name, b.last_name, count(po.id) "purchase_orders_count"
+	CountPurchasesByBuyer = `SELECT b.id, b.card_number_id, b.first_name, b.last_name, count(po.id) "purchase_orders_count"
 		FROM buyers b
 		JOIN purchase_orders po ON b.id = po.buyer_id
 		WHERE b.id=?
@@ -34,8 +34,8 @@ type Repository interface {
 	Save(b domain.Buyer) int
 	Update(b domain.Buyer)
 	Delete(id int)
-	CountPuchasesbyAllBuyers() []domain.PuchasesByBuyerReport
-	CountPuchasesbyBuyer(id int) *domain.PuchasesByBuyerReport
+	CountPurchasesByAllBuyers() []domain.PurchasesByBuyerReport
+	CountPurchasesByBuyer(id int) *domain.PurchasesByBuyerReport
 }
 
 type repository struct {
@@ -128,26 +128,26 @@ func (r *repository) Delete(id int) {
 	}
 }
 
-func (r *repository) CountPuchasesbyAllBuyers() []domain.PuchasesByBuyerReport {
-	rows, err := r.db.Query(CountPuchasesbyAllBuyers)
+func (r *repository) CountPurchasesByAllBuyers() []domain.PurchasesByBuyerReport {
+	rows, err := r.db.Query(CountPurchasesByAllBuyers)
 	if err != nil {
 		panic(err)
 	}
 
-	puchasesByBuyer := make([]domain.PuchasesByBuyerReport, 0)
+	purchasesByBuyer := make([]domain.PurchasesByBuyerReport, 0)
 
 	for rows.Next() {
-		b := domain.PuchasesByBuyerReport{}
+		b := domain.PurchasesByBuyerReport{}
 		_ = rows.Scan(&b.ID, &b.CardNumberID, &b.FirstName, &b.LastName, &b.PurchasesCount)
-		puchasesByBuyer = append(puchasesByBuyer, b)
+		purchasesByBuyer = append(purchasesByBuyer, b)
 	}
 
-	return puchasesByBuyer
+	return purchasesByBuyer
 }
 
-func (r *repository) CountPuchasesbyBuyer(id int) *domain.PuchasesByBuyerReport{
-	rows := r.db.QueryRow(CountPuchasesbyBuyer, id)
-	b := domain.PuchasesByBuyerReport{}
+func (r *repository) CountPurchasesByBuyer(id int) *domain.PurchasesByBuyerReport {
+	rows := r.db.QueryRow(CountPurchasesByBuyer, id)
+	b := domain.PurchasesByBuyerReport{}
 	err := rows.Scan(&b.ID, &b.CardNumberID, &b.FirstName, &b.LastName, &b.PurchasesCount)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

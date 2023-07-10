@@ -1,7 +1,6 @@
 package mocks
 
 import (
-
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/stretchr/testify/mock"
 )
@@ -39,12 +38,12 @@ func (r *Repository) Delete(id int) {
 	r.Called(id)
 }
 
-func (r *Repository) CountPuchasesbyAllBuyers() []domain.PuchasesByBuyerReport {
+func (r *Repository) CountPurchasesByAllBuyers() []domain.PurchasesByBuyerReport {
 	args := r.Called()
-	return args.Get(0).([]domain.PuchasesByBuyerReport)
+	return args.Get(0).([]domain.PurchasesByBuyerReport)
 }
 
-func (r *Repository) CountPuchasesbyBuyer(id int) *domain.PuchasesByBuyerReport {
-	args := r.Called()
-	return args.Get(0).(*domain.PuchasesByBuyerReport)
+func (r *Repository) CountPurchasesByBuyer(id int) *domain.PurchasesByBuyerReport {
+	args := r.Called(id)
+	return args.Get(0).(*domain.PurchasesByBuyerReport)
 }

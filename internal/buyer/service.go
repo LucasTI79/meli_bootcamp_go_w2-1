@@ -1,7 +1,6 @@
 package buyer
 
 import (
-
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 )
@@ -17,8 +16,8 @@ type Service interface {
 	Create(b domain.Buyer) (*domain.Buyer, error)
 	Update(id int, b domain.UpdateBuyer) (*domain.Buyer, error)
 	Delete(id int) error
-	CountPuchasesbyAllBuyers() []domain.PuchasesByBuyerReport
-	CountPuchasesbyBuyer(id int) (*domain.PuchasesByBuyerReport, error)
+	CountPurchasesByAllBuyers() []domain.PurchasesByBuyerReport
+	CountPurchasesByBuyer(id int) (*domain.PurchasesByBuyerReport, error)
 }
 
 type service struct {
@@ -31,18 +30,18 @@ func NewService(r Repository) Service {
 	}
 }
 
-func (s *service) CountPuchasesbyAllBuyers() []domain.PuchasesByBuyerReport {
-	return s.repository.CountPuchasesbyAllBuyers()
+func (s *service) CountPurchasesByAllBuyers() []domain.PurchasesByBuyerReport {
+	return s.repository.CountPurchasesByAllBuyers()
 }
 
-func (s *service) CountPuchasesbyBuyer(id int) (*domain.PuchasesByBuyerReport, error) {
+func (s *service) CountPurchasesByBuyer(id int) (*domain.PurchasesByBuyerReport, error) {
 	buyer := s.repository.Get(id)
 
 	if buyer == nil {
 		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
 	}
 
-	return s.repository.CountPuchasesbyBuyer(id), nil
+	return s.repository.CountPurchasesByBuyer(id), nil
 }
 
 func (s *service) GetAll() []domain.Buyer {

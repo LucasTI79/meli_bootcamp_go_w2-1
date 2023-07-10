@@ -155,6 +155,70 @@ func TestServiceDelete(t *testing.T) {
 	})
 }
 
+func TestServiceCountPurchasesByAllBuyers(t *testing.T) {
+	t.Run("Should return purchases count report by all buyers", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		mockedPurchasesByBuyerReport := domain.PurchasesByBuyerReport{
+			ID:             1,
+			CardNumberID:   "ABC123",
+			FirstName:      "Nome",
+			LastName:       "Sobrenome",
+			PurchasesCount: 1,
+		}
+
+		mockedPurchasesByAllBuyerReport := []domain.PurchasesByBuyerReport{mockedPurchasesByBuyerReport}
+
+		repository.On("CountPurchasesByAllBuyers").Return(mockedPurchasesByAllBuyerReport)
+
+		result := service.CountPurchasesByAllBuyers()
+
+		assert.Equal(t, 1, len(result))
+		assert.Equal(t, result[0], mockedPurchasesByBuyerReport)
+	})
+}
+
+func TestServiceCountPurchasesByBuyer(t *testing.T) {
+	t.Run("Should return purchases count report by specified buyer id", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		buyerID := 1
+		buyer := mockedBuyer
+
+		mockedPurchasesByBuyerReport := domain.PurchasesByBuyerReport{
+			ID:             buyerID,
+			CardNumberID:   "ABC123",
+			FirstName:      "Nome",
+			LastName:       "Sobrenome",
+			PurchasesCount: 1,
+		}
+
+		repository.On("Get", buyerID).Return(&buyer)
+		repository.On("CountPurchasesByBuyer", buyerID).Return(&mockedPurchasesByBuyerReport)
+
+		result, err := service.CountPurchasesByBuyer(buyerID)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, *result, mockedPurchasesByBuyerReport)
+	})
+
+	t.Run("Should return not found when buyer ID does not exist", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		buyerID := 1
+
+		var buyerRepositoryGetResult *domain.Buyer
+		repository.On("Get", buyerID).Return(buyerRepositoryGetResult)
+
+		result, err := service.CountPurchasesByBuyer(buyerID)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.ResourceNotFound](err))
+	})
+}
+
 func CreateService(t *testing.T) (buyer.Service, *mocks.Repository) {
 	t.Helper()
 	repository := new(mocks.Repository)

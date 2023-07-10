@@ -4,13 +4,29 @@ import (
 	"database/sql"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRepositoryCountPuchasesbyAllBuyers(t *testing.T) {
+var (
+	mockedPurchaseOrderTemplate = domain.PurchaseOrders{
+		ID:              1,
+		OrderNumber:     "order#123",
+		OrderDate:       time.Date(2023, 07, 10, 0, 0, 0, 0, time.UTC),
+		TrackingCode:    "TRACK007",
+		BuyerID:         1,
+		CarrierID:       1,
+		ProductRecordID: 1,
+		OrderStatusID:   1,
+		WarehouseID:     1,
+	}
+)
+
+func TestRepositoryCountPurchasesByAllBuyers(t *testing.T) {
 	t.Run("Should return purchases count report by all buyers", func(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
@@ -20,11 +36,11 @@ func TestRepositoryCountPuchasesbyAllBuyers(t *testing.T) {
 		buyerID := 1
 		rows.AddRow(buyerID, "", "", "", 1)
 
-		mock.ExpectQuery(regexp.QuoteMeta(buyer.CountPuchasesbyAllBuyers)).WillReturnRows(rows)
+		mock.ExpectQuery(regexp.QuoteMeta(buyer.CountPurchasesByAllBuyers)).WillReturnRows(rows)
 
 		repository := buyer.NewRepository(db)
 
-		result := repository.CountPuchasesbyAllBuyers()
+		result := repository.CountPurchasesByAllBuyers()
 
 		assert.Equal(t, len(result), 1)
 	})
@@ -33,15 +49,15 @@ func TestRepositoryCountPuchasesbyAllBuyers(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		mock.ExpectQuery(regexp.QuoteMeta(buyer.CountPuchasesbyAllBuyers)).WillReturnError(sql.ErrConnDone)
+		mock.ExpectQuery(regexp.QuoteMeta(buyer.CountPurchasesByAllBuyers)).WillReturnError(sql.ErrConnDone)
 
 		repository := buyer.NewRepository(db)
 
-		assert.Panics(t, func() { repository.CountPuchasesbyAllBuyers() })
+		assert.Panics(t, func() { repository.CountPurchasesByAllBuyers() })
 	})
 }
 
-func TestRepositoryCountPuchasesbyBuyer(t *testing.T) {
+func TestRepositoryCountPurchasesByBuyer(t *testing.T) {
 	t.Run("Should return purchases count report by specified buyer id", func(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
@@ -51,13 +67,13 @@ func TestRepositoryCountPuchasesbyBuyer(t *testing.T) {
 		buyerID := 1
 		rows.AddRow(buyerID, "", "", "", 1)
 
-		mock.ExpectQuery(regexp.QuoteMeta(buyer.CountPuchasesbyBuyer)).
+		mock.ExpectQuery(regexp.QuoteMeta(buyer.CountPurchasesByBuyer)).
 			WithArgs(buyerID).
 			WillReturnRows(rows)
 
 		repository := buyer.NewRepository(db)
 
-		result := repository.CountPuchasesbyBuyer(buyerID)
+		result := repository.CountPurchasesByBuyer(buyerID)
 
 		assert.NotNil(t, result)
 	})
@@ -67,11 +83,11 @@ func TestRepositoryCountPuchasesbyBuyer(t *testing.T) {
 		defer db.Close()
 
 		buyerID := 1
-		mock.ExpectQuery(regexp.QuoteMeta(buyer.CountPuchasesbyBuyer)).WillReturnError(sql.ErrNoRows)
+		mock.ExpectQuery(regexp.QuoteMeta(buyer.CountPurchasesByBuyer)).WillReturnError(sql.ErrNoRows)
 
 		repository := buyer.NewRepository(db)
 
-		result := repository.CountPuchasesbyBuyer(buyerID)
+		result := repository.CountPurchasesByBuyer(buyerID)
 
 		assert.Nil(t, result)
 	})
@@ -81,11 +97,11 @@ func TestRepositoryCountPuchasesbyBuyer(t *testing.T) {
 		defer db.Close()
 
 		localityId := 1
-		mock.ExpectQuery(regexp.QuoteMeta(buyer.CountPuchasesbyBuyer)).WillReturnError(sql.ErrConnDone)
+		mock.ExpectQuery(regexp.QuoteMeta(buyer.CountPurchasesByBuyer)).WillReturnError(sql.ErrConnDone)
 
 		repository := buyer.NewRepository(db)
 
-		assert.Panics(t, func() { repository.CountPuchasesbyBuyer(localityId) })
+		assert.Panics(t, func() { repository.CountPurchasesByBuyer(localityId) })
 	})
 }
 
