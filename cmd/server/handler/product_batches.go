@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batches"
@@ -26,29 +25,6 @@ type CreateProductBatchesRequest struct {
 	MinimumTemperature int     `json:"minimum_temperature"`
 	ProductID          int     `json:"product_id"`
 	SectionID          int     `json:"section_id"`
-}
-
-func DataConvert(pb CreateProductBatchesRequest) (product_batches.ProductBatches, error) {
-	Duedate, err := time.Parse("2023-07-07", pb.DueDate)
-	if err != nil {
-		return product_batches.ProductBatches{}, err
-	}
-	ManufacturingDate, err := time.Parse("2023-07-07", pb.ManufacturingDate)
-	if err != nil {
-		return product_batches.ProductBatches{}, err
-	}
-	return product_batches.ProductBatches{
-		BatchNumber:        pb.BatchNumber,
-		CurrentQuantity:    pb.CurrentQuantity,
-		CurrentTemperature: pb.CurrentTemperature,
-		DueDate:            Duedate,
-		InitialQuantity:    pb.InitialQuantity,
-		ManufacturingDate:  ManufacturingDate,
-		ManufacturingHour:  pb.ManufacturingHour,
-		MinimumTemperature: pb.MinimumTemperature,
-		ProductID:          pb.ProductID,
-		SectionID:          pb.SectionID,
-	}, nil
 }
 
 func (s *CreateProductBatchesRequest) ToProductBatches() domain.ProductBatches {
@@ -117,14 +93,29 @@ func (pb *ProductBatches) Create() gin.HandlerFunc {
 	}
 }
 
+// Create godoc
+// @Summary Get all product batches
+// @Description product batches
+// @Description If no query param is given, bring the report to all product batches.
+// @Tags ProductBatches
+// @Accept json
+// @Produce json
+// @Success 200 {object} []domain.ProductBatches "List of product batches"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /api/v1/sections/report-product [get]
 func (pb *ProductBatches) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.Param("id")
-		productBatches, err := pb.productBatchService.Get(id)
+		id, err := pb.productBatchService.Get()
 		if err != nil {
 			web.Error(c, http.StatusInternalServerError, err.Error())
 			return
 		}
-		web.Success(c, http.StatusOK, productBatches)
+		if len(id) == 0 {
+			web.Error(c, http.StatusNotFound, "product batches not found")
+			return
+		}
+		web.Success(c, http.StatusOK, id)
 	}
 }

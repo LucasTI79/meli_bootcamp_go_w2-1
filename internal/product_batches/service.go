@@ -24,6 +24,7 @@ type ProductBatches struct {
 type Service interface {
 	Create(pb domain.ProductBatches) (domain.ProductBatches, error)
 	Exists(batchNumber int) (bool, error)
+	Get() ([]domain.ProductBatches, error)
 }
 type service struct {
 	repository Repository
@@ -62,4 +63,12 @@ func (s *service) Create(pb domain.ProductBatches) (domain.ProductBatches, error
 
 func (s *service) Exists(batchNumber int) (bool, error) {
 	return s.repository.Exists(batchNumber), nil
+}
+
+func (s *service) Get() ([]domain.ProductBatches, error) {
+	productsbratches, err := s.repository.Get()
+	if err != nil {
+		return productsbratches, err
+	}
+	return productsbratches, nil
 }

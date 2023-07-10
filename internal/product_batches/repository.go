@@ -10,6 +10,7 @@ type Repository interface {
 	Create(pb domain.ProductBatches) (domain.ProductBatches, error)
 	Exists(batchNumber int) bool
 	Save(pb domain.ProductBatches) (int, error)
+	Get() ([]domain.ProductBatches, error)
 }
 
 type repository struct {
@@ -66,4 +67,24 @@ func (r *repository) Save(pb domain.ProductBatches) (int, error) {
 		panic(err)
 	}
 	return int(id), nil
+}
+
+func (r *repository) Get() ([]domain.ProductBatches, error) {
+	query := "SELECT * FROM product_batches"
+	rows, err := r.db.Query(query)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+	var productBatches []domain.ProductBatches
+	for rows.Next() {
+		var pb domain.ProductBatches
+		err := rows.Scan(&pb.ID, &pb.BatchNumber, &pb.CurrentQuantity, &pb.CurrentTemperature, &pb.DueDate, &pb.InitialQuantity, &pb.ManufacturingDate, &pb.ManufacturingHour, &pb.MinimumTemperature, &pb.ProductID, &pb.SectionID)
+		if err != nil {
+			panic(err)
+		}
+		productBatches = append(productBatches, pb)
+	}
+	return productBatches, nil
 }
