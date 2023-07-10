@@ -2,13 +2,27 @@ package product_batches_test
 
 import (
 	"database/sql"
-	//"regexp"
 	"testing"
 
-	//"github.com/DATA-DOG/go-sqlmock"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batches"
 	"github.com/stretchr/testify/assert"
+)
+
+var (
+	mockedProductBatches = domain.ProductBatches{
+		ID:                 1,
+		BatchNumber:        1,
+		CurrentQuantity:    1,
+		CurrentTemperature: 2,
+		DueDate:            "2021-01-01",
+		InitialQuantity:    10,
+		ManufacturingDate:  "2021-01-01",
+		ManufacturingHour:  "10:00",
+		MinimumTemperature: 0,
+		ProductID:          1,
+		SectionID:          1,
+	}
 )
 
 func TestRepositoryCreate(t *testing.T) {

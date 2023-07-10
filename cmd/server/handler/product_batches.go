@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batches"
@@ -107,15 +108,21 @@ func (pb *ProductBatches) Create() gin.HandlerFunc {
 // @Router /api/v1/sections/report-product [get]
 func (pb *ProductBatches) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id, err := pb.productBatchService.Get()
+
+		result, err := pb.productBatchService.Get()
 		if err != nil {
 			web.Error(c, http.StatusInternalServerError, err.Error())
 			return
 		}
-		if len(id) == 0 {
-			web.Error(c, http.StatusNotFound, "product batches not found")
+
+		idParam := c.Request.URL.Query().Get("id")
+		if idParam == "" {
+			web.Success(c, http.StatusOK, result)
 			return
 		}
-		web.Success(c, http.StatusOK, id)
+		id, err := strconv.Atoi(idParam)
+		result, err = pb.productBatchService.GetAllByID(id)
+
+		web.Success(c, http.StatusOK, result)
 	}
 }
