@@ -39,7 +39,7 @@ func NewLocality(service locality.Service) *Locality {
 
 // Create godoc
 // @Summary Create a locality
-// @Description Create a new locality based on the provided JSON payloads
+// @Description Create a new locality based on the provided JSON payload.
 // @Tags Localities
 // @Accept json
 // @Produce json

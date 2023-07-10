@@ -123,7 +123,7 @@ func (b *Buyer) Create() gin.HandlerFunc {
 
 // Update godoc
 // @Summary Update a buyer
-// @Description Update an existent buyer based on the provided id and JSON payload
+// @Description Update an existent buyer based on the provided id and JSON payload.
 // @Tags Buyers
 // @Accept json
 // @Produce json
@@ -161,7 +161,7 @@ func (b *Buyer) Update() gin.HandlerFunc {
 
 // Delete godoc
 // @Summary Delete a buyer
-// @Description Delete a buyer based on the provided id
+// @Description Delete a buyer based on the provided id.
 // @Tags Buyers
 // @Param id path int true "Buyer id"
 // @Success 204 "No content"
