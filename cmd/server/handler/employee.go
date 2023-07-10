@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
@@ -63,7 +64,7 @@ func NewEmployee(e employee.Service) *Employee {
 // @Router /employees [get]
 func (e *Employee) GetAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		employees := e.service.GetAll(ctx.Request.Context())
+		employees := e.service.GetAll()
 		web.Success(ctx, http.StatusOK, employees)
 	}
 }
@@ -82,7 +83,7 @@ func (e *Employee) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.GetInt("Id")
 
-		employee, err := e.service.Get(ctx.Request.Context(), id)
+		employee, err := e.service.Get(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -112,7 +113,7 @@ func (e *Employee) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		request := ctx.MustGet(RequestParamContext).(CreateEmployeeRequest)
 
-		createdEmployee, err := e.service.Create(ctx.Request.Context(), request.ToEmployee())
+		createdEmployee, err := e.service.Create(request.ToEmployee())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
@@ -144,7 +145,7 @@ func (e *Employee) Update() gin.HandlerFunc {
 		id := ctx.GetInt("Id")
 		request := ctx.MustGet(RequestParamContext).(UpdateEmployeeRequest)
 
-		response, err := e.service.Update(ctx.Request.Context(), id, request.ToUpdateEmployee())
+		response, err := e.service.Update(id, request.ToUpdateEmployee())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -175,7 +176,7 @@ func (e *Employee) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.GetInt("Id")
 
-		err := e.service.Delete(ctx.Request.Context(), id)
+		err := e.service.Delete(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -185,5 +186,49 @@ func (e *Employee) Delete() gin.HandlerFunc {
 		}
 
 		web.Success(ctx, http.StatusNoContent, nil)
+	}
+}
+
+// Get godoc
+// @Summary Count inbound_orders by employee
+// @Description InboundOrder count by employee.
+// @Description If no query param is given, bring the report to all employees.
+// @Description If a employee id is specified, bring the number of inbound orders for this employee.
+// @Tags Employee
+// @Accept json
+// @Produce json
+// @Success 200 {object} []domain.InboundOrdersByEmployee "List of employees"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /employees [get]
+func (e *Employee) ReportInboundOrders() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idParam := c.Request.URL.Query().Get("id")
+
+		if idParam == "" {
+			result := e.service.CountInboundOrdersByAllEmployees()
+			web.Success(c, http.StatusOK, result)
+			return
+		}
+
+		id, err := strconv.Atoi(idParam)
+
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, InvalidId, idParam)
+			return
+		}
+
+		employee, err := e.service.CountInboundOrdersByEmployee(id)
+
+
+		if err != nil {
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(c, http.StatusNotFound, err.Error())
+				return
+			}
+		}
+
+		web.Success(c, http.StatusOK, employee)
 	}
 }
