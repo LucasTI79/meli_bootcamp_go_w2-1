@@ -3,7 +3,6 @@ package warehouse
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
@@ -51,7 +50,6 @@ func (r *repository) Get(id int) *domain.Warehouse {
 	w := domain.Warehouse{}
 	err := row.Scan(&w.ID, &w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumTemperature, &w.MinimumCapacity, &w.LocalityId)
 	if err != nil {
-		fmt.Println(err)
 		if err == sql.ErrNoRows {
 			return nil
 		}

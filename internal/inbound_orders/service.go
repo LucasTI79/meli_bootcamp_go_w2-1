@@ -1,8 +1,6 @@
 package inbound_orders
 
 import (
-	"fmt"
-
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batch"
@@ -47,7 +45,6 @@ func (s *service) Create(inboundOrder domain.InboundOrder) (*domain.InboundOrder
 	}
 	
 	warehouse := s.warehouseRepository.Get(inboundOrder.WarehouseId)
-	fmt.Println("test")
 	if warehouse == nil {
 		return nil, apperr.NewDependentResourceNotFound(WarehouseNotFound, inboundOrder.WarehouseId)
 	}
