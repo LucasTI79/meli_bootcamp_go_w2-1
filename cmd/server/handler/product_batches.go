@@ -116,3 +116,15 @@ func (pb *ProductBatches) Create() gin.HandlerFunc {
 		web.Success(c, http.StatusCreated, created)
 	}
 }
+
+func (pb *ProductBatches) Get() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		productBatches, err := pb.productBatchService.Get(id)
+		if err != nil {
+			web.Error(c, http.StatusInternalServerError, err.Error())
+			return
+		}
+		web.Success(c, http.StatusOK, productBatches)
+	}
+}
