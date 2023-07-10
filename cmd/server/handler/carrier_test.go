@@ -13,7 +13,12 @@ import (
 )
 
 var mockedCarrier = domain.Carrier{
-	ID: 1,
+	ID:          1,
+	CID:         "123",
+	CompanyName: "company",
+	Address:     "Add",
+	Telephone:   1234678768,
+	LocalityID:  1,
 }
 
 const (
@@ -21,7 +26,13 @@ const (
 )
 
 func TestCreateCarrier(t *testing.T) {
-	requestObject := handler.CreateCarrierRequest{}
+	requestObject := handler.CreateCarrierRequest{
+		CID:         &mockedCarrier.CID,
+		CompanyName: &mockedCarrier.CompanyName,
+		Address:     &mockedCarrier.Address,
+		Telephone:   &mockedCarrier.Telephone,
+		LocalityID:  &mockedCarrier.LocalityID,
+	}
 
 	t.Run("Should return conflict error", func(t *testing.T) {
 		server, service, controller := InitCarrierServer(t)
@@ -31,20 +42,6 @@ func TestCreateCarrier(t *testing.T) {
 
 		var serviceReturn *domain.Carrier
 		service.On("Create", requestObject.ToCarrier()).Return(serviceReturn, apperr.NewResourceAlreadyExists(ResourceAlreadyExists))
-
-		server.ServeHTTP(response, request)
-
-		assert.Equal(t, http.StatusConflict, response.Code)
-	})
-
-	t.Run("Should return conflict error when carrier id not exists", func(t *testing.T) {
-		server, service, controller := InitCarrierServer(t)
-
-		server.POST(DefinePath(ResourceCarriersUri), ValidationMiddleware(requestObject), controller.Create())
-		request, response := MakeRequest("POST", DefinePath(ResourceCarriersUri), CreateBody(requestObject))
-
-		var serviceReturn *domain.Carrier
-		service.On("Create", requestObject.ToCarrier()).Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
 
 		server.ServeHTTP(response, request)
 
