@@ -16,28 +16,28 @@ type PurchaseOrder struct {
 }
 
 type CreatePurchaseOrderRequest struct {
-	OrderNumber 	string 		`json:"order_number" binding:"required"`
-	OrderDate  		string		`json:"order_date" binding:"required,datetime=2006-01-02 15:04:05"`
-	TrackingCode   	string   	`json:"tracking_code" binding:"required"`
-	BuyerID   		int    		`json:"buyer_id" binding:"required" `
-	CarrierID   	int    		`json:"carrier_id" binding:"required"`
-	ProductRecordID int    		`json:"product_record_id" binding:"required"`
-	OrderStatusID  	int    		`json:"order_status_id" binding:"required"`
-	WarehouseID   	int    		`json:"warehouse_id" binding:"required"`
+	OrderNumber 	*string 	`json:"order_number" binding:"required"`
+	OrderDate  		*string		`json:"order_date" binding:"required,datetime=2006-01-02 15:04:05"`
+	TrackingCode   	*string   	`json:"tracking_code" binding:"required"`
+	BuyerID   		*int    	`json:"buyer_id" binding:"required" `
+	CarrierID   	*int    	`json:"carrier_id" binding:"required"`
+	ProductRecordID *int    	`json:"product_record_id" binding:"required"`
+	OrderStatusID  	*int    	`json:"order_status_id" binding:"required"`
+	WarehouseID   	*int    	`json:"warehouse_id" binding:"required"`
 }
 
 func (r CreatePurchaseOrderRequest) ToPurchaseOrder() domain.PurchaseOrders{
 
 	return domain.PurchaseOrders{
 		ID: 0,
-		OrderNumber: r.OrderNumber,
-		OrderDate: helpers.ToDateTime(r.OrderDate),
-		TrackingCode: r.TrackingCode,
-		BuyerID: r.BuyerID,
-		CarrierID: r.CarrierID,
-		ProductRecordID: r.ProductRecordID,
-		OrderStatusID: r.OrderStatusID,
-		WarehouseID: r.WarehouseID,
+		OrderNumber: *r.OrderNumber,
+		OrderDate: helpers.ToDateTime(*r.OrderDate),
+		TrackingCode: *r.TrackingCode,
+		BuyerID: *r.BuyerID,
+		CarrierID: *r.CarrierID,
+		ProductRecordID: *r.ProductRecordID,
+		OrderStatusID: *r.OrderStatusID,
+		WarehouseID: *r.WarehouseID,
 	}
 }
 
