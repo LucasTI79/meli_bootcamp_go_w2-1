@@ -3,13 +3,14 @@ package warehouse
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
 
 type Repository interface {
 	GetAll(ctx context.Context) []domain.Warehouse
-	Get(ctx context.Context, id int) *domain.Warehouse
+	Get(id int) *domain.Warehouse
 	Exists(ctx context.Context, warehouseCode string) bool
 	Save(ctx context.Context, w domain.Warehouse) int
 	Update(ctx context.Context, w domain.Warehouse)
@@ -44,12 +45,13 @@ func (r *repository) GetAll(ctx context.Context) []domain.Warehouse {
 	return warehouses
 }
 
-func (r *repository) Get(ctx context.Context, id int) *domain.Warehouse {
-	query := "SELECT * FROM warehouses WHERE id=?;"
+func (r *repository) Get(id int) *domain.Warehouse {
+	query := "SELECT id, address, telephone, warehouse_code, minimum_temperature, minimum_capacity, locality_id FROM warehouses WHERE id=?;"
 	row := r.db.QueryRow(query, id)
 	w := domain.Warehouse{}
-	err := row.Scan(&w.ID, &w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumCapacity, &w.MinimumTemperature)
+	err := row.Scan(&w.ID, &w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumTemperature, &w.MinimumCapacity, &w.LocalityId)
 	if err != nil {
+		fmt.Println(err)
 		if err == sql.ErrNoRows {
 			return nil
 		}

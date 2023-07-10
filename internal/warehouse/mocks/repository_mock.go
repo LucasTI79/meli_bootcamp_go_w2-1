@@ -16,7 +16,7 @@ func (r *Repository) GetAll(ctx context.Context) []domain.Warehouse {
 	return args.Get(0).([]domain.Warehouse)
 }
 
-func (r *Repository) Get(ctx context.Context, id int) *domain.Warehouse {
+func (r *Repository) Get(id int) *domain.Warehouse {
 	args := r.Called(id)
 	return args.Get(0).(*domain.Warehouse)
 }

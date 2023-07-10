@@ -43,7 +43,7 @@ func (s *service) GetAll(ctx context.Context) []domain.Warehouse {
 }
 
 func (s *service) Get(ctx context.Context, id int) (*domain.Warehouse, error) {
-	warehouse := s.repository.Get(ctx, id)
+	warehouse := s.repository.Get(id)
 
 	if warehouse == nil {
 		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
@@ -58,11 +58,11 @@ func (s *service) Create(ctx context.Context, warehouse domain.Warehouse) (*doma
 	}
 
 	warehouseId := s.repository.Save(ctx, warehouse)
-	return s.repository.Get(ctx, warehouseId), nil
+	return s.repository.Get(warehouseId), nil
 }
 
 func (s *service) Update(ctx context.Context, id int, warehouse domain.UpdateWarehouse) (*domain.Warehouse, error) {
-	warehouseFound := s.repository.Get(ctx, id)
+	warehouseFound := s.repository.Get(id)
 
 	if warehouseFound == nil {
 		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
@@ -82,12 +82,12 @@ func (s *service) Update(ctx context.Context, id int, warehouse domain.UpdateWar
 
 	s.repository.Update(ctx, *warehouseFound)
 
-	updated := s.repository.Get(ctx, id)
+	updated := s.repository.Get(id)
 	return updated, nil
 }
 
 func (s *service) Delete(ctx context.Context, id int) error {
-	warehouse := s.repository.Get(ctx, id)
+	warehouse := s.repository.Get(id)
 
 	if warehouse == nil {
 		return apperr.NewResourceNotFound(ResourceNotFound, id)
