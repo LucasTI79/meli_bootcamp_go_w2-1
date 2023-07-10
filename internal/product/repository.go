@@ -7,6 +7,15 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
 
+const (
+	GetAllQuery = "SELECT id, description, expiration_rate, freezing_rate, height, lenght, netweight, product_code, recommended_freezing_temperature, width, id_product_type, id_seller FROM products;"
+	GetQuery    = "SELECT id, description, expiration_rate, freezing_rate, height, lenght, netweight, product_code, recommended_freezing_temperature, width, id_product_type, id_seller FROM products WHERE id=?;"
+	ExistsQuery = "SELECT product_code FROM products WHERE product_code=?;"
+	InsertQuery = "INSERT INTO products(description,expiration_rate,freezing_rate,height,lenght,netweight,product_code,recommended_freezing_temperature,width,id_product_type,id_seller) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
+	UpdateQuery = "UPDATE products SET description=?, expiration_rate=?, freezing_rate=?, height=?, lenght=?, netweight=?, product_code=?, recommended_freezing_temperature=?, width=?, id_product_type=?, id_seller=?  WHERE id=?"
+	DeleteQuery = "DELETE FROM products WHERE id=?"
+)
+
 type Repository interface {
 	GetAll() []domain.Product
 	Get(id int) *domain.Product
@@ -27,8 +36,7 @@ func NewRepository(db *sql.DB) Repository {
 }
 
 func (r *repository) GetAll() []domain.Product {
-	query := "SELECT * FROM products;"
-	rows, err := r.db.Query(query)
+	rows, err := r.db.Query(GetAllQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -45,8 +53,7 @@ func (r *repository) GetAll() []domain.Product {
 }
 
 func (r *repository) Get(id int) *domain.Product {
-	query := "SELECT id, description, expiration_rate, freezing_rate, height, lenght, netweight, product_code, recommended_freezing_temperature, width, id_product_type, id_seller FROM products WHERE id=?;"
-	row := r.db.QueryRow(query, id)
+	row := r.db.QueryRow(GetQuery, id)
 	p := domain.Product{}
 	err := row.Scan(&p.ID, &p.Description, &p.ExpirationRate, &p.FreezingRate, &p.Height, &p.Length, &p.Netweight, &p.ProductCode, &p.RecomFreezTemp, &p.Width, &p.ProductTypeID, &p.SellerID)
 
@@ -61,15 +68,13 @@ func (r *repository) Get(id int) *domain.Product {
 }
 
 func (r *repository) Exists(productCode string) bool {
-	query := "SELECT product_code FROM products WHERE product_code=?;"
-	row := r.db.QueryRow(query, productCode)
+	row := r.db.QueryRow(ExistsQuery, productCode)
 	err := row.Scan(&productCode)
 	return err == nil
 }
 
 func (r *repository) Save(p domain.Product) int {
-	query := "INSERT INTO products(description,expiration_rate,freezing_rate,height,lenght,netweight,product_code,recommended_freezing_temperature,width,id_product_type,id_seller) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
-	stmt, err := r.db.Prepare(query)
+	stmt, err := r.db.Prepare(InsertQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -88,8 +93,7 @@ func (r *repository) Save(p domain.Product) int {
 }
 
 func (r *repository) Update(p domain.Product) {
-	query := "UPDATE products SET description=?, expiration_rate=?, freezing_rate=?, height=?, lenght=?, netweight=?, product_code=?, recommended_freezing_temperature=?, width=?, id_product_type=?, id_seller=?  WHERE id=?"
-	stmt, err := r.db.Prepare(query)
+	stmt, err := r.db.Prepare(UpdateQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -101,8 +105,7 @@ func (r *repository) Update(p domain.Product) {
 }
 
 func (r *repository) Delete(id int) {
-	query := "DELETE FROM products WHERE id=?"
-	stmt, err := r.db.Prepare(query)
+	stmt, err := r.db.Prepare(DeleteQuery)
 	if err != nil {
 		panic(err)
 	}
