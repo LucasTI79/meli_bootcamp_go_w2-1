@@ -9,27 +9,19 @@ type Repository struct {
 	mock.Mock
 }
 
-func (r *Repository) Get(id int) *domain.ProductBatches {
-	args := r.Called(id)
-	return args.Get(0).(*domain.ProductBatches)
+func (r *Repository) Create(productBatches domain.ProductBatches) error {
+	args := r.Called(productBatches)
+	return args.Error(0)
 }
-func (r *Repository) Exists(BatchNumber string) bool {
-	args := r.Called(BatchNumber)
-	return args.Get(0).(bool)
+func (r *Repository) Exists(batchNumber int) bool {
+	args := r.Called(batchNumber)
+	return args.Bool(0)
 }
-func (r *Repository) Save(pb domain.ProductBatches) int {
-	args := r.Called(pb)
-	return args.Get(0).(int)
+func (r *Repository) Save(productBatches domain.ProductBatches) (int, error) {
+	args := r.Called(productBatches)
+	return args.Int(0), args.Error(1)
 }
-func (r *Repository) CheckSectionExists(id int) bool {
-	args := r.Called(id)
-	return args.Get(0).(bool)
-}
-func (r *Repository) CheckProductExists(id int) bool {
-	args := r.Called(id)
-	return args.Get(0).(bool)
-}
-func (r *Repository) CountProductBatchesBySection() []domain.CountProductBatchesBySection {
+func (r *Repository) Get() ([]domain.ProductBatches, error) {
 	args := r.Called()
-	return args.Get(0).([]domain.CountProductBatchesBySection)
+	return args.Get(0).([]domain.ProductBatches), args.Error(1)
 }

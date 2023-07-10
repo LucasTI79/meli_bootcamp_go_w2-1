@@ -9,23 +9,17 @@ type Service struct {
 	mock.Mock
 }
 
-func (s *Service) Exists(BatchNumber string) bool {
-	args := s.Called(BatchNumber)
-	return args.Get(0).(bool)
-}
-func (s *Service) CheckSectionExists(id int) bool {
-	args := s.Called(id)
-	return args.Get(0).(bool)
-}
-func (s *Service) CheckProductExists(id int) bool {
-	args := s.Called(id)
-	return args.Get(0).(bool)
-}
-func (s *Service) Create(pb domain.ProductBatches) int {
+func (s *Service) Create(pb domain.ProductBatches) (domain.ProductBatches, error) {
 	args := s.Called(pb)
-	return args.Get(0).(int)
+	return args.Get(0).(domain.ProductBatches), args.Error(1)
 }
-func (s *Service) CountProductBatchesBySection() []domain.CountProductBatchesBySection {
+
+func (s *Service) Exists(batchNumber int) (bool, error) {
+	args := s.Called(batchNumber)
+	return args.Bool(0), args.Error(1)
+}
+
+func (s *Service) Get() ([]domain.ProductBatches, error) {
 	args := s.Called()
-	return args.Get(0).([]domain.CountProductBatchesBySection)
+	return args.Get(0).([]domain.ProductBatches), args.Error(1)
 }
