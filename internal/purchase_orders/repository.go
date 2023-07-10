@@ -34,14 +34,16 @@ func (r *repository) Get(id int) *domain.PurchaseOrders {
 	row := r.db.QueryRow(GetQuery, id)
 	po := domain.PurchaseOrders{}
 	var orderDate string
+
 	err := row.Scan(&po.ID, &po.OrderNumber, &orderDate, &po.TrackingCode, &po.BuyerID, &po.CarrierID, &po.ProductRecordID, &po.OrderStatusID, &po.WarehouseID)
-	po.OrderDate = helpers.ToDateTime(orderDate)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
 		}
 		panic(err)
 	}
+	
+	po.OrderDate = helpers.ToDateTime(orderDate)
 
 	return &po
 }

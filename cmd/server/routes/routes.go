@@ -8,12 +8,14 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/carrier"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/locality"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/order_status"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_record"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/province"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/purchase_orders"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/order_status"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
@@ -167,7 +169,9 @@ func (r *router) buildPurchaseOrdersRoutes() {
 	buyerRepo := buyer.NewRepository(r.db)
 	orderStatusRepo := order_status.NewRepository(r.db)
 	warehouseRepo := warehouse.NewRepository(r.db)
-	service := purchase_orders.NewService(repo, buyerRepo, orderStatusRepo, warehouseRepo)
+	carrierRepo := carrier.NewRepository(r.db)
+	productRecordRepo := product_record.NewRepository(r.db)
+	service := purchase_orders.NewService(repo, buyerRepo, orderStatusRepo, warehouseRepo, carrierRepo, productRecordRepo)
 	controller := handler.NewPurchaseOrder(service)
 	purchaseOrdersRoutes := r.rg.Group("/purchase-orders")
 
