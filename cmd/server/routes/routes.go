@@ -150,7 +150,7 @@ func (r *router) buildBuyerRoutes() {
 	buyerRoutes.POST("/", middleware.RequestValidation[handler.CreateBuyerRequest](CreateCanBeBlank), controller.Create())
 	buyerRoutes.PATCH("/:id", middleware.RequestValidation[handler.UpdateBuyerRequest](UpdateCanBeBlank), controller.Update())
 	buyerRoutes.DELETE("/:id", controller.Delete())
-	buyerRoutes.GET("/report-purchase-orders", controller.ReportPuchases())
+	buyerRoutes.GET("/report-purchase-orders", controller.ReportPurchases())
 }
 
 func (r *router) buildLocalityRoutes() {

@@ -204,7 +204,7 @@ func (b *Buyer) Delete() gin.HandlerFunc {
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /report-purchase-orders[get]
-func (b *Buyer) ReportPuchases() gin.HandlerFunc {
+func (b *Buyer) ReportPurchases() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Request.URL.Query().Get("id")
 

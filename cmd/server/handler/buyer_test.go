@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	ResourceBuyerUri = "/buyers"
+	ResourceBuyerUri   = "/buyers"
+	ReportPurchasesUri = "buyers/report-purchase-orders"
 )
 
 var (
@@ -208,6 +209,68 @@ func TestDeleteBuyer(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		assert.Equal(t, http.StatusNoContent, response.Code)
+	})
+}
+
+func TestReportPurchasesByBuyer(t *testing.T) {
+	t.Run("Should return purchases count report of all buyers", func(t *testing.T) {
+		server, service, controller := InitBuyerServer(t)
+
+		server.GET(DefinePath(ReportPurchasesUri), controller.ReportPurchases())
+		request, response := MakeRequest("GET", DefinePath(ReportPurchasesUri), "")
+
+		service.On("CountPurchasesByAllBuyers").Return([]domain.PurchasesByBuyerReport{}, nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
+
+	t.Run("Should return invalid id error", func(t *testing.T) {
+		server, _, controller := InitBuyerServer(t)
+
+		server.GET(DefinePath(ReportPurchasesUri), controller.ReportPurchases())
+		request, response := MakeRequest("GET", DefinePath(ReportPurchasesUri)+"?id=abc", "")
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	})
+
+	t.Run("Should return not found error", func(t *testing.T) {
+		server, service, controller := InitBuyerServer(t)
+
+		server.GET(DefinePath(ReportPurchasesUri), controller.ReportPurchases())
+		request, response := MakeRequest("GET", DefinePath(ReportPurchasesUri)+"?id=1", "")
+
+		buyerID := 1
+		var serviceReturn *domain.PurchasesByBuyerReport
+		service.On("CountPurchasesByBuyer", buyerID).Return(serviceReturn, apperr.NewResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	})
+
+	t.Run("Should return purchases report by buyer", func(t *testing.T) {
+		server, service, controller := InitBuyerServer(t)
+
+		server.GET(DefinePath(ReportPurchasesUri), controller.ReportPurchases())
+		request, response := MakeRequest("GET", DefinePath(ReportPurchasesUri)+"?id=1", "")
+
+		buyerID := 1
+		serviceReturn := domain.PurchasesByBuyerReport{
+			ID: 1,
+			CardNumberID: "ABC123",
+			FirstName: "Nome",
+			LastName: "Sobrenome",
+			PurchasesCount: 1,
+		}
+		service.On("CountPurchasesByBuyer", buyerID).Return(&serviceReturn, nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
 	})
 }
 
