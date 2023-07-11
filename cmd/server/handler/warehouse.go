@@ -72,7 +72,7 @@ func (w *Warehouse) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 
-		warehouse, err := w.service.Get(c.Request.Context(), id)
+		warehouse, err := w.service.Get(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -96,7 +96,7 @@ func (w *Warehouse) Get() gin.HandlerFunc {
 // @Router /warehouses [get]
 func (w *Warehouse) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		warehouses := w.service.GetAll(c.Request.Context())
+		warehouses := w.service.GetAll()
 		web.Success(c, http.StatusOK, warehouses)
 	}
 }
@@ -118,7 +118,7 @@ func (w *Warehouse) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		request := c.MustGet(RequestParamContext).(CreateWarehouseRequest)
 
-		created, err := w.service.Create(c, request.ToWarehouse())
+		created, err := w.service.Create(request.ToWarehouse())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
@@ -150,7 +150,7 @@ func (w *Warehouse) Update() gin.HandlerFunc {
 		id := c.GetInt("Id")
 		request := c.MustGet(RequestParamContext).(UpdateWarehouseRequest)
 
-		updated, err := w.service.Update(c.Request.Context(), id, request.ToUpdateWarehouse())
+		updated, err := w.service.Update(id, request.ToUpdateWarehouse())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -183,7 +183,7 @@ func (w *Warehouse) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 
-		err := w.service.Delete(c, id)
+		err := w.service.Delete(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
