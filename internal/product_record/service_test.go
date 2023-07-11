@@ -88,17 +88,17 @@ func TestServiceCountRecordsByAllProducts(t *testing.T) {
 
 func TestServiceCountRecordsByProduct(t *testing.T) {
 	t.Run("Should return records count report by specified product id", func(t *testing.T) {
-		service, repository, _ := CreateService(t)
+		service, repository, productRepository := CreateService(t)
 
 		recordId := 1
-		mockedProductRecord := mockedProductRecordTemplate
+		mockedProduct := mockedProductTemplate
 		mockedRecordsByProductReport := domain.RecordsByProductReport{
 			ProductID:    1,
 			Description:  "Description",
 			RecordsCount: 1,
 		}
 
-		repository.On("Get", recordId).Return(&mockedProductRecord)
+		productRepository.On("Get", recordId).Return(&mockedProduct)
 		repository.On("CountRecordsByProduct", recordId).Return(&mockedRecordsByProductReport)
 
 		result, err := service.CountRecordsByProduct(recordId)
@@ -108,13 +108,13 @@ func TestServiceCountRecordsByProduct(t *testing.T) {
 		assert.Equal(t, *result, mockedRecordsByProductReport)
 	})
 
-	t.Run("Should return not found when record id not exists", func(t *testing.T) {
-		service, repository, _ := CreateService(t)
+	t.Run("Should return not found when product id not exists", func(t *testing.T) {
+		service, _, productRepository := CreateService(t)
 
 		recordId := 1
 
-		var recordRepositoryGetResult *domain.ProductRecord
-		repository.On("Get", recordId).Return(recordRepositoryGetResult)
+		var productRepositoryGetResult *domain.Product
+		productRepository.On("Get", recordId).Return(productRepositoryGetResult)
 
 		result, err := service.CountRecordsByProduct(recordId)
 

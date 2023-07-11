@@ -201,7 +201,7 @@ func TestRepositorySave(t *testing.T) {
 	})
 }
 
-func TestRepositoryCountCountRecordsByAllProducts(t *testing.T) {
+func TestRepositoryCountRecordsByAllProducts(t *testing.T) {
 	t.Run("Should return records count report by all products", func(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
@@ -231,7 +231,7 @@ func TestRepositoryCountCountRecordsByAllProducts(t *testing.T) {
 	})
 }
 
-func TestRepositoryCountCountRecordsByProduct(t *testing.T) {
+func TestRepositoryCountRecordsByProduct(t *testing.T) {
 	t.Run("Should return records count report by specified product id", func(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
