@@ -3,16 +3,20 @@
 
 Instale o MySQL: 
 ```bash
-brew install mysql Option2: -arm64 brew install mysql
+brew install mysql
+```
+Opção alternativa: 
+```bash
+-arm64 brew install mysql
 ```
 
-Verifique o status do MySQL: execute o comando 'make build-database' da raiz do projeto (comando declarado no Makefile).
+Construa o banco de dados executando o seguinte comando a partir da raiz do projeto:
 ```bash
 make build-database
 ```
 > Observação: não coloque senha.
 
-Execute o comando de criação do banco de dados: Verifique com o status 'mysql.server' para verificar se o serviço foi inicializado. 
+Verifique com o status 'mysql.server' se o MySQL foi inicializado. 
 ```bash
 mysql.server
 ```
