@@ -2,11 +2,11 @@ package routes
 
 import (
 	"database/sql"
+	"github.com/swaggo/swag/example/basic/docs"
 	"os"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/locality"

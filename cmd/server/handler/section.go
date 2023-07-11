@@ -80,7 +80,7 @@ func NewSection(s section.Service) *Section {
 // @Router /sections [get]
 func (s *Section) GetAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		sections := s.service.GetAll(ctx.Request.Context())
+		sections := s.service.GetAll()
 		web.Success(ctx, http.StatusOK, sections)
 	}
 }
@@ -100,7 +100,7 @@ func (s *Section) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.GetInt("Id")
 
-		section, err := s.service.Get(ctx.Request.Context(), id)
+		section, err := s.service.Get(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -127,7 +127,7 @@ func (s *Section) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		request := ctx.MustGet(RequestParamContext).(CreateSectionRequest)
 
-		created, err := s.service.Create(ctx.Request.Context(), request.ToSection())
+		created, err := s.service.Create(request.ToSection())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
@@ -157,7 +157,7 @@ func (s *Section) Update() gin.HandlerFunc {
 		id := ctx.GetInt("Id")
 		request := ctx.MustGet(RequestParamContext).(UpdateSectionRequest)
 
-		response, err := s.service.Update(ctx.Request.Context(), id, request.ToUpdateSection())
+		response, err := s.service.Update(id, request.ToUpdateSection())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -190,7 +190,7 @@ func (s *Section) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.GetInt("Id")
 
-		err := s.service.Delete(ctx.Request.Context(), id)
+		err := s.service.Delete(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
