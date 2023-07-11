@@ -7,7 +7,7 @@ brew install mysql
 ```
 Opção alternativa: 
 ```bash
--arm64 brew install mysql
+brew install mysql -arm64
 ```
 
 Construa o banco de dados executando o seguinte comando a partir da raiz do projeto:
