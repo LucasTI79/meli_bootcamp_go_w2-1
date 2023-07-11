@@ -16,7 +16,7 @@ type PurchaseOrder struct {
 }
 
 type CreatePurchaseOrderRequest struct {
-	OrderNumber 	*string 	`json:"order_number" binding:"required"`
+	OrderNumber 	*string 	`json:"order_number" binding:"required,gt=3"`
 	OrderDate  		*string		`json:"order_date" binding:"required,datetime=2006-01-02 15:04:05"`
 	TrackingCode   	*string   	`json:"tracking_code" binding:"required"`
 	BuyerID   		*int    	`json:"buyer_id" binding:"required" `
