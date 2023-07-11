@@ -14,14 +14,14 @@ const (
 	ExistsQuery = "SELECT product_id, last_update_date FROM product_records WHERE product_id=? AND last_update_date=?"
 	GetQuery    = "SELECT id, last_update_date, purchase_price, sale_price, product_id FROM product_records WHERE id=?"
 
-	CountRecordsByAllProductsQuery = `SELECT pr.product_id, p.description, count(pr.id) "records_count"
-		FROM product_records pr
-		JOIN products p ON p.id = pr.product_id
+	CountRecordsByAllProductsQuery = `SELECT p.id "product_id", p.description, count(pr.id) "records_count"
+		FROM products p
+		LEFT JOIN product_records pr ON p.id = pr.product_id
 		GROUP BY p.id`
 
-	CountRecordsByProductQuery = `SELECT pr.product_id, p.description, count(pr.id) "records_count"
-		FROM product_records pr
-		JOIN products p ON p.id = pr.product_id
+	CountRecordsByProductQuery = `SELECT p.id "product_id", p.description, count(pr.id) "records_count"
+		FROM products p
+		LEFT JOIN product_records pr ON p.id = pr.product_id
 		WHERE p.id=?
 		GROUP BY p.id`
 )

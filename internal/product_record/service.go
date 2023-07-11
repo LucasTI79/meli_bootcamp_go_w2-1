@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	ProductRecordNotFound = "registro de produto não encontrado com o id %d"
-	ProductNotFound       = "produto não encontrado com o id %d"
+	ResourceNotFound      = "produto não encontrado com o id %d"
 	ResourceAlreadyExists = "um registro de produto com o id de produto '%d' e última data de atualização `%s` já existe"
 )
 
@@ -36,7 +35,7 @@ func (s *service) Create(record domain.ProductRecord) (*domain.ProductRecord, er
 	productFound := s.productRepository.Get(record.ProductID)
 
 	if productFound == nil {
-		return nil, apperr.NewDependentResourceNotFound(ProductNotFound, record.ProductID)
+		return nil, apperr.NewDependentResourceNotFound(ResourceNotFound, record.ProductID)
 	}
 
 	id := s.repository.Save(record)
@@ -48,10 +47,10 @@ func (s *service) CountRecordsByAllProducts() []domain.RecordsByProductReport {
 }
 
 func (s *service) CountRecordsByProduct(id int) (*domain.RecordsByProductReport, error) {
-	record := s.repository.Get(id)
+	productFound := s.productRepository.Get(id)
 
-	if record == nil {
-		return nil, apperr.NewResourceNotFound(ProductRecordNotFound, id)
+	if productFound == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
 	}
 
 	return s.repository.CountRecordsByProduct(id), nil
