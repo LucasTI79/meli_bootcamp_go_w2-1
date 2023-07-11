@@ -12,14 +12,14 @@ const (
 	ExistsQuery = "SELECT locality_name FROM localities WHERE locality_name=?"
 	InsertQuery = "INSERT INTO localities (locality_name, province_id) VALUES (?, ?)"
 
-	CountSellersByAllLocalitiesQuery = `SELECT s.locality_id, l.locality_name, count(s.id) "sellers_count"
+	CountSellersByAllLocalitiesQuery = `SELECT l.id "locality_id", l.locality_name, count(s.id) "sellers_count"
 		FROM localities l
-		JOIN sellers s ON l.id = s.locality_id
+		LEFT JOIN sellers s ON l.id = s.locality_id
 		GROUP BY l.id`
 
-	CountSellersByLocalityQuery = `SELECT s.locality_id, l.locality_name, count(s.id) "sellers_count"
+	CountSellersByLocalityQuery = `SELECT l.id "locality_id", l.locality_name, count(s.id) "sellers_count"
 		FROM localities l
-		JOIN sellers s ON l.id = s.locality_id
+		LEFT JOIN sellers s ON l.id = s.locality_id
 		WHERE l.id=?
 		GROUP BY l.id`
 )
