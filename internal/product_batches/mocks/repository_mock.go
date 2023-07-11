@@ -9,19 +9,24 @@ type Repository struct {
 	mock.Mock
 }
 
-func (r *Repository) Create(productBatches domain.ProductBatches) error {
-	args := r.Called(productBatches)
-	return args.Error(0)
-}
 func (r *Repository) Exists(batchNumber int) bool {
 	args := r.Called(batchNumber)
 	return args.Bool(0)
 }
-func (r *Repository) Save(productBatches domain.ProductBatches) (int, error) {
+func (r *Repository) Save(productBatches domain.ProductBatches) int {
 	args := r.Called(productBatches)
-	return args.Int(0), args.Error(1)
+	return args.Int(0)
 }
-func (r *Repository) Get() ([]domain.ProductBatches, error) {
+func (r *Repository) Get(id int) *domain.ProductBatches {
+	args := r.Called(id)
+	return args.Get(0).(*domain.ProductBatches)
+}
+
+func (r *Repository) CountProductsByAllSections() ([]domain.ProductsBySectionReport, error) {
 	args := r.Called()
-	return args.Get(0).([]domain.ProductBatches), args.Error(1)
+	return args.Get(0).([]domain.ProductsBySectionReport), args.Error(1)
+}
+func (r *Repository) CountProductsBySection(id int) ([]domain.ProductsBySectionReport, error) {
+	args := r.Called(id)
+	return args.Get(0).([]domain.ProductsBySectionReport), args.Error(1)
 }

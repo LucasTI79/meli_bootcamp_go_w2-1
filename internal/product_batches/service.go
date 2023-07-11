@@ -22,9 +22,10 @@ type ProductBatches struct {
 }
 
 type Service interface {
-	Create(pb domain.ProductBatches) (domain.ProductBatches, error)
+	Create(pb domain.ProductBatches) (*domain.ProductBatches, error)
 	Exists(batchNumber int) (bool, error)
-	Get() ([]domain.ProductBatches, error)
+	CountProductsByAllSections() ([]domain.ProductsBySectionReport, error)
+	CountProductsBySection(id int) ([]domain.ProductsBySectionReport, error)
 }
 type service struct {
 	repository Repository
@@ -34,39 +35,30 @@ func NewService(repository Repository) Service {
 	return &service{repository}
 }
 
-func (s *service) Create(pb domain.ProductBatches) (domain.ProductBatches, error) {
+func (s *service) Create(pb domain.ProductBatches) (*domain.ProductBatches, error) {
 	existsProductBatchNumber := s.repository.Exists(pb.BatchNumber)
 	if existsProductBatchNumber {
-		return domain.ProductBatches{}, apperr.NewResourceNotFound("Invalid batch number")
+		return nil, apperr.NewResourceNotFound("Invalid batch number")
 	}
+	id := s.repository.Save(pb)
 
-	productBatch := domain.ProductBatches{
-		BatchNumber:        pb.BatchNumber,
-		CurrentQuantity:    pb.CurrentQuantity,
-		CurrentTemperature: pb.CurrentTemperature,
-		DueDate:            pb.DueDate,
-		InitialQuantity:    pb.InitialQuantity,
-		ManufacturingDate:  pb.ManufacturingDate,
-		ManufacturingHour:  pb.ManufacturingHour,
-		MinimumTemperature: pb.MinimumTemperature,
-		ProductID:          pb.ProductID,
-		SectionID:          pb.SectionID,
-	}
-
-	prodBatches, err := s.repository.Save(productBatch)
-	if err != nil {
-		return domain.ProductBatches{}, err
-	}
-	productBatch.ID = prodBatches
-	return productBatch, nil
+	return s.repository.Get(id), nil
 }
 
 func (s *service) Exists(batchNumber int) (bool, error) {
 	return s.repository.Exists(batchNumber), nil
 }
 
-func (s *service) Get() ([]domain.ProductBatches, error) {
-	productsbratches, err := s.repository.Get()
+func (s *service) CountProductsByAllSections() ([]domain.ProductsBySectionReport, error) {
+	productsbratches, err := s.repository.CountProductsByAllSections()
+	if err != nil {
+		return productsbratches, err
+	}
+	return productsbratches, nil
+}
+
+func (s *service) CountProductsBySection(id int) ([]domain.ProductsBySectionReport, error) {
+	productsbratches, err := s.repository.CountProductsBySection(id)
 	if err != nil {
 		return productsbratches, err
 	}

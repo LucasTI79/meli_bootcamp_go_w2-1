@@ -109,7 +109,7 @@ func (pb *ProductBatches) Create() gin.HandlerFunc {
 func (pb *ProductBatches) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		result, err := pb.productBatchService.Get()
+		result, err := pb.productBatchService.CountProductsByAllSections()
 		if err != nil {
 			web.Error(c, http.StatusInternalServerError, err.Error())
 			return
@@ -120,8 +120,8 @@ func (pb *ProductBatches) Get() gin.HandlerFunc {
 			web.Success(c, http.StatusOK, result)
 			return
 		}
-		id, err := strconv.Atoi(idParam)
-		result, err = pb.productBatchService.GetAllByID(id)
+		id, _ := strconv.Atoi(idParam)
+		result, _ = pb.productBatchService.CountProductsBySection(id)
 
 		web.Success(c, http.StatusOK, result)
 	}

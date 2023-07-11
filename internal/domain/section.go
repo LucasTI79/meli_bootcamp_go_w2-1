@@ -1,14 +1,7 @@
 package domain
 
 import (
-	"time"
-
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/helpers"
-)
-
-const (
-	invalidDateFormat = "invalid date format"
 )
 
 type Section struct {
@@ -51,18 +44,4 @@ type ProductsBySectionReport struct {
 	SectionID     int `json:"section_id"`
 	SectionNumber int `json:"section_number"`
 	ProductsCount int `json:"products_count"`
-}
-
-const dataModel = "2023-07-07 17:54:09"
-
-func (pb *ProductBatches) Validate() error {
-	_, err := time.Parse(dataModel, pb.ManufacturingDate)
-	if err != nil {
-		return apperr.NewResourceNotFound(invalidDateFormat, pb.ManufacturingDate)
-	}
-	_, err = time.Parse(dataModel, pb.DueDate)
-	if err != nil {
-		return apperr.NewResourceNotFound(invalidDateFormat, pb.DueDate)
-	}
-	return nil
 }
