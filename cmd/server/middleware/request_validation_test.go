@@ -52,6 +52,21 @@ func TestValidationMiddleware(t *testing.T) {
 		assert.False(t, context.IsAborted())
 	})
 
+	t.Run("Should have error when try parse a empty body request", func(t *testing.T) {
+		request := ""
+		context, recorder, _ := createValidationContext(request, getStringRequestInBytes)
+
+		middleware.RequestValidation[CorrectRequest](true)(context)
+
+		var response ErrorResponse
+		_ = json.Unmarshal(recorder.Body.Bytes(), &response)
+
+		assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
+		assert.Len(t, response.Messages, 1)
+		assert.Equal(t, "o corpo da requisição está vazio e precisa ser um objeto JSON válido", response.Messages[0])
+		assert.True(t, context.IsAborted())
+	})
+
 	t.Run("Should have error when try parse a request field with a syntax error", func(t *testing.T) {
 		request := createRequestWithSyntaxError()
 		context, recorder, _ := createValidationContext(request, getStringRequestInBytes)
