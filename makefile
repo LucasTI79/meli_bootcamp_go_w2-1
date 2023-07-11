@@ -21,7 +21,7 @@ test:
 .PHONY: test-cover
 test-cover:
 	@echo "=> Running tests and generating report"
-	@go test ./... -covermode=atomic -coverprofile=./coverage.out -coverpkg=./... -count=1
+	@go test ./... -coverprofile=./coverage.out -coverpkg=./... -count=1
 	@go tool cover -html=./coverage.out
 
 .PHONY: start
@@ -38,3 +38,6 @@ build-database:
 rebuild-database-with-password:
 	@echo "MysqlRoot Passowrd (if don't have ignore): "; \
     curl -s https://raw.githubusercontent.com/bootcamp-go/bootcamps-scripts/main/meli_database.sh | bash  -s rebuild ${p}
+
+doc:
+	@swag init --parseDependency -g cmd/server/main.go
