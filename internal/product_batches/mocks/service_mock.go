@@ -28,3 +28,8 @@ func (s *Service) CountProductsBySection(id int) ([]domain.ProductsBySectionRepo
 	args := s.Called(id)
 	return args.Get(0).([]domain.ProductsBySectionReport), args.Error(1)
 }
+
+func (s *Service) CountProductsByAllSections() ([]domain.ProductsBySectionReport, error) {
+	args := s.Called()
+	return args.Get(0).([]domain.ProductsBySectionReport), args.Error(1)
+}
