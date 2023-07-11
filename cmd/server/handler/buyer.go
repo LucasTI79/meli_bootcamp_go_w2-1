@@ -127,8 +127,8 @@ func (b *Buyer) Create() gin.HandlerFunc {
 // @Tags Buyers
 // @Accept json
 // @Produce json
-// @Param buyer body domain.UpdateBuyer true "Buyer data to be updated"
 // @Param id path int true "Buyer id"
+// @Param buyer body domain.UpdateBuyer true "Buyer data to be updated"
 // @Success 200 {object} domain.Buyer "Buyer with updated information"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"

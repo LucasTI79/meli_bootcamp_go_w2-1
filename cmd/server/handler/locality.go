@@ -78,11 +78,12 @@ func (l *Locality) Create() gin.HandlerFunc {
 // @Tags Localities
 // @Accept json
 // @Produce json
+// @Param id query int false "Locality id"
 // @Success 200 {object} []domain.SellersByLocalityReport "Report of sellers by locality"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /localities [get]
+// @Router /localities/report-sellers [get]
 func (l *Locality) ReportSellers() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Request.URL.Query().Get("id")
