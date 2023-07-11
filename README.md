@@ -42,3 +42,15 @@ Para executar os testes e ver a análise de cobertura, execute:
 ```bash
 make test-cover
 ```
+
+# Documentação
+
+Gere a documentação do projeto a partir do seguinte comando:
+```bash
+make doc
+```
+
+Para visualizá-la, acesse <seu_dominio>:<sua_porta>/api/v1/docs/index.html. Por exemplo, se seu domínio e porta for localhost:8080, acesse:
+```
+http://localhost:8080/api/v1/docs/index.html
+```
