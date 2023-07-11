@@ -84,17 +84,12 @@ func (pb *ProductBatches) Create() gin.HandlerFunc {
 				web.Error(c, http.StatusConflict, err.Error())
 				return
 			}
-			if apperr.Is[*apperr.DependentResourceNotFound](err) {
-				web.Error(c, http.StatusNotFound, err.Error())
-				return
-			}
 		}
-
 		web.Success(c, http.StatusCreated, created)
 	}
 }
 
-// Create godoc
+// Get godoc
 // @Summary Get all product batches
 // @Description product batches
 // @Description If no query param is given, bring the report to all product batches.
