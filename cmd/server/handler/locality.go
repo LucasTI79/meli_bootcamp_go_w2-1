@@ -115,6 +115,18 @@ func (l *Locality) ReportSellers() gin.HandlerFunc {
 	}
 }
 
+// @Summary Count carriers by locality
+// @Description Carrier count by location.
+// @Description If no query param is given, bring the report to all localities.
+// @Description If a location id is specified, bring the number of carriers for this locality.
+// @Tags Localities
+// @Accept json
+// @Produce json
+// @Success 200 {object} []domain.CarriersByLocalityReport "List of localities"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /localities [get]
 func (l Locality) ReportCarriers() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		idParam := ctx.Request.URL.Query().Get("id")
