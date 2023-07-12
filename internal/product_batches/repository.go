@@ -2,6 +2,7 @@ package product_batches
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
@@ -10,7 +11,7 @@ var (
 	CreateQuery = "INSERT INTO product_batches (batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minimum_temperature, product_id, section_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 	ExistsQuery = "SELECT id FROM product_batches WHERE batch_number = ?"
 	SaveQuery   = "INSERT INTO product_batches (batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minimum_temperature, product_id, section_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
-	GetQuery    = "SELECT pb.section_id, s.section_number, COUNT(s.id) 'products_count' FROM product_batches pb JOIN products p ON p.id = pb.product_id JOIN sections s ON s.id = pb.section_id GROUP BY s.id"
+	GetQuery    = "SELECT id, batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minimum_temperature, product_id, section_id FROM product_batches WHERE id = ?"
 	GetAllByID  = "SELECT pb.section_id, s.section_number, COUNT(s.id) 'products_count' FROM product_batches pb JOIN products p ON p.id = pb.product_id JOIN sections s ON s.id = pb.section_id WHERE s.id =? GROUP BY s.id"
 	GetByID     = "SELECT * FROM product_batches WHERE id = ?"
 )
@@ -18,8 +19,6 @@ var (
 type Repository interface {
 	Exists(batchNumber int) bool
 	Save(pb domain.ProductBatches) int
-	CountProductsByAllSections() ([]domain.ProductsBySectionReport, error)
-	CountProductsBySection(id int) ([]domain.ProductsBySectionReport, error)
 	Get(id int) *domain.ProductBatches
 }
 
@@ -56,50 +55,14 @@ func (r *repository) Save(pb domain.ProductBatches) int {
 	}
 	return int(id)
 }
-
-func (r *repository) CountProductsByAllSections() ([]domain.ProductsBySectionReport, error) {
-	rows, err := r.db.Query(GetQuery)
-	if err != nil {
-		panic(err)
-	}
-	defer rows.Close()
-
-	var productBatches []domain.ProductsBySectionReport
-	for rows.Next() {
-		var pb domain.ProductsBySectionReport
-		err := rows.Scan(&pb.SectionID, &pb.SectionNumber, &pb.ProductsCount)
-		if err != nil {
-			panic(err)
-		}
-		productBatches = append(productBatches, pb)
-	}
-	return productBatches, nil
-}
-
-func (r *repository) CountProductsBySection(id int) ([]domain.ProductsBySectionReport, error) {
-	rows, err := r.db.Query(GetAllByID, id)
-	if err != nil {
-		panic(err)
-	}
-	defer rows.Close()
-
-	var productBatches []domain.ProductsBySectionReport
-	for rows.Next() {
-		var pb domain.ProductsBySectionReport
-		err := rows.Scan(&pb.SectionID, &pb.SectionNumber, &pb.ProductsCount)
-		if err != nil {
-			panic(err)
-		}
-		productBatches = append(productBatches, pb)
-	}
-	return productBatches, nil
-}
-
 func (r *repository) Get(id int) *domain.ProductBatches {
-	row := r.db.QueryRow("SELECT * FROM product_batches WHERE id = ?", id)
+	row := r.db.QueryRow(GetQuery, id)
 	var pb domain.ProductBatches
 	err := row.Scan(&pb.ID, &pb.BatchNumber, &pb.CurrentQuantity, &pb.CurrentTemperature, &pb.DueDate, &pb.InitialQuantity, &pb.ManufacturingDate, &pb.ManufacturingHour, &pb.MinimumTemperature, &pb.ProductID, &pb.SectionID)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
 		panic(err)
 	}
 	return &pb

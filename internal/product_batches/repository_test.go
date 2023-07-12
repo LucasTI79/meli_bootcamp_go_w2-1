@@ -27,14 +27,6 @@ var (
 	}
 )
 
-var (
-	productBySectionRep = domain.ProductsBySectionReport{
-		SectionID:     1,
-		SectionNumber: 1,
-		ProductsCount: 1,
-	}
-)
-
 func TestRepositoryExists(t *testing.T) {
 	t.Run("Should return true when product batches number exists", func(t *testing.T) {
 		db, mock := SetupMock(t)
@@ -219,69 +211,6 @@ func TestRepositoryCreate(t *testing.T) {
 		assert.Panics(t, func() {
 			repository.Save(mockedProductBatches)
 		})
-	})
-}
-func TestRepositoryCountProductsBySection(t *testing.T) {
-	t.Run("Should return all product batches", func(t *testing.T) {
-		db, mock := SetupMock(t)
-		defer db.Close()
-
-		columns := []string{"section_id", "section_number", "products_count"}
-		rows := sqlmock.NewRows(columns)
-		batchNumberID := 1
-		rows.AddRow(productBySectionRep.SectionID, productBySectionRep.SectionNumber, productBySectionRep.ProductsCount)
-
-		mock.ExpectQuery(regexp.QuoteMeta(product_batches.GetAllByID)).
-			WithArgs(batchNumberID).
-			WillReturnRows(rows)
-
-		repository := product_batches.NewRepository(db)
-		result, _ := repository.CountProductsBySection(batchNumberID)
-		assert.NotNil(t, result)
-
-	})
-	t.Run("Should throw panic when expected prepare fails", func(t *testing.T) {
-		db, mock := SetupMock(t)
-		defer db.Close()
-
-		batchNumberID := 1
-		mock.ExpectQuery(regexp.QuoteMeta(product_batches.GetAllByID)).
-			WillReturnError(sql.ErrNoRows)
-
-		repository := product_batches.NewRepository(db)
-
-		assert.Panics(t, func() { repository.CountProductsBySection(batchNumberID) })
-	})
-}
-
-func TestRepositoryCountProductsByAllSections(t *testing.T) {
-	t.Run("Should return all product batches", func(t *testing.T) {
-		db, mock := SetupMock(t)
-		defer db.Close()
-
-		columns := []string{"section_id", "section_number", "products_count"}
-		rows := sqlmock.NewRows(columns)
-
-		rows.AddRow(productBySectionRep.SectionID, productBySectionRep.SectionNumber, productBySectionRep.ProductsCount)
-
-		mock.ExpectQuery(regexp.QuoteMeta(product_batches.GetQuery)).
-			WillReturnRows(rows)
-
-		repository := product_batches.NewRepository(db)
-		result, _ := repository.CountProductsByAllSections()
-		assert.Equal(t, result[0].SectionID, productBySectionRep.SectionID)
-
-	})
-	t.Run("Should throw panic when expected prepare fails", func(t *testing.T) {
-		db, mock := SetupMock(t)
-		defer db.Close()
-
-		mock.ExpectQuery(regexp.QuoteMeta(product_batches.GetQuery)).
-			WillReturnError(sql.ErrNoRows)
-
-		repository := product_batches.NewRepository(db)
-
-		assert.Panics(t, func() { repository.CountProductsByAllSections() })
 	})
 }
 

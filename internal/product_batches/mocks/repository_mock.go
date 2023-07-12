@@ -13,20 +13,11 @@ func (r *Repository) Exists(batchNumber int) bool {
 	args := r.Called(batchNumber)
 	return args.Bool(0)
 }
-func (r *Repository) Save(productBatches domain.ProductBatches) int {
-	args := r.Called(productBatches)
+func (r *Repository) Save(pb domain.ProductBatches) int {
+	args := r.Called(pb)
 	return args.Int(0)
 }
 func (r *Repository) Get(id int) *domain.ProductBatches {
 	args := r.Called(id)
 	return args.Get(0).(*domain.ProductBatches)
-}
-
-func (r *Repository) CountProductsByAllSections() ([]domain.ProductsBySectionReport, error) {
-	args := r.Called()
-	return args.Get(0).([]domain.ProductsBySectionReport), args.Error(1)
-}
-func (r *Repository) CountProductsBySection(id int) ([]domain.ProductsBySectionReport, error) {
-	args := r.Called(id)
-	return args.Get(0).([]domain.ProductsBySectionReport), args.Error(1)
 }

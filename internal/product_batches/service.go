@@ -1,8 +1,13 @@
 package product_batches
 
 import (
+	"context"
+
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
+
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 )
 
 const (
@@ -11,43 +16,34 @@ const (
 
 type Service interface {
 	Create(pb domain.ProductBatches) (*domain.ProductBatches, error)
-	Exists(batchNumber int) (bool, error)
-	CountProductsByAllSections() ([]domain.ProductsBySectionReport, error)
-	CountProductsBySection(id int) ([]domain.ProductsBySectionReport, error)
 }
 type service struct {
-	repository Repository
+	repository        Repository
+	productRepository product.Repository
+	sectionRepository section.Repository
 }
 
-func NewService(repository Repository) Service {
-	return &service{repository}
+func NewService(repository Repository, productRepository product.Repository, sectionRepository section.Repository) Service {
+	return &service{
+		repository,
+		productRepository,
+		sectionRepository,
+	}
 }
 
 func (s *service) Create(pb domain.ProductBatches) (*domain.ProductBatches, error) {
 	if s.repository.Exists(pb.BatchNumber) {
 		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, pb.BatchNumber)
 	}
+	productFound := s.productRepository.Get(context.TODO(), pb.ProductID)
+	if productFound == nil {
+		return nil, apperr.NewResourceNotFound("Product with id %d does not exist", pb.ProductID)
+	}
+	sectionFound := s.sectionRepository.Get(pb.SectionID)
+	if sectionFound == nil {
+		return nil, apperr.NewResourceNotFound("Section with id %d does not exist", pb.SectionID)
+	}
 	id := s.repository.Save(pb)
-	pd := s.repository.Get(id)
-	return pd, nil
-}
 
-func (s *service) Exists(batchNumber int) (bool, error) {
-	return s.repository.Exists(batchNumber), nil
-}
-
-func (s *service) CountProductsByAllSections() ([]domain.ProductsBySectionReport, error) {
-	productsBatches, err := s.repository.CountProductsByAllSections()
-	if err != nil {
-		return productsBatches, err
-	}
-	return productsBatches, nil
-}
-
-func (s *service) CountProductsBySection(id int) ([]domain.ProductsBySectionReport, error) {
-	productsBatches, err := s.repository.CountProductsBySection(id)
-	if err != nil {
-		return productsBatches, err
-	}
-	return productsBatches, nil
+	return s.repository.Get(id), nil
 }

@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batches"
@@ -18,12 +17,12 @@ type CreateProductBatchesRequest struct {
 	ID                 int     `json:"id"`
 	BatchNumber        int     `json:"batch_number"`
 	CurrentQuantity    int     `json:"current_quantity"`
-	CurrentTemperature float64 `json:"current_temperature"`
+	CurrentTemperature float32 `json:"current_temperature"`
 	DueDate            string  `json:"due_date"`
 	InitialQuantity    int     `json:"initial_quantity"`
 	ManufacturingDate  string  `json:"manufacturing_date"`
 	ManufacturingHour  string  `json:"manufacturing_hour"`
-	MinimumTemperature int     `json:"minimum_temperature"`
+	MinimumTemperature float32 `json:"minimum_temperature"`
 	ProductID          int     `json:"product_id"`
 	SectionID          int     `json:"section_id"`
 }
@@ -67,16 +66,6 @@ func (pb *ProductBatches) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		request := c.MustGet(RequestParamContext).(CreateProductBatchesRequest)
 
-		exists, err := pb.productBatchService.Exists(request.BatchNumber)
-		if err != nil {
-			web.Error(c, http.StatusInternalServerError, err.Error())
-			return
-		}
-		if exists {
-			web.Error(c, http.StatusConflict, "product batches already exists")
-			return
-		}
-
 		created, err := pb.productBatchService.Create(request.ToProductBatches())
 
 		if err != nil {
@@ -84,40 +73,11 @@ func (pb *ProductBatches) Create() gin.HandlerFunc {
 				web.Error(c, http.StatusConflict, err.Error())
 				return
 			}
+			if apperr.Is[*apperr.DependentResourceNotFound](err) {
+				web.Error(c, http.StatusConflict, err.Error())
+				return
+			}
 		}
 		web.Success(c, http.StatusCreated, created)
-	}
-}
-
-// Get godoc
-// @Summary Get all product batches
-// @Description product batches
-// @Description If no query param is given, bring the report to all product batches.
-// @Tags ProductBatches
-// @Accept json
-// @Produce json
-// @Success 200 {object} []domain.ProductBatches "List of product batches"
-// @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "Resource not found error"
-// @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /api/v1/sections/report-product [get]
-func (pb *ProductBatches) Get() gin.HandlerFunc {
-	return func(c *gin.Context) {
-
-		result, err := pb.productBatchService.CountProductsByAllSections()
-		if err != nil {
-			web.Error(c, http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		idParam := c.Request.URL.Query().Get("id")
-		if idParam == "" {
-			web.Success(c, http.StatusOK, result)
-			return
-		}
-		id, _ := strconv.Atoi(idParam)
-		result, _ = pb.productBatchService.CountProductsBySection(id)
-
-		web.Success(c, http.StatusOK, result)
 	}
 }

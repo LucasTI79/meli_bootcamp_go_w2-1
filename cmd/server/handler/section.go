@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
@@ -80,7 +81,7 @@ func NewSection(s section.Service) *Section {
 // @Router /sections [get]
 func (s *Section) GetAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		sections := s.service.GetAll(ctx.Request.Context())
+		sections := s.service.GetAll()
 		web.Success(ctx, http.StatusOK, sections)
 	}
 }
@@ -100,7 +101,7 @@ func (s *Section) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.GetInt("Id")
 
-		section, err := s.service.Get(ctx.Request.Context(), id)
+		section, err := s.service.Get(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -127,7 +128,7 @@ func (s *Section) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		request := ctx.MustGet(RequestParamContext).(CreateSectionRequest)
 
-		created, err := s.service.Create(ctx.Request.Context(), request.ToSection())
+		created, err := s.service.Create(request.ToSection())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
@@ -157,7 +158,7 @@ func (s *Section) Update() gin.HandlerFunc {
 		id := ctx.GetInt("Id")
 		request := ctx.MustGet(RequestParamContext).(UpdateSectionRequest)
 
-		response, err := s.service.Update(ctx.Request.Context(), id, request.ToUpdateSection())
+		response, err := s.service.Update(id, request.ToUpdateSection())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -190,7 +191,7 @@ func (s *Section) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.GetInt("Id")
 
-		err := s.service.Delete(ctx.Request.Context(), id)
+		err := s.service.Delete(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -200,5 +201,40 @@ func (s *Section) Delete() gin.HandlerFunc {
 		}
 
 		web.Success(ctx, http.StatusNoContent, nil)
+	}
+}
+
+// ReportProducts godoc
+// @Summary Return the report of products by section
+// @Description Return the report of products by section based on the provided JSON payload
+// @Tags Sections
+// @Accept json
+// @Produce json
+// @Success 200 {object} []domain.ProductsBySectionReport "List of products by section"
+// @Failure 400 {object} web.ErrorResponse InvalidId
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Router /api/v1/sections/report-product [get]
+func (s *Section) ReportProducts() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		idParam := c.Request.URL.Query().Get("id")
+		if idParam == "" {
+			result := s.service.CountProductsByAllSections()
+			web.Success(c, http.StatusOK, result)
+			return
+		}
+		id, err := strconv.Atoi(idParam)
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, InvalidId, idParam)
+			return
+		}
+		result, err := s.service.CountProductsBySection(id)
+		if err != nil {
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(c, http.StatusNotFound, err.Error())
+				return
+			}
+			web.Success(c, http.StatusOK, result)
+		}
 	}
 }

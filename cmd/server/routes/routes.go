@@ -108,6 +108,7 @@ func (r *router) buildSectionRoutes() {
 	sectionRoutes.PATCH("/:id", middleware.RequestValidation[handler.UpdateSectionRequest](UpdateCanBeBlank), controller.Update())
 	sectionRoutes.GET("/:id", controller.Get())
 	sectionRoutes.DELETE("/:id", controller.Delete())
+	sectionRoutes.GET("/report-products", controller.ReportProducts())
 }
 
 func (r *router) buildWarehouseRoutes() {
@@ -163,10 +164,11 @@ func (r *router) buildLocalityRoutes() {
 func (r *router) buildProductBtachesRoutes() {
 
 	repo := product_batches.NewRepository(r.db)
-	service := product_batches.NewService(repo)
+	productRepo := product.NewRepository(r.db)
+	sectionRepo := section.NewRepository(r.db)
+	service := product_batches.NewService(repo, productRepo, sectionRepo)
 	controller := handler.NewProductBatches(service)
 	productBatchesRoutes := r.rg.Group("/product-batches")
 
-	productBatchesRoutes.GET("/sections/report-products", controller.Get())
 	productBatchesRoutes.POST("/", middleware.RequestValidation[handler.CreateProductBatchesRequest](CreateCanBeBlank), controller.Create())
 }

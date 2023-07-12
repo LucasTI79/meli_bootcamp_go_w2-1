@@ -29,6 +29,11 @@ var (
 		WarehouseID:        1,
 		ProductTypeID:      1,
 	}
+	pb = domain.ProductsBySectionReport{
+		SectionNumber: 1,
+		SectionID:     1,
+		ProductsCount: 1,
+	}
 )
 
 func TestCreateSection(t *testing.T) {
@@ -106,7 +111,7 @@ func TestGetSection(t *testing.T) {
 
 		id := 1
 
-		server.GET(DefinePath(resourceSectionUri)+"/:id", controller.Get())
+		server.GET(DefinePath(resourceSectionUri)+"/report-products:id", controller.Get())
 		request, response := MakeRequest("GET", DefinePathWithId(resourceSectionUri, id), "")
 
 		service.On("Get", id).Return(&s, nil)
@@ -212,6 +217,49 @@ func TestDeleteSection(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		assert.Equal(t, http.StatusNoContent, response.Code)
+	})
+}
+
+func TestReportProducts(t *testing.T) {
+	t.Run("Should return all products by section", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		server.GET(DefinePath(resourceSectionUri)+"/report-products", controller.ReportProducts())
+		request, response := MakeRequest("GET", DefinePath(resourceSectionUri), "")
+
+		service.On("ReportProducts").Return([]domain.ProductsBySectionReport{})
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
+	t.Run("Should return not found error", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		id := 2
+
+		server.GET(DefinePath(resourceSectionUri)+"/report-products?", controller.ReportProducts())
+		request, response := MakeRequest("GET", DefinePathWithId(resourceSectionUri, id), "")
+
+		var serviceReturn *domain.ProductsBySectionReport
+		service.On("ReportProducts").Return(serviceReturn, apperr.NewResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	})
+	t.Run("Should return the found section", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		id := 1
+
+		server.GET(DefinePath(resourceSectionUri)+"/report-products", controller.ReportProducts())
+		request, response := MakeRequest("GET", DefinePathWithId(resourceSectionUri, id), "")
+
+		service.On("ReportProducts", id).Return(&pb, nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
 	})
 }
 
