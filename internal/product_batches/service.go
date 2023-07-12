@@ -11,7 +11,9 @@ import (
 )
 
 const (
-	ResourceAlreadyExists = "Batch number %d already exists"
+	ResourceAlreadyExists = "batch number %d already exists"
+	ProductNotFound       = "product not found with id %d"
+	SectionNotFound       = "section not found with id %d"
 )
 
 type Service interface {
@@ -37,11 +39,11 @@ func (s *service) Create(pb domain.ProductBatches) (*domain.ProductBatches, erro
 	}
 	productFound := s.productRepository.Get(context.TODO(), pb.ProductID)
 	if productFound == nil {
-		return nil, apperr.NewResourceNotFound("Product with id %d does not exist", pb.ProductID)
+		return nil, apperr.NewDependentResourceNotFound("Product with id %d does not exist", pb.ProductID)
 	}
 	sectionFound := s.sectionRepository.Get(pb.SectionID)
 	if sectionFound == nil {
-		return nil, apperr.NewResourceNotFound("Section with id %d does not exist", pb.SectionID)
+		return nil, apperr.NewDependentResourceNotFound("Section with id %d does not exist", pb.SectionID)
 	}
 	id := s.repository.Save(pb)
 

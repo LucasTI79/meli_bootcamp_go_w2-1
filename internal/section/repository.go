@@ -8,14 +8,14 @@ import (
 )
 
 const (
-	CountProductsByAllSections = "SELECT id, batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minimum_temperature, product_id, section_id FROM product_batches WHERE id = ?"
-	CountProductsBySection     = "SELECT pb.section_id, s.section_number, COUNT(s.id) 'products_count' FROM product_batches pb JOIN products p ON p.id = pb.product_id JOIN sections s ON s.id = pb.section_id WHERE s.id =? GROUP BY s.id"
 	GetAll                     = "SELECT * FROM sections;"
 	Get                        = "SELECT * FROM sections WHERE id=?;"
 	Exists                     = "SELECT section_number FROM sections WHERE section_number=?;"
 	Save                       = "INSERT INTO sections(section_number, current_temperature, minimum_temperature, current_capacity, minimum_capacity, maximum_capacity, warehouse_id, id_product_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);"
 	Update                     = "UPDATE sections SET section_number=?, current_temperature=?, minimum_temperature=?, current_capacity=?, minimum_capacity=?, maximum_capacity=?, warehouse_id=?, id_product_type=? WHERE id=?;"
-	Delete                     = "DELETE FROM sections WHERE id=?;"
+	Delete                     = "DELETE FROM sections WHERE id=?"
+	CountProductsByAllSections = `SELECT s.id "section_id", s.section_number, COUNT(pb.product_id) "product_count" FROM sections s LEFT JOIN product_batches pb ON s.id = pb.section_id GROUP BY s.id`
+	CountProductsBySection     = `SELECT s.id "section_id", s.section_number, COUNT(pb.product_id) "product_count" FROM sections s LEFT JOIN product_batches pb ON s.id = pb.section_id WHERE s.id=? GROUP BY s.id`
 )
 
 type Repository interface {
@@ -118,8 +118,6 @@ func (r *repository) CountProductsByAllSections() []domain.ProductsBySectionRepo
 	if err != nil {
 		panic(err)
 	}
-	defer rows.Close()
-
 	var productBatches []domain.ProductsBySectionReport
 	for rows.Next() {
 		var pb domain.ProductsBySectionReport
@@ -133,19 +131,14 @@ func (r *repository) CountProductsByAllSections() []domain.ProductsBySectionRepo
 }
 
 func (r *repository) CountProductsBySection(id int) *domain.ProductsBySectionReport {
-	rows, err := r.db.Query(CountProductsBySection, id)
-	if err != nil {
-		panic(err)
-	}
-	defer rows.Close()
-
-	var pb *domain.ProductsBySectionReport
-	err = rows.Scan(&pb.SectionID, &pb.SectionNumber, &pb.ProductsCount)
+	rows := r.db.QueryRow(CountProductsBySection, id)
+	pb := domain.ProductsBySectionReport{}
+	err := rows.Scan(&pb.SectionID, &pb.SectionNumber, &pb.ProductsCount)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
 		}
 		panic(err)
 	}
-	return pb
+	return &pb
 }

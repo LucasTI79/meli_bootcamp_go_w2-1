@@ -52,7 +52,7 @@ func (r *router) MapRoutes() {
 	r.buildEmployeeRoutes()
 	r.buildBuyerRoutes()
 	r.buildLocalityRoutes()
-	r.buildProductBtachesRoutes()
+	r.buildProductBatchesRoutes()
 }
 
 func (r *router) setGroup() {
@@ -161,7 +161,7 @@ func (r *router) buildLocalityRoutes() {
 	localityRoutes.GET("/report-sellers", controller.ReportSellers())
 }
 
-func (r *router) buildProductBtachesRoutes() {
+func (r *router) buildProductBatchesRoutes() {
 
 	repo := product_batches.NewRepository(r.db)
 	productRepo := product.NewRepository(r.db)

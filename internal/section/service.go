@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	ResourceNotFound      = "produto não encontrado com o id %d"
+	ResourceNotFound      = "seção não encontrada com o id %d"
 	ResourceAlreadyExists = "um produto com o código '%d' já existe"
 )
 

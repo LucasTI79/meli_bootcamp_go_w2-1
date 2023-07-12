@@ -234,7 +234,8 @@ func (s *Section) ReportProducts() gin.HandlerFunc {
 				web.Error(c, http.StatusNotFound, err.Error())
 				return
 			}
-			web.Success(c, http.StatusOK, result)
 		}
+
+		web.Success(c, http.StatusOK, result)
 	}
 }
