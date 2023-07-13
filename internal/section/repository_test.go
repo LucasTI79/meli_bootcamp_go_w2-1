@@ -35,7 +35,8 @@ func TestRepositoryGetAll(t *testing.T) {
 		sectionId := 1
 		rows.AddRow(sectionId, 1, 1, 1, 1, 1, 1, 1, 1)
 
-		mock.ExpectQuery(section.GetAllQuery).WillReturnRows(rows)
+		mock.ExpectQuery(regexp.QuoteMeta(section.GetAllQuery)).
+			WillReturnRows(rows)
 
 		repository := section.NewRepository(db)
 		result := repository.GetAll()
@@ -61,9 +62,12 @@ func TestRepositoryGet(t *testing.T) {
 		columns := []string{"id", "section_number", "current_temperature", "minimum_temperature", "current_capacity", "minimum_capacity", "maximum_capacity", "warehouse_id", "product_type_id"}
 		rows := sqlmock.NewRows(columns)
 		sectionId := 1
-		rows.AddRow(sectionId, 1, 1, 1, 1, 1)
 
-		mock.ExpectQuery(section.GetQuery).WithArgs(sectionId).WillReturnRows(rows)
+		rows.AddRow(sectionId, 1, 1, 1, 1, 1, 1, 1, 1)
+
+		mock.ExpectQuery(regexp.QuoteMeta(section.GetQuery)).
+			WithArgs(sectionId).
+			WillReturnRows(rows)
 
 		repository := section.NewRepository(db)
 
@@ -78,7 +82,7 @@ func TestRepositoryGet(t *testing.T) {
 
 		sectionId := 1
 
-		mock.ExpectQuery(section.GetQuery).WithArgs(sectionId).WillReturnError(sql.ErrNoRows)
+		mock.ExpectQuery(regexp.QuoteMeta(section.GetQuery)).WithArgs(sectionId).WillReturnError(sql.ErrNoRows)
 
 		repository := section.NewRepository(db)
 
@@ -157,15 +161,16 @@ func TestRepositorySave(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		columns := []string{"id", "section_number", "current_temperature", "minimum_temperature", "current_capacity", "minimum_capacity", "maximum_capacity", "warehouse_id", "product_type_id"}
+		columns := []string{"section_number"}
 		rows := sqlmock.NewRows(columns)
-		rows.AddRow(1, 1, 1, 1, 1, 1, 1, 1, 1)
+		rows.AddRow(1)
 
 		lastInsertId := 1
 		mockedSection1 := mockedSectionTemplate
+
 		mock.ExpectPrepare(regexp.QuoteMeta(section.InsertQuery))
 		mock.ExpectExec(regexp.QuoteMeta(section.InsertQuery)).
-			WithArgs(mockedSection1.ID, mockedSection1.SectionNumber, mockedSection1.CurrentTemperature, mockedSection1.MinimumTemperature, mockedSection1.CurrentCapacity, mockedSection1.MinimumCapacity, mockedSection1.MaximumCapacity, mockedSection1.WarehouseID, mockedSection1.ProductTypeID).
+			WithArgs(mockedSection1.SectionNumber, mockedSection1.ProductTypeID, mockedSection1.CurrentCapacity, mockedSection1.CurrentCapacity, mockedSection1.MinimumCapacity, mockedSection1.MaximumCapacity, mockedSection1.WarehouseID, mockedSection1.ProductTypeID).
 			WillReturnResult(sqlmock.NewResult(int64(lastInsertId), 1))
 
 		repository := section.NewRepository(db)
@@ -307,24 +312,83 @@ func TestRepositoryDelete(t *testing.T) {
 }
 
 func TestRepositoryCountProductsByAllSections(t *testing.T) {
-	t.Run("Should return all products count by all sections", func(t *testing.T) {
+	t.Run("Should return products count by all sections", func(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
 		columns := []string{"section_id", "section_number", "product_count"}
 		rows := sqlmock.NewRows(columns)
 		id := 1
-		rows.AddRow(id, 1, 1, 1)
+		rows.AddRow(id, 1, 1)
 
-		mock.ExpectQuery(section.ProductsByAllSectionsQuery).WillReturnRows(rows)
+		mock.ExpectQuery(regexp.QuoteMeta(section.ProductsByAllSectionsQuery)).
+			WillReturnRows(rows)
 
 		repository := section.NewRepository(db)
 
 		result := repository.CountProductsByAllSections()
 
+		assert.Equal(t, len(result), 1)
+	})
+	t.Run("Should throw panic when expected query fails", func(t *testing.T) {
+		db, mock := SetupMock(t)
+		defer db.Close()
+
+		mock.ExpectQuery(regexp.QuoteMeta(section.ProductsByAllSectionsQuery)).
+			WillReturnError(sql.ErrConnDone)
+
+		repository := section.NewRepository(db)
+
+		assert.Panics(t, func() { repository.CountProductsByAllSections() })
+	})
+}
+
+func TestRepositoryCountProductsBySection(t *testing.T) {
+	t.Run("Should return products count by specific section id", func(t *testing.T) {
+		db, mock := SetupMock(t)
+		defer db.Close()
+
+		columns := []string{"section_id", "section_number", "product_count"}
+		rows := sqlmock.NewRows(columns)
+		id := 1
+		rows.AddRow(id, 1, 1)
+
+		mock.ExpectQuery(regexp.QuoteMeta(section.ProductsBySectionQuery)).
+			WithArgs(id).
+			WillReturnRows(rows)
+
+		repository := section.NewRepository(db)
+
+		result := repository.CountProductsBySection(id)
+
 		assert.NotNil(t, result)
 	})
+	t.Run("Should throw panic when expected execution fails", func(t *testing.T) {
+		db, mock := SetupMock(t)
+		defer db.Close()
 
+		id := 1
+		mock.ExpectQuery(regexp.QuoteMeta(section.ProductsBySectionQuery)).
+			WillReturnError(sql.ErrNoRows)
+
+		repository := section.NewRepository(db)
+		result := repository.CountProductsBySection(id)
+
+		assert.Nil(t, result)
+	})
+	t.Run("Should throw panic when expected query fails", func(t *testing.T) {
+		db, mock := SetupMock(t)
+		defer db.Close()
+
+		id := 1
+		mock.ExpectQuery(regexp.QuoteMeta(section.ProductsBySectionQuery)).
+			WithArgs(id).
+			WillReturnError(sql.ErrConnDone)
+
+		repository := section.NewRepository(db)
+
+		assert.Panics(t, func() { repository.CountProductsBySection(id) })
+	})
 }
 
 func SetupMock(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
