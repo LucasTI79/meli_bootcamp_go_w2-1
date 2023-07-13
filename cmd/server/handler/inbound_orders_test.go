@@ -3,13 +3,13 @@ package handler_test
 import (
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/inbound_orders/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,7 +20,7 @@ const (
 
 var (
 	date = "2022-10-01 00:00:00"
-	dateString, _ = time.Parse("2006-01-02", date)
+	dateString  = helpers.ToDateTime(date)
 	mockedInboundOrder = domain.InboundOrder{
 		ID: 1,
 		OrderDate: dateString,

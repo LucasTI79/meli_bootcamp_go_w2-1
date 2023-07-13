@@ -2,7 +2,6 @@ package inbound_orders_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	eMock "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee/mocks"
@@ -11,12 +10,13 @@ import (
 	pbMock "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batch/mocks"
 	wMock "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/helpers"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
 	date = "2022-10-01 00:00:00"
-	dateString, _ = time.Parse("2006-01-02", date)
+	dateString = helpers.ToDateTime(date)
 	io = domain.InboundOrder{
 		ID: 1,
 		OrderDate: dateString,
@@ -40,7 +40,7 @@ var (
 	w = domain.Warehouse{
 		ID:                 1,
 		Address:            "Address",
-		Telephone:          "12345",
+		Telephone:          "+554111111111",
 		WarehouseCode:      "123",
 		MinimumCapacity:    1,
 		MinimumTemperature: 1,
@@ -94,7 +94,7 @@ func TestServiceCreate(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.True(t, apperr.Is[*apperr.DependentResourceNotFound](err))
 	})
-	t.Run("should return dependente resource not found if warehouse id doenst exist", func(t *testing.T) {
+	t.Run("should return dependent resource not found if warehouse id doenst exist", func(t *testing.T) {
 		service, ioRepository, eRepository, pbRepository, wRepository := CreateService(t)
 
 		orderNumber := "asdf"
@@ -115,7 +115,7 @@ func TestServiceCreate(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.True(t, apperr.Is[*apperr.DependentResourceNotFound](err))
 	})
-	t.Run("should return dependente resource not found if warehouse id doenst exist", func(t *testing.T) {
+	t.Run("should return the created inbound order", func(t *testing.T) {
 		service, ioRepository, eRepository, pbRepository, wRepository := CreateService(t)
 
 		inboundOrderId := 1
