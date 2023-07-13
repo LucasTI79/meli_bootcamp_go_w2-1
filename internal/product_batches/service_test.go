@@ -20,7 +20,7 @@ var (
 		DueDate:            "2021-01-01",
 		InitialQuantity:    10,
 		ManufacturingDate:  "2021-01-01",
-		ManufacturingHour:  "10:00",
+		ManufacturingHour:  10,
 		MinimumTemperature: 0,
 		ProductID:          1,
 		SectionID:          1,
