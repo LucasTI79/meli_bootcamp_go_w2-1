@@ -8,14 +8,14 @@ import (
 )
 
 const (
-	GetAllQuery                = "SELECT * FROM sections;"
-	GetQuery                   = "SELECT * FROM sections WHERE id=?;"
-	ExistsQuery                = "SELECT section_number FROM sections WHERE section_number=?;"
-	InsertQuery                = "INSERT INTO sections(section_number, current_temperature, minimum_temperature, current_capacity, minimum_capacity, maximum_capacity, warehouse_id, id_product_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);"
-	UpdateQuery                = "UPDATE sections SET section_number=?, current_temperature=?, minimum_temperature=?, current_capacity=?, minimum_capacity=?, maximum_capacity=?, warehouse_id=?, id_product_type=? WHERE id=?;"
-	DeleteQuery                = "DELETE FROM sections WHERE id=?"
-	ProductsByAllSectionsQuery = `SELECT s.id "section_id", s.section_number, COUNT(pb.product_id) "product_count" FROM sections s LEFT JOIN product_batches pb ON s.id = pb.section_id GROUP BY s.id`
-	ProductsBySectionQuery     = `SELECT s.id "section_id", s.section_number, COUNT(pb.product_id) "product_count" FROM sections s LEFT JOIN product_batches pb ON s.id = pb.section_id WHERE s.id=? GROUP BY s.id`
+	GetAllQuery                     = "SELECT * FROM sections;"
+	GetQuery                        = "SELECT * FROM sections WHERE id=?;"
+	ExistsQuery                     = "SELECT section_number FROM sections WHERE section_number=?;"
+	InsertQuery                     = "INSERT INTO sections(section_number, current_temperature, minimum_temperature, current_capacity, minimum_capacity, maximum_capacity, warehouse_id, id_product_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);"
+	UpdateQuery                     = "UPDATE sections SET section_number=?, current_temperature=?, minimum_temperature=?, current_capacity=?, minimum_capacity=?, maximum_capacity=?, warehouse_id=?, id_product_type=? WHERE id=?;"
+	DeleteQuery                     = "DELETE FROM sections WHERE id=?"
+	CountProductsByAllSectionsQuery = `SELECT s.id "section_id", s.section_number, COUNT(pb.product_id) "product_count" FROM sections s LEFT JOIN product_batches pb ON s.id = pb.section_id GROUP BY s.id`
+	CountProductsBySectionQuery     = `SELECT s.id "section_id", s.section_number, COUNT(pb.product_id) "product_count" FROM sections s LEFT JOIN product_batches pb ON s.id = pb.section_id WHERE s.id=? GROUP BY s.id`
 )
 
 type Repository interface {
@@ -114,7 +114,7 @@ func (r *repository) Delete(id int) {
 }
 
 func (r *repository) CountProductsByAllSections() []domain.ProductsBySectionReport {
-	rows, err := r.db.Query(ProductsByAllSectionsQuery)
+	rows, err := r.db.Query(CountProductsByAllSectionsQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -128,7 +128,7 @@ func (r *repository) CountProductsByAllSections() []domain.ProductsBySectionRepo
 }
 
 func (r *repository) CountProductsBySection(id int) *domain.ProductsBySectionReport {
-	rows := r.db.QueryRow(ProductsBySectionQuery, id)
+	rows := r.db.QueryRow(CountProductsBySectionQuery, id)
 	pb := domain.ProductsBySectionReport{}
 	err := rows.Scan(&pb.SectionID, &pb.SectionNumber, &pb.ProductsCount)
 	if err != nil {

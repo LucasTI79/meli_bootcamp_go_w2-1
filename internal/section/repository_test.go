@@ -321,7 +321,7 @@ func TestRepositoryCountProductsByAllSections(t *testing.T) {
 		id := 1
 		rows.AddRow(id, 1, 1)
 
-		mock.ExpectQuery(regexp.QuoteMeta(section.ProductsByAllSectionsQuery)).
+		mock.ExpectQuery(regexp.QuoteMeta(section.CountProductsByAllSectionsQuery)).
 			WillReturnRows(rows)
 
 		repository := section.NewRepository(db)
@@ -334,7 +334,7 @@ func TestRepositoryCountProductsByAllSections(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		mock.ExpectQuery(regexp.QuoteMeta(section.ProductsByAllSectionsQuery)).
+		mock.ExpectQuery(regexp.QuoteMeta(section.CountProductsByAllSectionsQuery)).
 			WillReturnError(sql.ErrConnDone)
 
 		repository := section.NewRepository(db)
@@ -353,7 +353,7 @@ func TestRepositoryCountProductsBySection(t *testing.T) {
 		id := 1
 		rows.AddRow(id, 1, 1)
 
-		mock.ExpectQuery(regexp.QuoteMeta(section.ProductsBySectionQuery)).
+		mock.ExpectQuery(regexp.QuoteMeta(section.CountProductsBySectionQuery)).
 			WithArgs(id).
 			WillReturnRows(rows)
 
@@ -368,7 +368,7 @@ func TestRepositoryCountProductsBySection(t *testing.T) {
 		defer db.Close()
 
 		id := 1
-		mock.ExpectQuery(regexp.QuoteMeta(section.ProductsBySectionQuery)).
+		mock.ExpectQuery(regexp.QuoteMeta(section.CountProductsBySectionQuery)).
 			WillReturnError(sql.ErrNoRows)
 
 		repository := section.NewRepository(db)
@@ -381,7 +381,7 @@ func TestRepositoryCountProductsBySection(t *testing.T) {
 		defer db.Close()
 
 		id := 1
-		mock.ExpectQuery(regexp.QuoteMeta(section.ProductsBySectionQuery)).
+		mock.ExpectQuery(regexp.QuoteMeta(section.CountProductsBySectionQuery)).
 			WithArgs(id).
 			WillReturnError(sql.ErrConnDone)
 
