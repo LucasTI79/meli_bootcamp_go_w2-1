@@ -1,8 +1,6 @@
 package product_batches
 
 import (
-	"context"
-
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 
@@ -37,7 +35,7 @@ func (s *service) Create(pb domain.ProductBatches) (*domain.ProductBatches, erro
 	if s.repository.Exists(pb.BatchNumber) {
 		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, pb.BatchNumber)
 	}
-	productFound := s.productRepository.Get(context.TODO(), pb.ProductID)
+	productFound := s.productRepository.Get(pb.ProductID)
 	if productFound == nil {
 		return nil, apperr.NewDependentResourceNotFound("Product with id %d does not exist", pb.ProductID)
 	}
