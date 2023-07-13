@@ -2,12 +2,17 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	invalidId = "o id '%s' é inválido"
 )
 
 type CreateBuyerRequest struct {
@@ -39,10 +44,10 @@ func (r UpdateBuyerRequest) ToUpdateBuyer() domain.UpdateBuyer {
 }
 
 type Buyer struct {
-	buyerService buyer.IService
+	buyerService buyer.Service
 }
 
-func NewBuyer(b buyer.IService) *Buyer {
+func NewBuyer(b buyer.Service) *Buyer {
 	return &Buyer{
 		buyerService: b,
 	}
@@ -63,7 +68,7 @@ func (b *Buyer) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 
-		buyer, err := b.buyerService.Get(c.Request.Context(), id)
+		buyer, err := b.buyerService.Get(id)
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
 				web.Error(c, http.StatusNotFound, err.Error())
@@ -87,7 +92,7 @@ func (b *Buyer) Get() gin.HandlerFunc {
 // @Router /buyers [get]
 func (b *Buyer) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		buyers := b.buyerService.GetAll(c.Request.Context())
+		buyers := b.buyerService.GetAll()
 		web.Success(c, http.StatusOK, buyers)
 	}
 }
@@ -108,7 +113,7 @@ func (b *Buyer) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		request := c.MustGet(RequestParamContext).(CreateBuyerRequest)
 
-		buyer, err := b.buyerService.Create(c.Request.Context(), request.ToBuyer())
+		buyer, err := b.buyerService.Create(request.ToBuyer())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
@@ -141,7 +146,7 @@ func (b *Buyer) Update() gin.HandlerFunc {
 		id := c.GetInt("Id")
 		request := c.MustGet(RequestParamContext).(UpdateBuyerRequest)
 
-		updated, err := b.buyerService.Update(c.Request.Context(), id, request.ToUpdateBuyer())
+		updated, err := b.buyerService.Update(id, request.ToUpdateBuyer())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -173,7 +178,7 @@ func (b *Buyer) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 
-		err := b.buyerService.Delete(c.Request.Context(), id)
+		err := b.buyerService.Delete(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -183,5 +188,48 @@ func (b *Buyer) Delete() gin.HandlerFunc {
 		}
 
 		web.Success(c, http.StatusNoContent, nil)
+	}
+}
+
+// Create godoc
+// @Summary Count purchase orders by buyer
+// @Description Purchase Orders count by buyer.
+// @Description If no query param is given, bring the report to all purchase orders for all buyers.
+// @Description If a buyer id is specified, bring the amount of purchase orders for this buyer.
+// @Tags Purchase Orders
+// @Accept json
+// @Produce json
+// @Success 200 {object} []domain.PuchasesByBuyerReport "List of purchase Orders"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /report-purchase-orders[get]
+func (b *Buyer) ReportPurchases() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idParam := c.Request.URL.Query().Get("id")
+
+		if idParam == "" {
+			result := b.buyerService.CountPurchasesByAllBuyers()
+			web.Success(c, http.StatusOK, result)
+			return
+		}
+
+		id, err := strconv.Atoi(idParam)
+
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, InvalidId, idParam)
+			return
+		}
+
+		purchases, err := b.buyerService.CountPurchasesByBuyer(id)
+
+		if err != nil {
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(c, http.StatusNotFound, err.Error())
+				return
+			}
+		}
+
+		web.Success(c, http.StatusOK, purchases)
 	}
 }
