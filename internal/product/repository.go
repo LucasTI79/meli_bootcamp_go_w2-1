@@ -1,7 +1,6 @@
 package product
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 
@@ -10,12 +9,12 @@ import (
 
 // Repository encapsulates the storage of a Product.
 type Repository interface {
-	GetAll(ctx context.Context) []domain.Product
-	Get(ctx context.Context, id int) *domain.Product
-	Exists(ctx context.Context, productCode string) bool
-	Save(ctx context.Context, p domain.Product) int
-	Update(ctx context.Context, p domain.Product)
-	Delete(ctx context.Context, id int)
+	GetAll() []domain.Product
+	Get(id int) *domain.Product
+	Exists(productCode string) bool
+	Save(p domain.Product) int
+	Update(p domain.Product)
+	Delete(id int)
 }
 
 type repository struct {
@@ -28,7 +27,7 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r *repository) GetAll(ctx context.Context) []domain.Product {
+func (r *repository) GetAll() []domain.Product {
 	query := "SELECT * FROM products;"
 	rows, err := r.db.Query(query)
 	if err != nil {
@@ -46,7 +45,7 @@ func (r *repository) GetAll(ctx context.Context) []domain.Product {
 	return products
 }
 
-func (r *repository) Get(ctx context.Context, id int) *domain.Product {
+func (r *repository) Get(id int) *domain.Product {
 	query := "SELECT * FROM products WHERE id=?;"
 	row := r.db.QueryRow(query, id)
 	p := domain.Product{}
@@ -62,14 +61,14 @@ func (r *repository) Get(ctx context.Context, id int) *domain.Product {
 	return &p
 }
 
-func (r *repository) Exists(ctx context.Context, productCode string) bool {
+func (r *repository) Exists(productCode string) bool {
 	query := "SELECT product_code FROM products WHERE product_code=?;"
 	row := r.db.QueryRow(query, productCode)
 	err := row.Scan(&productCode)
 	return err == nil
 }
 
-func (r *repository) Save(ctx context.Context, p domain.Product) int {
+func (r *repository) Save(p domain.Product) int {
 	query := "INSERT INTO products(description,expiration_rate,freezing_rate,height,lenght,netweight,product_code,recommended_freezing_temperature,width,id_product_type,id_seller) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -89,7 +88,7 @@ func (r *repository) Save(ctx context.Context, p domain.Product) int {
 	return int(id)
 }
 
-func (r *repository) Update(ctx context.Context, p domain.Product) {
+func (r *repository) Update(p domain.Product) {
 	query := "UPDATE products SET description=?, expiration_rate=?, freezing_rate=?, height=?, lenght=?, netweight=?, product_code=?, recommended_freezing_temperature=?, width=?, id_product_type=?, id_seller=?  WHERE id=?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -102,7 +101,7 @@ func (r *repository) Update(ctx context.Context, p domain.Product) {
 	}
 }
 
-func (r *repository) Delete(ctx context.Context, id int) {
+func (r *repository) Delete(id int) {
 	query := "DELETE FROM products WHERE id=?"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
