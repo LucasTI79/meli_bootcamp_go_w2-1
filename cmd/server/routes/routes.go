@@ -6,7 +6,6 @@ import (
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/carrier"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
@@ -15,6 +14,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/order_status"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batch"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batches"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_record"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_type"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/province"
@@ -25,6 +25,7 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/swag/example/basic/docs"
 )
 
 const (
@@ -60,6 +61,7 @@ func (r *router) MapRoutes() {
 	r.buildLocalityRoutes()
 	r.buildProductRecordRoutes()
 	r.buildCarriersRoutes()
+	r.buildProductBatchesRoutes()
 }
 
 func (r *router) setGroup() {
@@ -120,6 +122,7 @@ func (r *router) buildSectionRoutes() {
 	sectionRoutes.PATCH("/:id", middleware.RequestValidation[handler.UpdateSectionRequest](UpdateCanBeBlank), controller.Update())
 	sectionRoutes.GET("/:id", controller.Get())
 	sectionRoutes.DELETE("/:id", controller.Delete())
+	sectionRoutes.GET("/report-products", controller.ReportProducts())
 }
 
 func (r *router) buildWarehouseRoutes() {
@@ -219,4 +222,16 @@ func (r *router) buildInboundOrdersRoutes() {
 	inboundOrdersRoutes := r.rg.Group("/inbound-orders")
 
 	inboundOrdersRoutes.POST("/", middleware.RequestValidation[handler.CreateInboundOrderRequest](CreateCanBeBlank), controller.Create())
+}
+
+func (r *router) buildProductBatchesRoutes() {
+
+	repo := product_batches.NewRepository(r.db)
+	productRepo := product.NewRepository(r.db)
+	sectionRepo := section.NewRepository(r.db)
+	service := product_batches.NewService(repo, productRepo, sectionRepo)
+	controller := handler.NewProductBatches(service)
+	productBatchesRoutes := r.rg.Group("/product-batches")
+
+	productBatchesRoutes.POST("/", middleware.RequestValidation[handler.CreateProductBatchesRequest](CreateCanBeBlank), controller.Create())
 }

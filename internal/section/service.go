@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	ResourceNotFound      = "produto não encontrado com o id %d"
+	ResourceNotFound      = "seção não encontrada com o id %d"
 	ResourceAlreadyExists = "um produto com o código '%d' já existe"
 	WarehouseNotFound     = "armazem não encontrado com o id %d"
 	ProductTypeNotFound   = "tipo do produto não encontrado com o id %d"
@@ -20,6 +20,8 @@ type Service interface {
 	Create(sc domain.Section) (*domain.Section, error)
 	Update(int, domain.UpdateSection) (*domain.Section, error)
 	Delete(int) error
+	CountProductsByAllSections() []domain.ProductsBySectionReport
+	CountProductsBySection(id int) (*domain.ProductsBySectionReport, error)
 }
 type service struct {
 	repository            Repository
@@ -109,4 +111,15 @@ func (s *service) Delete(id int) error {
 
 	s.repository.Delete(id)
 	return nil
+}
+func (s *service) CountProductsByAllSections() []domain.ProductsBySectionReport {
+	return s.repository.CountProductsByAllSections()
+}
+
+func (s *service) CountProductsBySection(id int) (*domain.ProductsBySectionReport, error) {
+	productsBatch := s.repository.CountProductsBySection(id)
+	if productsBatch == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
+	}
+	return productsBatch, nil
 }

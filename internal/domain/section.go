@@ -1,6 +1,8 @@
 package domain
 
-import "github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/helpers"
+import (
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/helpers"
+)
 
 type Section struct {
 	ID                 int `json:"id"`
@@ -36,4 +38,10 @@ func (s *Section) Overlap(section UpdateSection) {
 	s.MaximumCapacity = helpers.Fill(section.MaximumCapacity, s.MaximumCapacity).(int)
 	s.WarehouseID = helpers.Fill(section.WarehouseID, s.WarehouseID).(int)
 	s.ProductTypeID = helpers.Fill(section.ProductTypeID, s.ProductTypeID).(int)
+}
+
+type ProductsBySectionReport struct {
+	SectionID     int `json:"section_id"`
+	SectionNumber int `json:"section_number"`
+	ProductsCount int `json:"products_count"`
 }

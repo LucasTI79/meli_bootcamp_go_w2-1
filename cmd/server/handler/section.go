@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
@@ -204,5 +205,41 @@ func (s *Section) Delete() gin.HandlerFunc {
 		}
 
 		web.Success(ctx, http.StatusNoContent, nil)
+	}
+}
+
+// ReportProducts godoc
+// @Summary Return the report of products by section
+// @Description Return the report of products by section based on the provided JSON payload
+// @Tags Sections
+// @Accept json
+// @Produce json
+// @Success 200 {object} []domain.ProductsBySectionReport "List of products by section"
+// @Failure 400 {object} web.ErrorResponse InvalidId
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Router /api/v1/sections/report-product [get]
+func (s *Section) ReportProducts() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		idParam := c.Request.URL.Query().Get("id")
+		if idParam == "" {
+			result := s.service.CountProductsByAllSections()
+			web.Success(c, http.StatusOK, result)
+			return
+		}
+		id, err := strconv.Atoi(idParam)
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, InvalidId, idParam)
+			return
+		}
+		result, err := s.service.CountProductsBySection(id)
+		if err != nil {
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(c, http.StatusNotFound, err.Error())
+				return
+			}
+		}
+
+		web.Success(c, http.StatusOK, result)
 	}
 }

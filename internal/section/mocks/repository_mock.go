@@ -36,3 +36,11 @@ func (r *Repository) Update(section domain.Section) {
 func (r *Repository) Delete(id int) {
 	r.Called(id)
 }
+func (r *Repository) CountProductsByAllSections() []domain.ProductsBySectionReport {
+	args := r.Called()
+	return args.Get(0).([]domain.ProductsBySectionReport)
+}
+func (r *Repository) CountProductsBySection(id int) *domain.ProductsBySectionReport {
+	args := r.Called(id)
+	return args.Get(0).(*domain.ProductsBySectionReport)
+}

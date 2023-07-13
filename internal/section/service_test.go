@@ -24,6 +24,12 @@ var (
 		WarehouseID:        1,
 		ProductTypeID:      1,
 	}
+
+	mockedProductsBySection = domain.ProductsBySectionReport{
+		SectionID:     1,
+		SectionNumber: 1,
+		ProductsCount: 1,
+	}
 )
 
 func TestServiceCreate(t *testing.T) {
@@ -186,6 +192,51 @@ func TestServiceDelete(t *testing.T) {
 		err := service.Delete(id)
 
 		assert.NoError(t, err)
+	})
+}
+
+func TestCountProductsByAllSections(t *testing.T) {
+	t.Run("Should return a list of sections", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		expected := []domain.ProductsBySectionReport{mockedProductsBySection}
+
+		repository.On("CountProductsByAllSections").Return(expected)
+		result := service.CountProductsByAllSections()
+
+		assert.NotEmpty(t, result)
+		assert.True(t, len(result) == 1)
+		assert.Equal(t, result[0], mockedProductsBySection)
+	})
+}
+
+// ok
+func TestCountProductsBySection(t *testing.T) {
+	t.Run("Should return amount of products by section by a specified id", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		mockedProductsBySec := mockedProductsBySection
+		id := 1
+
+		repository.On("CountProductsBySection", id).Return(&mockedProductsBySec)
+		result, err := service.CountProductsBySection(id)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, *result, mockedProductsBySec)
+	})
+	t.Run("Should return a not found error", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		id := 1
+		var respositoryResult *domain.ProductsBySectionReport
+
+		repository.On("CountProductsBySection", id).Return(respositoryResult)
+		result, err := service.CountProductsBySection(id)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.ResourceNotFound](err))
 	})
 }
 
