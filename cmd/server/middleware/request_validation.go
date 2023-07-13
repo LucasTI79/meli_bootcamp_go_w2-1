@@ -2,7 +2,9 @@ package middleware
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -22,6 +24,10 @@ func RequestValidation[T any](canBeBlank bool) gin.HandlerFunc {
 		if err := ctx.ShouldBindJSON(&request); err != nil {
 			status := http.StatusUnprocessableEntity
 			errorMessages := make([]string, 0)
+
+			if errors.Is(err, io.EOF) {
+				errorMessages = append(errorMessages, "o corpo da requisição está vazio e precisa ser um objeto JSON válido")
+			}
 
 			if syntaxError, ok := err.(*json.SyntaxError); ok {
 				errorMessages = append(errorMessages, fmt.Sprintf("erro de sintaxe na posição %d: %v", syntaxError.Offset, syntaxError.Error()))
@@ -67,6 +73,10 @@ func readableMessageFrom(structValue interface{}, fe validator.FieldError) strin
 		message = fmt.Sprintf("'%s' é obrigatório", getFieldNameOfFieldError(structValue, fe))
 	case "e164":
 		message = fmt.Sprintf("'%s' precisa estar no formato +<country_code><zone_code><phone_number> sem espaços ou caracteres especiais, por exemplo: +5500123456789", getFieldNameOfFieldError(structValue, fe))
+	case "datetime":
+		message = fmt.Sprintf("'%s' precisa estar no formato yyyy-mm-dd hh:mm:ss", getFieldNameOfFieldError(structValue, fe))
+	case "gt":
+		message = fmt.Sprintf("'%s' precisa ter mais de 3 caracteres", getFieldNameOfFieldError(structValue, fe))
 	default:
 		message = "erro desconhecido"
 	}

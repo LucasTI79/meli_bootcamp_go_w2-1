@@ -12,15 +12,26 @@ const (
 	ExistsQuery = "SELECT locality_name FROM localities WHERE locality_name=?"
 	InsertQuery = "INSERT INTO localities (locality_name, province_id) VALUES (?, ?)"
 
-	CountSellersByAllLocalitiesQuery = `SELECT s.locality_id, l.locality_name, count(s.id) "sellers_count"
+	CountSellersByAllLocalitiesQuery = `SELECT l.id "locality_id", l.locality_name, count(s.id) "sellers_count"
 		FROM localities l
-		JOIN sellers s ON l.id = s.locality_id
+		LEFT JOIN sellers s ON l.id = s.locality_id
 		GROUP BY l.id`
 
-	CountSellersByLocalityQuery = `SELECT s.locality_id, l.locality_name, count(s.id) "sellers_count"
+	CountSellersByLocalityQuery = `SELECT l.id "locality_id", l.locality_name, count(s.id) "sellers_count"
 		FROM localities l
-		JOIN sellers s ON l.id = s.locality_id
+		LEFT JOIN sellers s ON l.id = s.locality_id
 		WHERE l.id=?
+		GROUP BY l.id`
+
+	CountCarriersByLocality = `SELECT c.locality_id, l.locality_name, count(c.id) "carriers_count"
+		FROM localities l
+		JOIN carriers c ON l.id = c.locality_id
+		WHERE l.id=?
+		GROUP BY l.id`
+
+	CountCarriersByAllLocalitiesQuery = `SELECT c.locality_id, l.locality_name, count(c.id) "carriers_count"
+		FROM localities l
+		JOIN carriers c ON l.id = c.locality_id
 		GROUP BY l.id`
 )
 
@@ -31,6 +42,8 @@ type Repository interface {
 	Save(locality domain.Locality) int
 	CountSellersByAllLocalities() []domain.SellersByLocalityReport
 	CountSellersByLocality(id int) *domain.SellersByLocalityReport
+	CountCarriersByLocality(id int) *domain.CarriersByLocalityReport
+	CountCarriersByAllLocalities() []domain.CarriersByLocalityReport
 }
 
 type repository struct {
@@ -111,4 +124,34 @@ func (r *repository) CountSellersByLocality(id int) *domain.SellersByLocalityRep
 	}
 
 	return &s
+}
+
+func (r *repository) CountCarriersByLocality(id int) *domain.CarriersByLocalityReport {
+	rows := r.db.QueryRow(CountCarriersByLocality, id)
+	c := domain.CarriersByLocalityReport{}
+	err := rows.Scan(&c.ID, &c.LocalityName, &c.CarriersCount)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		panic(err)
+	}
+	return &c
+}
+
+func (r *repository) CountCarriersByAllLocalities() []domain.CarriersByLocalityReport {
+	rows, err := r.db.Query(CountCarriersByAllLocalitiesQuery)
+	if err != nil {
+		panic(err)
+	}
+
+	carriersByLocalities := make([]domain.CarriersByLocalityReport, 0)
+
+	for rows.Next() {
+		c := domain.CarriersByLocalityReport{}
+		_ = rows.Scan(&c.ID, &c.LocalityName, &c.CarriersCount)
+		carriersByLocalities = append(carriersByLocalities, c)
+	}
+
+	return carriersByLocalities
 }

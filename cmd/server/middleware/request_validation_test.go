@@ -12,6 +12,7 @@ import (
 type CorrectRequest struct {
 	FieldA *string `json:"field_a" binding:"required"`
 	FieldB *string `json:"field_b" binding:"e164,omitempty"`
+	FieldC *string `json:"field_c" binding:"datetime=2006-01-02 15:04:05,omitempty"`
 }
 
 type WrongTypeRequest struct {
@@ -21,6 +22,7 @@ type WrongTypeRequest struct {
 
 type MissingRequiredFieldRequest struct {
 	FieldB *string `json:"field_b" validate:"e164,omitempty"`
+	FieldC *string `json:"field_c" validate:"datetime=2006-01-02 15:04:05,omitempty"`
 }
 
 type UnknownValidationTagRequest struct {
@@ -36,9 +38,10 @@ type ErrorResponse struct {
 func TestValidationMiddleware(t *testing.T) {
 	fieldA := "Field A"
 	fieldB := "+5500123456789"
+	fieldC := "2023-01-01 00:00:00"
 
 	t.Run("Should have success on validation", func(t *testing.T) {
-		request := createCorrectRequest(fieldA, fieldB)
+		request := createCorrectRequest(fieldA, fieldB, fieldC)
 		context, recorder, _ := createValidationContext(request, getMarshaledRequestInBytes[CorrectRequest])
 
 		middleware.RequestValidation[CorrectRequest](true)(context)
@@ -47,6 +50,21 @@ func TestValidationMiddleware(t *testing.T) {
 		assert.Equal(t, http.StatusOK, recorder.Code)
 		assert.Equal(t, request, gotRequest)
 		assert.False(t, context.IsAborted())
+	})
+
+	t.Run("Should have error when try parse a empty body request", func(t *testing.T) {
+		request := ""
+		context, recorder, _ := createValidationContext(request, getStringRequestInBytes)
+
+		middleware.RequestValidation[CorrectRequest](true)(context)
+
+		var response ErrorResponse
+		_ = json.Unmarshal(recorder.Body.Bytes(), &response)
+
+		assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
+		assert.Len(t, response.Messages, 1)
+		assert.Equal(t, "o corpo da requisição está vazio e precisa ser um objeto JSON válido", response.Messages[0])
+		assert.True(t, context.IsAborted())
 	})
 
 	t.Run("Should have error when try parse a request field with a syntax error", func(t *testing.T) {
@@ -80,7 +98,7 @@ func TestValidationMiddleware(t *testing.T) {
 	})
 
 	t.Run("Should have error when try parse a request with a missing required field", func(t *testing.T) {
-		request := createMissingRequiredFieldRequest(fieldB)
+		request := createMissingRequiredFieldRequest(fieldB, fieldC)
 		context, recorder, _ := createValidationContext(request, getMarshaledRequestInBytes[MissingRequiredFieldRequest])
 
 		middleware.RequestValidation[CorrectRequest](true)(context)
@@ -95,7 +113,7 @@ func TestValidationMiddleware(t *testing.T) {
 	})
 
 	t.Run("Should have error when try parse a request with a wrong phone format", func(t *testing.T) {
-		request := createCorrectRequest(fieldA, "Phone")
+		request := createCorrectRequest(fieldA, "Phone", fieldC)
 		context, recorder, _ := createValidationContext(request, getMarshaledRequestInBytes[CorrectRequest])
 
 		middleware.RequestValidation[CorrectRequest](true)(context)
@@ -106,6 +124,21 @@ func TestValidationMiddleware(t *testing.T) {
 		assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 		assert.Len(t, response.Messages, 1)
 		assert.Equal(t, "'field_b' precisa estar no formato +<country_code><zone_code><phone_number> sem espaços ou caracteres especiais, por exemplo: +5500123456789", response.Messages[0])
+		assert.True(t, context.IsAborted())
+	})
+
+	t.Run("Should have error when try parse a request with a wrong datetime format", func(t *testing.T) {
+		request := createCorrectRequest(fieldA, fieldB, "Date")
+		context, recorder, _ := createValidationContext(request, getMarshaledRequestInBytes[CorrectRequest])
+
+		middleware.RequestValidation[CorrectRequest](true)(context)
+
+		var response ErrorResponse
+		_ = json.Unmarshal(recorder.Body.Bytes(), &response)
+
+		assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
+		assert.Len(t, response.Messages, 1)
+		assert.Equal(t, "'field_c' precisa estar no formato yyyy-mm-dd hh:mm:ss", response.Messages[0])
 		assert.True(t, context.IsAborted())
 	})
 
@@ -140,7 +173,7 @@ func TestValidationMiddleware(t *testing.T) {
 	})
 
 	t.Run("Should have success when request that 'cannot be blank' is not blank", func(t *testing.T) {
-		request := createMissingRequiredFieldRequest(fieldB)
+		request := createMissingRequiredFieldRequest(fieldB, fieldC)
 		context, recorder, _ := createValidationContext(request, getMarshaledRequestInBytes[MissingRequiredFieldRequest])
 
 		middleware.RequestValidation[MissingRequiredFieldRequest](false)(context)
@@ -152,16 +185,16 @@ func TestValidationMiddleware(t *testing.T) {
 	})
 }
 
-func createCorrectRequest(fieldA string, fieldB string) CorrectRequest {
-	return CorrectRequest{&fieldA, &fieldB}
+func createCorrectRequest(fieldA string, fieldB string, fieldC string) CorrectRequest {
+	return CorrectRequest{&fieldA, &fieldB, &fieldC}
 }
 
 func createWrongTypeRequest(fieldA int, fieldB int) WrongTypeRequest {
 	return WrongTypeRequest{&fieldA, &fieldB}
 }
 
-func createMissingRequiredFieldRequest(fieldB string) MissingRequiredFieldRequest {
-	return MissingRequiredFieldRequest{&fieldB}
+func createMissingRequiredFieldRequest(fieldB string, fieldC string) MissingRequiredFieldRequest {
+	return MissingRequiredFieldRequest{&fieldB, &fieldC}
 }
 
 func createUnknownValidationTagRequest(fieldA string) UnknownValidationTagRequest {

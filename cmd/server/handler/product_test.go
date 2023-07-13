@@ -63,6 +63,20 @@ func TestCreateProduct(t *testing.T) {
 		assert.Equal(t, http.StatusConflict, response.Code)
 	})
 
+	t.Run("Should return dependent resource not found error", func(t *testing.T) {
+		server, service, controller := InitProductServer(t)
+
+		server.POST(DefinePath(ResourceProductsUri), ValidationMiddleware(requestObject), controller.Create())
+		request, response := MakeRequest("POST", DefinePath(ResourceProductsUri), CreateBody(requestObject))
+
+		var serviceReturn *domain.Product
+		service.On("Create", requestObject.ToProduct()).Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceAlreadyExists))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
 	t.Run("Should return a created product", func(t *testing.T) {
 		server, service, controller := InitProductServer(t)
 
@@ -174,6 +188,24 @@ func TestUpdateProduct(t *testing.T) {
 		assert.Equal(t, http.StatusConflict, response.Code)
 	})
 
+	t.Run("Should return dependent resource not found error", func(t *testing.T) {
+		server, service, controller := InitProductServer(t)
+
+		id := 1
+
+		server.PATCH(DefinePath(ResourceProductsUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceProductsUri, id), CreateBody(requestObject))
+
+		var serviceReturn *domain.Product
+		service.On(
+			"Update", id, requestObject.ToUpdateProduct()).
+			Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
 	t.Run("Should return updated product", func(t *testing.T) {
 		server, service, controller := InitProductServer(t)
 
@@ -221,6 +253,66 @@ func TestDeleteProduct(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		assert.Equal(t, http.StatusNoContent, response.Code)
+	})
+}
+
+func TestReportProductRecords(t *testing.T) {
+	t.Run("Should return records count report of all products", func(t *testing.T) {
+		server, service, controller := InitProductServer(t)
+
+		server.GET(DefinePath(ResourceProductRecordsUri), controller.ReportRecords())
+		request, response := MakeRequest("GET", DefinePath(ResourceProductRecordsUri), "")
+
+		service.On("CountRecordsByAllProducts").Return([]domain.RecordsByProductReport{}, nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
+
+	t.Run("Should return invalid id error", func(t *testing.T) {
+		server, _, controller := InitProductServer(t)
+
+		server.GET(DefinePath(ResourceProductRecordsUri), controller.ReportRecords())
+		request, response := MakeRequest("GET", DefinePath(ResourceProductRecordsUri)+"?id=abc", "")
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	})
+
+	t.Run("Should return not found error", func(t *testing.T) {
+		server, service, controller := InitProductServer(t)
+
+		server.GET(DefinePath(ResourceProductRecordsUri), controller.ReportRecords())
+		request, response := MakeRequest("GET", DefinePath(ResourceProductRecordsUri)+"?id=1", "")
+
+		recordId := 1
+		var serviceReturn *domain.RecordsByProductReport
+		service.On("CountRecordsByProduct", recordId).Return(serviceReturn, apperr.NewResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	})
+
+	t.Run("Should return records count report by product", func(t *testing.T) {
+		server, service, controller := InitProductServer(t)
+
+		server.GET(DefinePath(ResourceProductRecordsUri), controller.ReportRecords())
+		request, response := MakeRequest("GET", DefinePath(ResourceProductRecordsUri)+"?id=1", "")
+
+		recordId := 1
+		serviceReturn := domain.RecordsByProductReport{
+			ProductID:    1,
+			Description:  "Description",
+			RecordsCount: 1,
+		}
+		service.On("CountRecordsByProduct", recordId).Return(&serviceReturn, nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
 	})
 }
 

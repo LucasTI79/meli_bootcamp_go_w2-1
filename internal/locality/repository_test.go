@@ -278,3 +278,83 @@ func TestRepositoryCountSellersByLocality(t *testing.T) {
 		assert.Panics(t, func() { repository.CountSellersByLocality(localityId) })
 	})
 }
+
+func TestRepositoryCountCarriersByAllLocalities(t *testing.T) {
+	t.Run("Should return carriers count report by all localities", func(t *testing.T) {
+		db, mock := SetupMock(t)
+		defer db.Close()
+
+		columns := []string{"locality_id", "locality_name", "carriers_count"}
+		rows := sqlmock.NewRows(columns)
+		localityId := 1
+		rows.AddRow(localityId, "", 1)
+
+		mock.ExpectQuery(regexp.QuoteMeta(locality.CountCarriersByAllLocalitiesQuery)).WillReturnRows(rows)
+
+		repository := locality.NewRepository(db)
+
+		result := repository.CountCarriersByAllLocalities()
+
+		assert.Equal(t, len(result), 1)
+	})
+
+	t.Run("Should throw panic when query execution fails", func(t *testing.T) {
+		db, mock := SetupMock(t)
+		defer db.Close()
+
+		mock.ExpectQuery(regexp.QuoteMeta(locality.CountCarriersByAllLocalitiesQuery)).WillReturnError(sql.ErrConnDone)
+
+		repository := locality.NewRepository(db)
+
+		assert.Panics(t, func() { repository.CountCarriersByAllLocalities() })
+	})
+
+}
+
+func TestRepositoryCountCarriersByLocality(t *testing.T) {
+	t.Run("Should return carriers count by specified locality id", func(t *testing.T) {
+		db, mock := SetupMock(t)
+		defer db.Close()
+
+		columns := []string{"locality_id", "locality_name", "carriers_count"}
+		rows := sqlmock.NewRows(columns)
+		localityId := 1
+		rows.AddRow(localityId, "", 1)
+
+		mock.ExpectQuery(regexp.QuoteMeta(locality.CountCarriersByLocality)).
+			WithArgs(localityId).
+			WillReturnRows(rows)
+
+		repository := locality.NewRepository(db)
+
+		result := repository.CountCarriersByLocality(localityId)
+
+		assert.NotNil(t, result)
+	})
+
+	t.Run("Should throw panic when query execution fails", func(t *testing.T) {
+		db, mock := SetupMock(t)
+		defer db.Close()
+
+		localityId := 1
+		mock.ExpectQuery(regexp.QuoteMeta(locality.CountCarriersByLocality)).WillReturnError(sql.ErrNoRows)
+
+		repository := locality.NewRepository(db)
+
+		result := repository.CountCarriersByLocality(localityId)
+
+		assert.Nil(t, result)
+	})
+
+	t.Run("Should throw panic when query execution fails", func(t *testing.T) {
+		db, mock := SetupMock(t)
+		defer db.Close()
+
+		localityId := 1
+		mock.ExpectQuery(regexp.QuoteMeta(locality.CountCarriersByLocality)).WillReturnError(sql.ErrConnDone)
+
+		repository := locality.NewRepository(db)
+
+		assert.Panics(t, func() { repository.CountCarriersByLocality(localityId) })
+	})
+}

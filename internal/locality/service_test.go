@@ -124,6 +124,64 @@ func TestServiceCountSellersByLocality(t *testing.T) {
 	})
 }
 
+func TestServiceCountCarriersByAllLocalities(t *testing.T) {
+	t.Run("Should return carriers count of all localities", func(t *testing.T) {
+		service, repository, _ := CreateService(t)
+
+		mockedCarriersByLocalityReport := domain.CarriersByLocalityReport{
+			ID:            1,
+			LocalityName:  "Locality Name",
+			CarriersCount: 1,
+		}
+		mockedSellersByLocalitiesReport := []domain.CarriersByLocalityReport{mockedCarriersByLocalityReport}
+
+		repository.On("CountCarriersByAllLocalities").Return(mockedSellersByLocalitiesReport)
+
+		result := service.CountCarriersByAllLocalities()
+
+		assert.Equal(t, 1, len(result))
+		assert.Equal(t, result[0], mockedCarriersByLocalityReport)
+	})
+}
+
+func TestServiceCountCarriersByLocality(t *testing.T) {
+	t.Run("Should return carriers count by specified locality id", func(t *testing.T) {
+		service, repository, _ := CreateService(t)
+
+		localityId := 1
+		mockedLocality := mockedLocalityTemplate
+		mockedSellersByLocalityReport := domain.CarriersByLocalityReport{
+			ID:            1,
+			LocalityName:  "Locality Name",
+			CarriersCount: 1,
+		}
+
+		repository.On("Get", localityId).Return(&mockedLocality)
+		repository.On("CountCarriersByLocality", localityId).Return(&mockedSellersByLocalityReport)
+
+		result, err := service.CountCarriersByLocality(localityId)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, *result, mockedSellersByLocalityReport)
+	})
+
+	t.Run("Should return not found when locality id not exists", func(t *testing.T) {
+		service, repository, _ := CreateService(t)
+
+		localityId := 1
+
+		var localityRepositoryGetResult *domain.Locality
+		repository.On("Get", localityId).Return(localityRepositoryGetResult)
+
+		result, err := service.CountCarriersByLocality(localityId)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.ResourceNotFound](err))
+	})
+}
+
 func CreateService(t *testing.T) (locality.Service, *mocks.Repository, *provinceMocks.Repository) {
 	t.Helper()
 	repository := new(mocks.Repository)
