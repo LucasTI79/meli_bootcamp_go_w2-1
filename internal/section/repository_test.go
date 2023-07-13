@@ -306,6 +306,27 @@ func TestRepositoryDelete(t *testing.T) {
 	})
 }
 
+func TestRepositoryCountProductsByAllSections(t *testing.T) {
+	t.Run("Should return all products count by all sections", func(t *testing.T) {
+		db, mock := SetupMock(t)
+		defer db.Close()
+
+		columns := []string{"section_id", "section_number", "product_count"}
+		rows := sqlmock.NewRows(columns)
+		id := 1
+		rows.AddRow(id, 1, 1, 1)
+
+		mock.ExpectQuery(section.ProductsByAllSectionsQuery).WillReturnRows(rows)
+
+		repository := section.NewRepository(db)
+
+		result := repository.CountProductsByAllSections()
+
+		assert.NotNil(t, result)
+	})
+
+}
+
 func SetupMock(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
 	t.Helper()
 
