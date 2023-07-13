@@ -72,8 +72,8 @@ func (s *service) Update(id int, warehouse domain.UpdateWarehouse) (*domain.Ware
 		warehouseExists := s.repository.Exists(warehouseCode)
 
 		if warehouseExists && warehouseCode != warehouseFound.WarehouseCode {
-		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, warehouseCode)
-	}
+			return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, warehouseCode)
+		}
 
 	}
 

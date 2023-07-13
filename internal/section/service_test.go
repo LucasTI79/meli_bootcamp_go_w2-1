@@ -1,7 +1,6 @@
 package section_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
@@ -13,15 +12,21 @@ import (
 
 var (
 	mockedSection = domain.Section{
-		ID: 1,
-		SectionNumber: 1,      
+		ID:                 1,
+		SectionNumber:      1,
 		CurrentTemperature: 1,
 		MinimumTemperature: 1,
-		CurrentCapacity: 1,
-		MinimumCapacity: 1,
-		MaximumCapacity: 1,
-		WarehouseID: 1,
-		ProductTypeID: 1,      
+		CurrentCapacity:    1,
+		MinimumCapacity:    1,
+		MaximumCapacity:    1,
+		WarehouseID:        1,
+		ProductTypeID:      1,
+	}
+
+	mockedProductsBySection = domain.ProductsBySectionReport{
+		SectionID:     1,
+		SectionNumber: 1,
+		ProductsCount: 1,
 	}
 )
 
@@ -33,7 +38,7 @@ func TestServiceCreate(t *testing.T) {
 		repository.On("Save", mockedSection).Return(id)
 		repository.On("Get", id).Return(&mockedSection)
 		repository.On("Exists", mockedSection.SectionNumber).Return(false)
-		result, err := service.Create(context.TODO(), mockedSection)
+		result, err := service.Create(mockedSection)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -44,7 +49,7 @@ func TestServiceCreate(t *testing.T) {
 		service, repository := CreateService(t)
 
 		repository.On("Exists", mockedSection.SectionNumber).Return(true)
-		result, err := service.Create(context.TODO(), mockedSection)
+		result, err := service.Create(mockedSection)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -59,7 +64,7 @@ func TestServiceGet(t *testing.T) {
 		expected := []domain.Section{mockedSection}
 
 		repository.On("GetAll").Return(expected)
-		result := service.GetAll(context.TODO())
+		result := service.GetAll()
 
 		assert.NotEmpty(t, result)
 		assert.Equal(t, len(result), 1)
@@ -72,7 +77,7 @@ func TestServiceGet(t *testing.T) {
 		id := 1
 
 		repository.On("Get", id).Return(&mockedSection)
-		result, err := service.Get(context.TODO(), id)
+		result, err := service.Get(id)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -86,7 +91,7 @@ func TestServiceGet(t *testing.T) {
 		var respositoryResult *domain.Section
 
 		repository.On("Get", id).Return(respositoryResult)
-		result, err := service.Get(context.TODO(), id)
+		result, err := service.Get(id)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -101,14 +106,14 @@ func TestServiceUpdate(t *testing.T) {
 		id := 2
 		sectionNumber := 123
 		UpdateSection := domain.UpdateSection{
-			ID:          &id,
+			ID:            &id,
 			SectionNumber: &sectionNumber,
 		}
 
 		var respositoryResult *domain.Section
 
 		repository.On("Get", id).Return(respositoryResult)
-		result, err := service.Update(context.TODO(), id, UpdateSection)
+		result, err := service.Update(id, UpdateSection)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -121,13 +126,13 @@ func TestServiceUpdate(t *testing.T) {
 		id := 1
 		sectionNumber := 456
 		UpdateSection := domain.UpdateSection{
-			ID:          &id,
+			ID:            &id,
 			SectionNumber: &sectionNumber,
 		}
 
 		repository.On("Get", id).Return(&mockedSection)
 		repository.On("Exists", sectionNumber).Return(true)
-		result, err := service.Update(context.TODO(), id, UpdateSection)
+		result, err := service.Update(id, UpdateSection)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -141,9 +146,9 @@ func TestServiceUpdate(t *testing.T) {
 		sectionNumber := 123
 		currentTemperature := 2
 		UpdateSection := domain.UpdateSection{
-			ID:          &id,
+			ID:                 &id,
 			CurrentTemperature: &currentTemperature,
-			SectionNumber: &sectionNumber,
+			SectionNumber:      &sectionNumber,
 		}
 		updatedSection := mockedSection
 		updatedSection.Overlap(UpdateSection)
@@ -152,7 +157,7 @@ func TestServiceUpdate(t *testing.T) {
 		repository.On("Exists", sectionNumber).Return(false)
 		repository.On("Update", updatedSection)
 		repository.On("Get", id).Return(&updatedSection)
-		result, err := service.Update(context.TODO(), id, UpdateSection)
+		result, err := service.Update(id, UpdateSection)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -168,7 +173,7 @@ func TestServiceDelete(t *testing.T) {
 		var respositoryResult *domain.Section
 
 		repository.On("Get", id).Return(respositoryResult)
-		err := service.Delete(context.TODO(), id)
+		err := service.Delete(id)
 
 		assert.Error(t, err)
 		assert.True(t, apperr.Is[*apperr.ResourceNotFound](err))
@@ -182,9 +187,54 @@ func TestServiceDelete(t *testing.T) {
 		repository.On("Get", id).Return(&mockedSection)
 		repository.On("Delete", id)
 
-		err := service.Delete(context.TODO(), id)
+		err := service.Delete(id)
 
 		assert.NoError(t, err)
+	})
+}
+
+func TestCountProductsByAllSections(t *testing.T) {
+	t.Run("Should return a list of sections", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		expected := []domain.ProductsBySectionReport{mockedProductsBySection}
+
+		repository.On("CountProductsByAllSections").Return(expected)
+		result := service.CountProductsByAllSections()
+
+		assert.NotEmpty(t, result)
+		assert.True(t, len(result) == 1)
+		assert.Equal(t, result[0], mockedProductsBySection)
+	})
+}
+
+// ok
+func TestCountProductsBySection(t *testing.T) {
+	t.Run("Should return amount of products by section by a specified id", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		mockedProductsBySec := mockedProductsBySection
+		id := 1
+
+		repository.On("CountProductsBySection", id).Return(&mockedProductsBySec)
+		result, err := service.CountProductsBySection(id)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, *result, mockedProductsBySec)
+	})
+	t.Run("Should return a not found error", func(t *testing.T) {
+		service, repository := CreateService(t)
+
+		id := 1
+		var respositoryResult *domain.ProductsBySectionReport
+
+		repository.On("CountProductsBySection", id).Return(respositoryResult)
+		result, err := service.CountProductsBySection(id)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.ResourceNotFound](err))
 	})
 }
 

@@ -215,6 +215,64 @@ func TestDeleteSection(t *testing.T) {
 	})
 }
 
+func TestReportProducts(t *testing.T) {
+	t.Run("Should return products count by all sections", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		server.GET(DefinePath(resourceSectionUri), controller.ReportProducts())
+		request, response := MakeRequest("GET", DefinePath(resourceSectionUri), "")
+
+		service.On("CountProductsByAllSections").Return([]domain.ProductsBySectionReport{}, nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
+	t.Run("Should return invalid id error", func(t *testing.T) {
+		server, _, controller := initSectionServer(t)
+
+		server.GET(DefinePath(resourceSectionUri), controller.ReportProducts())
+		request, response := MakeRequest("GET", DefinePath(resourceSectionUri)+"?id=abc", "")
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	})
+	t.Run("Should return not found error", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		server.GET(DefinePath(resourceSectionUri), controller.ReportProducts())
+		request, response := MakeRequest("GET", DefinePath(resourceSectionUri)+"?id=1", "")
+
+		productId := 1
+		var serviceReturn *domain.ProductsBySectionReport
+		service.On("CountProductsBySection", productId).Return(serviceReturn, apperr.NewResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	})
+	t.Run("Should return products count by section", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		server.GET(DefinePath(resourceSectionUri), controller.ReportProducts())
+		request, response := MakeRequest("GET", DefinePath(resourceSectionUri)+"?id=1", "")
+
+		productId := 1
+		serviceReturn := domain.ProductsBySectionReport{
+			SectionID:     productId,
+			SectionNumber: 1,
+			ProductsCount: 1,
+		}
+		service.On("CountProductsBySection", productId).Return(&serviceReturn, nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
+
+}
+
 func initSectionServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Section) {
 	t.Helper()
 	server := CreateServer()
