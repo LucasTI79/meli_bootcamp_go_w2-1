@@ -30,36 +30,70 @@ var (
 
 func TestServiceCreate(t *testing.T) {
 	t.Run("Should return a created product batches", func(t *testing.T) {
-		service, repository := CreateService(t)
+		service, repository, productRepository, sectionRepository := CreateService(t)
 
 		id := 1
 		repository.On("Save", productBatch).Return(id)
 		repository.On("Get", id).Return(&productBatch)
 		repository.On("Exists", productBatch.BatchNumber).Return(false)
+		productRepository.On("Get", productBatch.ProductID).Return(&domain.Product{})
+		sectionRepository.On("Get", productBatch.SectionID).Return(&domain.Section{})
 		result, err := service.Create(productBatch)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, productBatch, result)
+		assert.Equal(t, productBatch, *result)
 	})
-	t.Run("Should return a conflict error when product batches number already exists", func(t *testing.T) {
-		service, repository := CreateService(t)
+	t.Run("Should return a conflict error when product not found", func(t *testing.T) {
+		service, repository, productRepository, _ := CreateService(t)
 
-		repository.On("Exists", pb.BatchNumber).Return(true)
-		result, err := service.Create(pb)
+		mockedProductBatch := productBatch
+		var productGetResult *domain.Product
+
+		repository.On("Exists", mockedProductBatch.BatchNumber).Return(false)
+		productRepository.On("Get", mockedProductBatch.ProductID).Return(productGetResult)
+		result, err := service.Create(mockedProductBatch)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.DependentResourceNotFound](err))
+	})
+	t.Run("Should return a conflict error when section not found", func(t *testing.T) {
+		service, repository, productRepository, sectionRepository := CreateService(t)
+
+		mockedProductBatch := productBatch
+		var sectionGetResult *domain.Section
+
+		repository.On("Exists", mockedProductBatch.BatchNumber).Return(false)
+		productRepository.On("Get", mockedProductBatch.ProductID).Return(&domain.Product{})
+		sectionRepository.On("Get", mockedProductBatch.SectionID).Return(sectionGetResult)
+		result, err := service.Create(mockedProductBatch)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.DependentResourceNotFound](err))
+	})
+	t.Run("Should return a conflict error when batch number already exists", func(t *testing.T) {
+		service, repository, _, _ := CreateService(t)
+
+		mockedProductBatch := productBatch
+
+		repository.On("Exists", mockedProductBatch.BatchNumber).Return(true)
+		result, err := service.Create(mockedProductBatch)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.True(t, apperr.Is[*apperr.ResourceAlreadyExists](err))
+
 	})
 }
 
-func CreateService(t *testing.T) (product_batches.Service, *mocks.Repository) {
+func CreateService(t *testing.T) (product_batches.Service, *mocks.Repository, *product_mocks.Repository, *section_mocks.Repository) {
 	t.Helper()
 	repository := new(mocks.Repository)
 	productRepository := new(product_mocks.Repository)
 	sectionRepository := new(section_mocks.Repository)
 	service := product_batches.NewService(repository, productRepository, sectionRepository)
 
-	return service, repository
+	return service, repository, productRepository, sectionRepository
 }
