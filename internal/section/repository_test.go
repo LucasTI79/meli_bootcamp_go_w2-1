@@ -66,15 +66,15 @@ func TestRepositoryGet(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		localityId := 1
+		sectionId := 1
 
 		mock.ExpectQuery(regexp.QuoteMeta(GetQuery)).
-			WithArgs(localityId).
+			WithArgs(sectionId).
 			WillReturnError(sql.ErrConnDone)
 
 		repository := NewRepository(db)
 
-		assert.Panics(t, func() { repository.Get(localityId) })
+		assert.Panics(t, func() { repository.Get(sectionId) })
 	})
 }
 
@@ -146,7 +146,7 @@ func TestRepositorySave(t *testing.T) {
 
 		mock.ExpectPrepare(regexp.QuoteMeta(InsertQuery))
 		mock.ExpectExec(regexp.QuoteMeta(InsertQuery)).
-			WithArgs(mockedSection.SectionNumber, mockedSection.ProductTypeID, mockedSection.CurrentCapacity, mockedSection.CurrentCapacity, mockedSection.MinimumCapacity, mockedSection.MaximumCapacity, mockedSection.WarehouseID, mockedSection.ProductTypeID).
+			WithArgs(mockedSection.SectionNumber, mockedSection.ProductTypeID, mockedSection.CurrentCapacity, mockedSection.CurrentTemperature, mockedSection.MinimumCapacity, mockedSection.MaximumCapacity, mockedSection.WarehouseID, mockedSection.ProductTypeID).
 			WillReturnResult(sqlmock.NewResult(int64(lastInsertId), 1))
 
 		repository := NewRepository(db)
@@ -175,7 +175,7 @@ func TestRepositorySave(t *testing.T) {
 		mockedSection := mockedSectionTemplate
 		mock.ExpectPrepare(regexp.QuoteMeta(InsertQuery))
 		mock.ExpectExec(regexp.QuoteMeta(InsertQuery)).
-			WithArgs(mockedSection.SectionNumber, mockedSection.ProductTypeID, mockedSection.CurrentCapacity, mockedSection.CurrentCapacity, mockedSection.MinimumCapacity, mockedSection.MaximumCapacity, mockedSection.WarehouseID, mockedSection.ProductTypeID).
+			WithArgs(mockedSection.SectionNumber, mockedSection.ProductTypeID, mockedSection.CurrentCapacity, mockedSection.CurrentTemperature, mockedSection.MinimumCapacity, mockedSection.MaximumCapacity, mockedSection.WarehouseID, mockedSection.ProductTypeID).
 			WillReturnError(sql.ErrConnDone)
 
 		repository := NewRepository(db)
@@ -190,7 +190,7 @@ func TestRepositorySave(t *testing.T) {
 		mockedSection := mockedSectionTemplate
 		mock.ExpectPrepare(regexp.QuoteMeta(InsertQuery))
 		mock.ExpectExec(regexp.QuoteMeta(InsertQuery)).
-			WithArgs(mockedSection.SectionNumber, mockedSection.ProductTypeID, mockedSection.CurrentCapacity, mockedSection.CurrentCapacity, mockedSection.MinimumCapacity, mockedSection.MaximumCapacity, mockedSection.WarehouseID, mockedSection.ProductTypeID).
+			WithArgs(mockedSection.SectionNumber, mockedSection.ProductTypeID, mockedSection.CurrentCapacity, mockedSection.CurrentTemperature, mockedSection.MinimumCapacity, mockedSection.MaximumCapacity, mockedSection.WarehouseID, mockedSection.ProductTypeID).
 			WillReturnResult(sqlmock.NewErrorResult(sql.ErrConnDone))
 
 		repository := NewRepository(db)
