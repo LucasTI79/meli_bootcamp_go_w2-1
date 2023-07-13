@@ -17,11 +17,11 @@ const (
 
 	CountInboundOrdersByAllEmployeesQuery = `SELECT e.id, e.card_number_id, e.first_name, e.last_name, e.warehouse_id, count(i.id) "inbound_orders_count"
 	FROM employees e
-	JOIN inbound_orders i ON e.id = i.employee_id
+	LEFT JOIN inbound_orders i ON e.id = i.employee_id
 	GROUP BY e.id`
 	CountInboundOrdersByEmployeeQuery = `SELECT e.id, e.card_number_id, e.first_name, e.last_name, e.warehouse_id, count(i.id) "inbound_orders_count"
 	FROM employees e
-	JOIN inbound_orders i ON e.id = i.employee_id
+	LEFT JOIN inbound_orders i ON e.id = i.employee_id
 	WHERE e.id=?
 	GROUP BY e.id`
 )
