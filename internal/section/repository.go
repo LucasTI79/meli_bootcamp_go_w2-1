@@ -118,13 +118,10 @@ func (r *repository) CountProductsByAllSections() []domain.ProductsBySectionRepo
 	if err != nil {
 		panic(err)
 	}
-	var productBatches []domain.ProductsBySectionReport
+	productBatches := make([]domain.ProductsBySectionReport, 0)
 	for rows.Next() {
-		var pb domain.ProductsBySectionReport
-		err := rows.Scan(&pb.SectionID, &pb.SectionNumber, &pb.ProductsCount)
-		if err != nil {
-			panic(err)
-		}
+		pb := domain.ProductsBySectionReport{}
+		_ = rows.Scan(&pb.SectionID, &pb.SectionNumber, &pb.ProductsCount)
 		productBatches = append(productBatches, pb)
 	}
 	return productBatches
