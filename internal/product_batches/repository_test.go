@@ -20,7 +20,7 @@ var (
 		DueDate:            "2021-01-01",
 		InitialQuantity:    10,
 		ManufacturingDate:  "2021-01-01",
-		ManufacturingHour:  "10:00",
+		ManufacturingHour:  10,
 		MinimumTemperature: 0,
 		ProductID:          1,
 		SectionID:          1,
@@ -66,35 +66,34 @@ func TestRepositoryGet(t *testing.T) {
 
 		columns := []string{"id", "batch_number", "current_quantity", "current_temperature", "due_date", "initial_quantity", "manufacturing_date", "manufacturing_hour", "minimum_temperature", "product_id", "section_id"}
 		rows := sqlmock.NewRows(columns)
-		id := 1
-		rows.AddRow(pb.ID, pb.BatchNumber, pb.CurrentQuantity, pb.CurrentTemperature, pb.DueDate, pb.InitialQuantity, pb.ManufacturingDate, pb.ManufacturingHour, pb.MinimumTemperature, pb.ProductID, pb.SectionID)
-
-		mock.ExpectQuery(regexp.QuoteMeta(product_batches.GetByID)).
-			WithArgs(pb.ID).
-			WillReturnRows(rows)
-
-		repository := product_batches.NewRepository(db)
-		result := repository.Get(id)
-		assert.NotNil(t, result)
-
-	})
-	t.Run("Should not return a product batches by ID", func(t *testing.T) {
-		db, mock := SetupMock(t)
-		defer db.Close()
-
-		columns := []string{"id", "batch_number", "current_quantity", "current_temperature", "due_date", "initial_quantity", "manufacturing_date", "manufacturing_hour", "minimum_temperature", "product_id", "section_id"}
-		rows := sqlmock.NewRows(columns)
 		batchNumber := 1
-		rows.AddRow(pb.ID, pb.BatchNumber, pb.CurrentQuantity, pb.CurrentTemperature, pb.DueDate, pb.InitialQuantity, pb.ManufacturingDate, pb.ManufacturingHour, pb.MinimumTemperature, pb.ProductID, pb.SectionID)
 
-		mock.ExpectQuery(regexp.QuoteMeta(product_batches.GetByID)).
+		rows.AddRow(batchNumber, 1, 1, 2, "2021-01-01", 10, "2021-01-01", 10, 0, 1, 1)
+
+		mock.ExpectQuery(regexp.QuoteMeta(product_batches.GetQuery)).
 			WithArgs(batchNumber).
 			WillReturnRows(rows)
 
 		repository := product_batches.NewRepository(db)
 
 		result := repository.Get(batchNumber)
+
 		assert.NotNil(t, result)
+	})
+	t.Run("Should not return a product batches", func(t *testing.T) {
+		db, mock := SetupMock(t)
+		defer db.Close()
+
+		columns := []string{"id", "batch_number", "current_quantity", "current_temperature", "due_date", "initial_quantity", "manufacturing_date", "manufacturing_hour", "minimum_temperature", "product_id", "section_id"}
+		rows := sqlmock.NewRows(columns)
+		batchNumber := 1
+		rows.AddRow(batchNumber, 1, 1, 2, "2021-01-01", 10, "2021-01-01", 10, 0, 1, 1)
+
+		mock.ExpectQuery(product_batches.GetQuery).WithArgs(batchNumber).WillReturnError(sql.ErrNoRows)
+
+		repository := product_batches.NewRepository(db)
+		result := repository.Get(batchNumber)
+		assert.Nil(t, result)
 	})
 
 	t.Run("Should throw panic", func(t *testing.T) {
@@ -103,9 +102,8 @@ func TestRepositoryGet(t *testing.T) {
 
 		batchNumber := 1
 
-		mock.ExpectQuery(regexp.QuoteMeta(product_batches.GetQuery)).
-			WithArgs(batchNumber).
-			WillReturnError(sql.ErrNoRows)
+		mock.ExpectQuery(product_batches.GetQuery).
+			WithArgs(batchNumber).WillReturnError(sql.ErrConnDone)
 
 		repository := product_batches.NewRepository(db)
 
@@ -127,8 +125,8 @@ func TestRepositorySave(t *testing.T) {
 
 		LastInsertId := 1
 		mockedProductBatches := pb
-		mock.ExpectPrepare(regexp.QuoteMeta(product_batches.SaveQuery))
-		mock.ExpectExec(regexp.QuoteMeta(product_batches.SaveQuery)).
+		mock.ExpectPrepare(regexp.QuoteMeta(product_batches.InsertQuery))
+		mock.ExpectExec(regexp.QuoteMeta(product_batches.InsertQuery)).
 			WithArgs(mockedProductBatches.BatchNumber, mockedProductBatches.CurrentQuantity, mockedProductBatches.CurrentTemperature, mockedProductBatches.DueDate, mockedProductBatches.InitialQuantity, mockedProductBatches.ManufacturingDate, mockedProductBatches.ManufacturingHour, mockedProductBatches.MinimumTemperature, mockedProductBatches.ProductID, mockedProductBatches.SectionID).
 			WillReturnResult(sqlmock.NewResult(int64(LastInsertId), 1))
 
@@ -141,7 +139,7 @@ func TestRepositorySave(t *testing.T) {
 		defer db.Close()
 
 		mockedProductBatches := pb
-		mock.ExpectPrepare(regexp.QuoteMeta(product_batches.SaveQuery)).WillReturnError(sql.ErrNoRows)
+		mock.ExpectPrepare(regexp.QuoteMeta(product_batches.InsertQuery)).WillReturnError(sql.ErrNoRows)
 
 		repository := product_batches.NewRepository(db)
 		assert.Panics(t, func() {
@@ -153,8 +151,8 @@ func TestRepositorySave(t *testing.T) {
 		defer db.Close()
 
 		mockedProductBatches := pb
-		mock.ExpectPrepare(regexp.QuoteMeta(product_batches.SaveQuery))
-		mock.ExpectExec(regexp.QuoteMeta(product_batches.SaveQuery)).WillReturnError(sql.ErrNoRows).
+		mock.ExpectPrepare(regexp.QuoteMeta(product_batches.InsertQuery))
+		mock.ExpectExec(regexp.QuoteMeta(product_batches.InsertQuery)).WillReturnError(sql.ErrNoRows).
 			WithArgs(mockedProductBatches.BatchNumber, mockedProductBatches.CurrentQuantity, mockedProductBatches.CurrentTemperature, mockedProductBatches.DueDate, mockedProductBatches.InitialQuantity, mockedProductBatches.ManufacturingDate, mockedProductBatches.ManufacturingHour, mockedProductBatches.MinimumTemperature, mockedProductBatches.ProductID, mockedProductBatches.SectionID).
 			WillReturnError(sql.ErrConnDone)
 
@@ -168,44 +166,10 @@ func TestRepositorySave(t *testing.T) {
 		defer db.Close()
 
 		mockedProductBatches := pb
-		mock.ExpectPrepare(regexp.QuoteMeta(product_batches.SaveQuery))
-		mock.ExpectExec(regexp.QuoteMeta(product_batches.SaveQuery)).
+		mock.ExpectPrepare(regexp.QuoteMeta(product_batches.InsertQuery))
+		mock.ExpectExec(regexp.QuoteMeta(product_batches.InsertQuery)).
 			WithArgs(mockedProductBatches.BatchNumber, mockedProductBatches.CurrentQuantity, mockedProductBatches.CurrentTemperature, mockedProductBatches.DueDate, mockedProductBatches.InitialQuantity, mockedProductBatches.ManufacturingDate, mockedProductBatches.ManufacturingHour, mockedProductBatches.MinimumTemperature, mockedProductBatches.ProductID, mockedProductBatches.SectionID).
 			WillReturnResult(sqlmock.NewErrorResult(sql.ErrConnDone))
-
-		repository := product_batches.NewRepository(db)
-		assert.Panics(t, func() {
-			repository.Save(mockedProductBatches)
-		})
-	})
-}
-
-func TestRepositoryCreate(t *testing.T) {
-	t.Run("Should create a product batches", func(t *testing.T) {
-
-		db, mock := SetupMock(t)
-		defer db.Close()
-
-		columns := []string{"batch_number", "current_quantity", "current_temperature", "due_date", "initial_quantity", "manufacturing_date", "manufacturing_hour", "minimum_temperature", "product_id", "section_id"}
-		rows := sqlmock.NewRows(columns)
-		rows.AddRow(pb.BatchNumber, pb.CurrentQuantity, pb.CurrentTemperature, pb.DueDate, pb.InitialQuantity, pb.ManufacturingDate, pb.ManufacturingHour, pb.MinimumTemperature, pb.ProductID, pb.SectionID)
-
-		mockedProductBatches := pb
-		mock.ExpectPrepare(regexp.QuoteMeta(product_batches.CreateQuery))
-		mock.ExpectExec(regexp.QuoteMeta(product_batches.CreateQuery)).
-			WithArgs(mockedProductBatches.BatchNumber, mockedProductBatches.CurrentQuantity, mockedProductBatches.CurrentTemperature, mockedProductBatches.DueDate, mockedProductBatches.InitialQuantity, mockedProductBatches.ManufacturingDate, mockedProductBatches.ManufacturingHour, mockedProductBatches.MinimumTemperature, mockedProductBatches.ProductID, mockedProductBatches.SectionID).
-			WillReturnResult(sqlmock.NewResult(1, 1))
-
-		repository := product_batches.NewRepository(db)
-		result := repository.Save(mockedProductBatches)
-		assert.NotNil(t, result)
-	})
-	t.Run("Should throw panic when expected prepare fails", func(t *testing.T) {
-		db, mock := SetupMock(t)
-		defer db.Close()
-
-		mockedProductBatches := pb
-		mock.ExpectPrepare(regexp.QuoteMeta(product_batches.CreateQuery)).WillReturnError(sql.ErrNoRows)
 
 		repository := product_batches.NewRepository(db)
 		assert.Panics(t, func() {
