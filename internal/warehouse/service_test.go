@@ -1,7 +1,6 @@
 package warehouse_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
@@ -30,7 +29,7 @@ func TestServiceCreate(t *testing.T) {
 		repository.On("Save", w).Return(id)
 		repository.On("Get", id).Return(&w)
 		repository.On("Exists", w.WarehouseCode).Return(false)
-		result, err := service.Create(context.TODO(), w)
+		result, err := service.Create(w)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -41,7 +40,7 @@ func TestServiceCreate(t *testing.T) {
 		service, repository := CreateService(t)
 
 		repository.On("Exists", w.WarehouseCode).Return(true)
-		result, err := service.Create(context.TODO(), w)
+		result, err := service.Create(w)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -56,7 +55,7 @@ func TestServiceGet(t *testing.T) {
 		expected := []domain.Warehouse{w}
 
 		repository.On("GetAll").Return(expected)
-		result := service.GetAll(context.TODO())
+		result := service.GetAll()
 
 		assert.NotEmpty(t, result)
 		assert.Equal(t, len(result), 1)
@@ -69,7 +68,7 @@ func TestServiceGet(t *testing.T) {
 		id := 1
 
 		repository.On("Get", id).Return(&w)
-		result, err := service.Get(context.TODO(), id)
+		result, err := service.Get(id)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -83,7 +82,7 @@ func TestServiceGet(t *testing.T) {
 		var respositoryResult *domain.Warehouse
 
 		repository.On("Get", id).Return(respositoryResult)
-		result, err := service.Get(context.TODO(), id)
+		result, err := service.Get(id)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -104,7 +103,7 @@ func TestServiceUpdate(t *testing.T) {
 		var respositoryResult *domain.Warehouse
 
 		repository.On("Get", id).Return(respositoryResult)
-		result, err := service.Update(context.TODO(), id, updateWarehouse)
+		result, err := service.Update(id, updateWarehouse)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -123,7 +122,7 @@ func TestServiceUpdate(t *testing.T) {
 
 		repository.On("Get", id).Return(&w)
 		repository.On("Exists", warehouseCode).Return(true)
-		result, err := service.Update(context.TODO(), id, updateWarehouse)
+		result, err := service.Update(id, updateWarehouse)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -148,7 +147,7 @@ func TestServiceUpdate(t *testing.T) {
 		repository.On("Exists", warehouseCode).Return(true)
 		repository.On("Update", updatedWarehouse)
 		repository.On("Get", id).Return(&updatedWarehouse)
-		result, err := service.Update(context.TODO(), id, updateWarehouse)
+		result, err := service.Update(id, updateWarehouse)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -164,7 +163,7 @@ func TestServiceDelete(t *testing.T) {
 		var respositoryResult *domain.Warehouse
 
 		repository.On("Get", id).Return(respositoryResult)
-		err := service.Delete(context.TODO(), id)
+		err := service.Delete(id)
 
 		assert.Error(t, err)
 		assert.True(t, apperr.Is[*apperr.ResourceNotFound](err))
@@ -177,7 +176,7 @@ func TestServiceDelete(t *testing.T) {
 
 		repository.On("Get", 1).Return(&w)
 		repository.On("Delete", id)
-		err := service.Delete(context.TODO(), id)
+		err := service.Delete(id)
 
 		assert.NoError(t, err)
 	})
