@@ -59,6 +59,7 @@ func (r *router) MapRoutes() {
 	r.buildBuyerRoutes()
 	r.buildLocalityRoutes()
 	r.buildProductRecordRoutes()
+	r.buildCarriersRoutes()
 }
 
 func (r *router) setGroup() {
@@ -169,6 +170,17 @@ func (r *router) buildLocalityRoutes() {
 
 	localityRoutes.POST("/", middleware.RequestValidation[handler.CreateLocalityRequest](CreateCanBeBlank), controller.Create())
 	localityRoutes.GET("/report-sellers", controller.ReportSellers())
+	localityRoutes.GET("/report-carriers", controller.ReportCarriers())
+}
+
+func (r *router) buildCarriersRoutes() {
+	repository := carrier.NewRepository(r.db)
+	localityRepo := locality.NewRepository(r.db)
+	service := carrier.NewService(repository, localityRepo)
+	controller := handler.NewCarrier(service)
+	carrierGroups := r.rg.Group("carriers")
+	carrierGroups.POST("/", middleware.RequestValidation[handler.CreateCarrierRequest](CreateCanBeBlank), controller.Create())
+
 }
 
 func (r *router) buildProductRecordRoutes() {
