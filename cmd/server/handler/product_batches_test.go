@@ -19,7 +19,6 @@ const (
 
 var (
 	productBatch = domain.ProductBatches{
-		ID:                 1,
 		BatchNumber:        1,
 		CurrentQuantity:    1,
 		CurrentTemperature: 2,
@@ -46,33 +45,44 @@ func TestCreateProductBatches(t *testing.T) {
 		ProductID:          &productBatch.ProductID,
 		SectionID:          &productBatch.SectionID,
 	}
-	t.Run("Should return conflict error", func(t *testing.T) {
+	t.Run("Should return conflict error when product batch already exists", func(t *testing.T) {
 		server, service, controller := InitProductBatchesServer(t)
 
 		server.POST(DefinePath(resourceProductsBatchesUri), ValidationMiddleware(requestObject), controller.Create())
 		request, response := MakeRequest("POST", DefinePath(resourceProductsBatchesUri), CreateBody(requestObject))
 
-		var serviceReturn *domain.ProductBatches
-		service.On("Create", requestObject.ToProductBatches()).Return(serviceReturn, apperr.NewResourceAlreadyExists(ResourceAlreadyExists))
+		var productBatchReturn *domain.ProductBatches
+		service.On("Create", requestObject.ToProductBatches()).Return(productBatchReturn, apperr.NewResourceAlreadyExists(ResourceAlreadyExists))
 
 		server.ServeHTTP(response, request)
 
 		assert.Equal(t, http.StatusConflict, response.Code)
 	})
-
-	t.Run("Should return a created product batches", func(t *testing.T) {
+	t.Run("Should return conflict error when product batch id not exists", func(t *testing.T) {
 		server, service, controller := InitProductBatchesServer(t)
 
 		server.POST(DefinePath(resourceProductsBatchesUri), ValidationMiddleware(requestObject), controller.Create())
 		request, response := MakeRequest("POST", DefinePath(resourceProductsBatchesUri), CreateBody(requestObject))
 
-		service.On("Create", requestObject.ToProductBatches()).Return(&requestObject, nil)
+		var productBatchReturn *domain.ProductBatches
+		service.On("Create", requestObject.ToProductBatches()).Return(productBatchReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+	t.Run("Should return created product batch", func(t *testing.T) {
+		server, service, controller := InitProductBatchesServer(t)
+
+		server.POST(DefinePath(resourceProductsBatchesUri), ValidationMiddleware(requestObject), controller.Create())
+		request, response := MakeRequest("POST", DefinePath(resourceProductsBatchesUri), CreateBody(requestObject))
+
+		service.On("Create", requestObject.ToProductBatches()).Return(&productBatch, nil)
 
 		server.ServeHTTP(response, request)
 
 		assert.Equal(t, http.StatusCreated, response.Code)
 	})
-
 }
 
 func InitProductBatchesServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.ProductBatches) {
