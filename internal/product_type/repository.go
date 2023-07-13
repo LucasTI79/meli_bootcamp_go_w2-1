@@ -3,17 +3,14 @@ package product_type
 import (
 	"database/sql"
 	"errors"
-
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
-)
-
-const (
-	GetQuery = "SELECT id FROM product_types WHERE id=?"
 )
 
 type Repository interface {
 	Get(id int) *domain.ProductType
 }
+
+const GetQuery = "SELECT * FROM product_types WHERE id=?"
 
 type repository struct {
 	db *sql.DB
@@ -25,12 +22,10 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r *repository) Get(id int) *domain.ProductType {
+func (r repository) Get(id int) *domain.ProductType {
 	row := r.db.QueryRow(GetQuery, id)
-	productType := domain.ProductType{}
-
-	err := row.Scan(&productType.ID)
-
+	pt := domain.ProductType{}
+	err := row.Scan(&pt.ID, &pt.Description)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
@@ -38,5 +33,5 @@ func (r *repository) Get(id int) *domain.ProductType {
 		panic(err)
 	}
 
-	return &productType
+	return &pt
 }

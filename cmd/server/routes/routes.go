@@ -2,23 +2,17 @@ package routes
 
 import (
 	"database/sql"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_type"
 	"github.com/swaggo/swag/example/basic/docs"
 	"os"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/carrier"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/inbound_orders"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/locality"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/order_status"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batch"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_record"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_type"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/province"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/purchase_orders"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
@@ -58,7 +52,6 @@ func (r *router) MapRoutes() {
 	r.buildEmployeeRoutes()
 	r.buildBuyerRoutes()
 	r.buildLocalityRoutes()
-	r.buildProductRecordRoutes()
 }
 
 func (r *router) setGroup() {
@@ -103,7 +96,6 @@ func (r *router) buildProductRoutes() {
 	productRoutes.POST("/", middleware.RequestValidation[handler.CreateProductRequest](CreateCanBeBlank), controller.Create())
 	productRoutes.PATCH("/:id", middleware.RequestValidation[handler.UpdateProductRequest](UpdateCanBeBlank), controller.Update())
 	productRoutes.DELETE("/:id", controller.Delete())
-	productRoutes.GET("/report-records", controller.ReportRecords())
 }
 
 func (r *router) buildSectionRoutes() {
@@ -142,7 +134,6 @@ func (r *router) buildEmployeeRoutes() {
 
 	employeeRoutes.GET("/", controller.GetAll())
 	employeeRoutes.GET("/:id", controller.Get())
-	employeeRoutes.GET("/report-inbound-orders", controller.ReportInboundOrders())
 	employeeRoutes.POST("/", middleware.RequestValidation[handler.CreateEmployeeRequest](CreateCanBeBlank), controller.Create())
 	employeeRoutes.PATCH("/:id", middleware.RequestValidation[handler.UpdateEmployeeRequest](UpdateCanBeBlank), controller.Update())
 	employeeRoutes.DELETE("/:id", controller.Delete())
@@ -159,7 +150,6 @@ func (r *router) buildBuyerRoutes() {
 	buyerRoutes.POST("/", middleware.RequestValidation[handler.CreateBuyerRequest](CreateCanBeBlank), controller.Create())
 	buyerRoutes.PATCH("/:id", middleware.RequestValidation[handler.UpdateBuyerRequest](UpdateCanBeBlank), controller.Update())
 	buyerRoutes.DELETE("/:id", controller.Delete())
-	buyerRoutes.GET("/report-purchase-orders", controller.ReportPurchases())
 }
 
 func (r *router) buildLocalityRoutes() {
@@ -171,40 +161,4 @@ func (r *router) buildLocalityRoutes() {
 
 	localityRoutes.POST("/", middleware.RequestValidation[handler.CreateLocalityRequest](CreateCanBeBlank), controller.Create())
 	localityRoutes.GET("/report-sellers", controller.ReportSellers())
-}
-
-func (r *router) buildProductRecordRoutes() {
-	repo := product_record.NewRepository(r.db)
-	productRepo := product.NewRepository(r.db)
-	service := product_record.NewService(repo, productRepo)
-	controller := handler.NewProductRecord(service)
-	productRecordRoutes := r.rg.Group("/product-records")
-
-	productRecordRoutes.POST("/", middleware.RequestValidation[handler.CreateProductRecordRequest](CreateCanBeBlank), controller.Create())
-}
-
-func (r *router) buildPurchaseOrdersRoutes() {
-	repo := purchase_orders.NewRepository(r.db)
-	buyerRepo := buyer.NewRepository(r.db)
-	orderStatusRepo := order_status.NewRepository(r.db)
-	warehouseRepo := warehouse.NewRepository(r.db)
-	carrierRepo := carrier.NewRepository(r.db)
-	productRecordRepo := product_record.NewRepository(r.db)
-	service := purchase_orders.NewService(repo, buyerRepo, orderStatusRepo, warehouseRepo, carrierRepo, productRecordRepo)
-	controller := handler.NewPurchaseOrder(service)
-	purchaseOrdersRoutes := r.rg.Group("/purchase-orders")
-
-	purchaseOrdersRoutes.POST("/", middleware.RequestValidation[handler.CreatePurchaseOrderRequest](CreateCanBeBlank), controller.Create())
-}
-
-func (r *router) buildInboundOrdersRoutes() {
-	repo := inbound_orders.NewRepository(r.db)
-	repoEmployee := employee.NewRepository(r.db)
-	repoProductBatch := product_batch.NewRepository(r.db)
-	repoWarehouse := warehouse.NewRepository(r.db)
-	service := inbound_orders.NewService(repo, repoEmployee, repoProductBatch, repoWarehouse)
-	controller := handler.NewInboundOrder(service)
-	inboundOrdersRoutes := r.rg.Group("/inbound-orders")
-
-	inboundOrdersRoutes.POST("/", middleware.RequestValidation[handler.CreateInboundOrderRequest](CreateCanBeBlank), controller.Create())
 }

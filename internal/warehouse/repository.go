@@ -2,7 +2,6 @@ package warehouse
 
 import (
 	"database/sql"
-	"errors"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
@@ -45,12 +44,12 @@ func (r *repository) GetAll() []domain.Warehouse {
 }
 
 func (r *repository) Get(id int) *domain.Warehouse {
-	query := "SELECT id, address, telephone, warehouse_code, minimum_temperature, minimum_capacity, locality_id FROM warehouses WHERE id=?;"
+	query := "SELECT * FROM warehouses WHERE id=?;"
 	row := r.db.QueryRow(query, id)
 	w := domain.Warehouse{}
 	err := row.Scan(&w.ID, &w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumCapacity, &w.MinimumTemperature, &w.LocalityID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if err == sql.ErrNoRows {
 			return nil
 		}
 		panic(err)
