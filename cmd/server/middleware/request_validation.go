@@ -2,7 +2,9 @@ package middleware
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -22,6 +24,10 @@ func RequestValidation[T any](canBeBlank bool) gin.HandlerFunc {
 		if err := ctx.ShouldBindJSON(&request); err != nil {
 			status := http.StatusUnprocessableEntity
 			errorMessages := make([]string, 0)
+
+			if errors.Is(err, io.EOF) {
+				errorMessages = append(errorMessages, "o corpo da requisição está vazio e precisa ser um objeto JSON válido")
+			}
 
 			if syntaxError, ok := err.(*json.SyntaxError); ok {
 				errorMessages = append(errorMessages, fmt.Sprintf("erro de sintaxe na posição %d: %v", syntaxError.Offset, syntaxError.Error()))

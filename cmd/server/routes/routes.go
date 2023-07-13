@@ -2,7 +2,6 @@ package routes
 
 import (
 	"database/sql"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_type"
 	"github.com/swaggo/swag/example/basic/docs"
 	"os"
 
@@ -17,6 +16,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batch"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_record"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_type"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/province"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/purchase_orders"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
@@ -58,6 +58,7 @@ func (r *router) MapRoutes() {
 	r.buildEmployeeRoutes()
 	r.buildBuyerRoutes()
 	r.buildLocalityRoutes()
+	r.buildProductRecordRoutes()
 }
 
 func (r *router) setGroup() {
@@ -91,7 +92,9 @@ func (r *router) buildSellerRoutes() {
 
 func (r *router) buildProductRoutes() {
 	repo := product.NewRepository(r.db)
-	service := product.NewService(repo)
+	productTypeRepo := product_type.NewRepository(r.db)
+	sellerRepo := seller.NewRepository(r.db)
+	service := product.NewService(repo, productTypeRepo, sellerRepo)
 	controller := handler.NewProduct(service)
 	productRoutes := r.rg.Group("/products")
 
@@ -100,6 +103,7 @@ func (r *router) buildProductRoutes() {
 	productRoutes.POST("/", middleware.RequestValidation[handler.CreateProductRequest](CreateCanBeBlank), controller.Create())
 	productRoutes.PATCH("/:id", middleware.RequestValidation[handler.UpdateProductRequest](UpdateCanBeBlank), controller.Update())
 	productRoutes.DELETE("/:id", controller.Delete())
+	productRoutes.GET("/report-records", controller.ReportRecords())
 }
 
 func (r *router) buildSectionRoutes() {
@@ -167,6 +171,16 @@ func (r *router) buildLocalityRoutes() {
 
 	localityRoutes.POST("/", middleware.RequestValidation[handler.CreateLocalityRequest](CreateCanBeBlank), controller.Create())
 	localityRoutes.GET("/report-sellers", controller.ReportSellers())
+}
+
+func (r *router) buildProductRecordRoutes() {
+	repo := product_record.NewRepository(r.db)
+	productRepo := product.NewRepository(r.db)
+	service := product_record.NewService(repo, productRepo)
+	controller := handler.NewProductRecord(service)
+	productRecordRoutes := r.rg.Group("/product-records")
+
+	productRecordRoutes.POST("/", middleware.RequestValidation[handler.CreateProductRecordRequest](CreateCanBeBlank), controller.Create())
 }
 
 func (r *router) buildPurchaseOrdersRoutes() {

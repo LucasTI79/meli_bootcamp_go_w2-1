@@ -54,15 +54,16 @@ func NewBuyer(b buyer.Service) *Buyer {
 }
 
 // Get godoc
-// @Summary List buyer based on ID
-// @Description get buyer by ID
+// @Summary Get a buyer by id
+// @Description Get a buyer based on the provided id. Returns a not found error if the buyer does not exist.
 // @Tags Buyers
 // @Accept json
 // @Produce json
-// @Param id path int true "ID do comprador"
-// @Success 200 {object} domain.Buyer "List a specific Buyer according to ID"
+// @Param id path int true "Buyer id"
+// @Success 200 {object} domain.Buyer "Obtained buyer"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "Buyer not found"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /buyers/{id} [get]
 func (b *Buyer) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -82,13 +83,12 @@ func (b *Buyer) Get() gin.HandlerFunc {
 
 // GetAll godoc
 // @Summary List all buyers
-// @Description getAll buyers
+// @Description Returns a collection of existing buyers.
 // @Tags Buyers
 // @Accept json
 // @Produce json
-// @Success 200 {object} domain.Buyer "List of all Buyers"
-// @Failure 204 {object} web.ErrorResponse "Buyer not found"
-// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Success 200 {object} domain.Buyer "List of all buyers"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /buyers [get]
 func (b *Buyer) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -98,16 +98,16 @@ func (b *Buyer) GetAll() gin.HandlerFunc {
 }
 
 // Create godoc
-// @Summary Create new buyer
-// @Description Create a new buyer based on the provided JSON payload
+// @Summary Create a buyer
+// @Description Create a new buyer based on the provided JSON payload.
 // @Tags Buyers
 // @Accept json
 // @Produce json
 // @Param buyer body domain.Buyer true "Buyer to be created"
 // @Success 201 {object} domain.Buyer "Created buyer"
-// @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 422 {object} web.ErrorResponse "Json Parse error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /buyers [post]
 func (b *Buyer) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -127,17 +127,17 @@ func (b *Buyer) Create() gin.HandlerFunc {
 }
 
 // Update godoc
-// @Summary Update a buyer based on ID
-// @Description Update a specific buyer based on the provided JSON payload
+// @Summary Update a buyer
+// @Description Update an existent buyer based on the provided id and JSON payload.
 // @Tags Buyers
 // @Accept json
 // @Produce json
-// @Param buyer body domain.UpdateBuyer true "Buyer to be updated"
-// @Param id path int true "ID do comprador"
+// @Param id path int true "Buyer id"
+// @Param buyer body domain.UpdateBuyer true "Buyer data to be updated"
 // @Success 200 {object} domain.Buyer "Buyer with updated information"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "Buyer not found"
-// @Failure 422 {object} web.ErrorResponse "Json Parse error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /buyers/{id} [patch]
@@ -165,13 +165,13 @@ func (b *Buyer) Update() gin.HandlerFunc {
 }
 
 // Delete godoc
-// @Summary Delete a buyer based on ID
-// @Description Delete a specific buyer based on ID
+// @Summary Delete a buyer
+// @Description Delete a buyer based on the provided id.
 // @Tags Buyers
-// @Param id path int true "ID do comprador"
+// @Param id path int true "Buyer id"
 // @Success 204 "No content"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "Buyer not found"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /buyers/{id} [delete]
 func (b *Buyer) Delete() gin.HandlerFunc {
