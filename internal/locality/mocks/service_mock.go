@@ -23,3 +23,13 @@ func (s *Service) CountSellersByLocality(id int) (*domain.SellersByLocalityRepor
 	args := s.Called(id)
 	return args.Get(0).(*domain.SellersByLocalityReport), args.Error(1)
 }
+
+func (s *Service) CountCarriersByAllLocalities() []domain.CarriersByLocalityReport {
+	args := s.Called()
+	return args.Get(0).([]domain.CarriersByLocalityReport)
+}
+
+func (s *Service) CountCarriersByLocality(id int) (*domain.CarriersByLocalityReport, error) {
+	args := s.Called(id)
+	return args.Get(0).(*domain.CarriersByLocalityReport), args.Error(1)
+}
