@@ -8,6 +8,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batches"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batches/mocks"
 	section_mocks "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section/mocks"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,15 +33,14 @@ func TestServiceCreate(t *testing.T) {
 		service, repository := CreateService(t)
 
 		id := 1
-		repository.On("Exists", productBatch.BatchNumber).Return(false)
 		repository.On("Save", productBatch).Return(id)
 		repository.On("Get", id).Return(&productBatch)
-
+		repository.On("Exists", productBatch.BatchNumber).Return(false)
 		result, err := service.Create(productBatch)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, productBatch, *result)
+		assert.Equal(t, productBatch, result)
 	})
 	t.Run("Should return a conflict error when product batches number already exists", func(t *testing.T) {
 		service, repository := CreateService(t)
@@ -50,6 +50,7 @@ func TestServiceCreate(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.ResourceAlreadyExists](err))
 	})
 }
 

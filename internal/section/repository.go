@@ -8,14 +8,14 @@ import (
 )
 
 const (
-	GetAll                     = "SELECT * FROM sections;"
-	Get                        = "SELECT * FROM sections WHERE id=?;"
-	Exists                     = "SELECT section_number FROM sections WHERE section_number=?;"
-	Save                       = "INSERT INTO sections(section_number, current_temperature, minimum_temperature, current_capacity, minimum_capacity, maximum_capacity, warehouse_id, id_product_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);"
-	Update                     = "UPDATE sections SET section_number=?, current_temperature=?, minimum_temperature=?, current_capacity=?, minimum_capacity=?, maximum_capacity=?, warehouse_id=?, id_product_type=? WHERE id=?;"
-	Delete                     = "DELETE FROM sections WHERE id=?"
-	CountProductsByAllSections = `SELECT s.id "section_id", s.section_number, COUNT(pb.product_id) "product_count" FROM sections s LEFT JOIN product_batches pb ON s.id = pb.section_id GROUP BY s.id`
-	CountProductsBySection     = `SELECT s.id "section_id", s.section_number, COUNT(pb.product_id) "product_count" FROM sections s LEFT JOIN product_batches pb ON s.id = pb.section_id WHERE s.id=? GROUP BY s.id`
+	GetAllQuery                = "SELECT * FROM sections;"
+	GetQuery                   = "SELECT * FROM sections WHERE id=?;"
+	ExistsQuery                = "SELECT section_number FROM sections WHERE section_number=?;"
+	InsertQuery                = "INSERT INTO sections(section_number, current_temperature, minimum_temperature, current_capacity, minimum_capacity, maximum_capacity, warehouse_id, id_product_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);"
+	UpdateQuery                = "UPDATE sections SET section_number=?, current_temperature=?, minimum_temperature=?, current_capacity=?, minimum_capacity=?, maximum_capacity=?, warehouse_id=?, id_product_type=? WHERE id=?;"
+	DeleteQuery                = "DELETE FROM sections WHERE id=?"
+	ProductsByAllSectionsQuery = `SELECT s.id "section_id", s.section_number, COUNT(pb.product_id) "product_count" FROM sections s LEFT JOIN product_batches pb ON s.id = pb.section_id GROUP BY s.id`
+	ProductsBySectionQuery     = `SELECT s.id "section_id", s.section_number, COUNT(pb.product_id) "product_count" FROM sections s LEFT JOIN product_batches pb ON s.id = pb.section_id WHERE s.id=? GROUP BY s.id`
 )
 
 type Repository interface {
@@ -40,7 +40,7 @@ func NewRepository(db *sql.DB) Repository {
 }
 
 func (r *repository) GetAll() []domain.Section {
-	rows, err := r.db.Query(GetAll)
+	rows, err := r.db.Query(GetAllQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -55,7 +55,7 @@ func (r *repository) GetAll() []domain.Section {
 }
 
 func (r *repository) Get(id int) *domain.Section {
-	row := r.db.QueryRow(Get, id)
+	row := r.db.QueryRow(GetQuery, id)
 	s := domain.Section{}
 	err := row.Scan(&s.ID, &s.SectionNumber, &s.CurrentTemperature, &s.MinimumTemperature, &s.CurrentCapacity, &s.MinimumCapacity, &s.MaximumCapacity, &s.WarehouseID, &s.ProductTypeID)
 	if err != nil {
@@ -68,13 +68,13 @@ func (r *repository) Get(id int) *domain.Section {
 }
 
 func (r *repository) Exists(sectionNumber int) bool {
-	row := r.db.QueryRow(Exists, sectionNumber)
+	row := r.db.QueryRow(ExistsQuery, sectionNumber)
 	err := row.Scan(&sectionNumber)
 	return err == nil
 }
 
 func (r *repository) Save(sc domain.Section) int {
-	stmt, err := r.db.Prepare(Save)
+	stmt, err := r.db.Prepare(InsertQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -91,7 +91,7 @@ func (r *repository) Save(sc domain.Section) int {
 }
 
 func (r *repository) Update(s domain.Section) {
-	stmt, err := r.db.Prepare(Update)
+	stmt, err := r.db.Prepare(UpdateQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -103,7 +103,7 @@ func (r *repository) Update(s domain.Section) {
 }
 
 func (r *repository) Delete(id int) {
-	stmt, err := r.db.Prepare(Delete)
+	stmt, err := r.db.Prepare(DeleteQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -114,7 +114,7 @@ func (r *repository) Delete(id int) {
 }
 
 func (r *repository) CountProductsByAllSections() []domain.ProductsBySectionReport {
-	rows, err := r.db.Query(CountProductsByAllSections)
+	rows, err := r.db.Query(ProductsByAllSectionsQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -131,7 +131,7 @@ func (r *repository) CountProductsByAllSections() []domain.ProductsBySectionRepo
 }
 
 func (r *repository) CountProductsBySection(id int) *domain.ProductsBySectionReport {
-	rows := r.db.QueryRow(CountProductsBySection, id)
+	rows := r.db.QueryRow(ProductsBySectionQuery, id)
 	pb := domain.ProductsBySectionReport{}
 	err := rows.Scan(&pb.SectionID, &pb.SectionNumber, &pb.ProductsCount)
 	if err != nil {
