@@ -144,7 +144,7 @@ func (l Locality) ReportCarriers() gin.HandlerFunc {
 			return
 		}
 
-		localities, err := l.service.CountCarriersByLocality(id)
+		reportCarriers, err := l.service.CountCarriersByLocality(id)
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
 				web.Error(ctx, http.StatusNotFound, err.Error())
@@ -152,7 +152,7 @@ func (l Locality) ReportCarriers() gin.HandlerFunc {
 			}
 		}
 
-		web.Success(ctx, http.StatusOK, localities)
+		web.Success(ctx, http.StatusOK, reportCarriers)
 
 	}
 }

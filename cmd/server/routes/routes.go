@@ -163,7 +163,8 @@ func (r *router) buildLocalityRoutes() {
 
 func (r *router) buildCarriersRoutes() {
 	repository := carrier.NewRepository(r.db)
-	service := carrier.NewService(repository)
+	localityRepo := locality.NewRepository(r.db)
+	service := carrier.NewService(repository, localityRepo)
 	controller := handler.NewCarrier(service)
 	carrierGroups := r.rg.Group("carriers")
 	carrierGroups.POST("/", middleware.RequestValidation[handler.CreateCarrierRequest](CreateCanBeBlank), controller.Create())

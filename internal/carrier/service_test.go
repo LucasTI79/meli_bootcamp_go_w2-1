@@ -4,6 +4,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/carrier"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/carrier/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	localityMocks "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/locality/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -15,7 +16,7 @@ var (
 		CID:         "123456",
 		CompanyName: "CompaniName",
 		Address:     "Address",
-		Telephone:   213123312,
+		Telephone:   "+554312343212",
 		LocalityID:  1,
 	}
 )
@@ -81,7 +82,8 @@ func TestServiceGet(t *testing.T) {
 func CreateService(t *testing.T) (carrier.Service, *mocks.Repository) {
 	t.Helper()
 	repository := new(mocks.Repository)
-	service := carrier.NewService(repository)
+	localityRepo := new(localityMocks.Repository)
+	service := carrier.NewService(repository, localityRepo)
 
 	return service, repository
 }

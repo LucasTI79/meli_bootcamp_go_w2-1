@@ -16,7 +16,7 @@ var (
 		CID:         "CID",
 		CompanyName: "company",
 		Address:     "address",
-		Telephone:   123432,
+		Telephone:   "+554312343212",
 		LocalityID:  1,
 	}
 )
@@ -81,7 +81,7 @@ func TestRepositoryGet(t *testing.T) {
 		columns := []string{"id", "cid", "company_name", "address", "telephone", "locality_id"}
 		rows := sqlmock.NewRows(columns)
 		carrierId := 1
-		rows.AddRow(carrierId, "1", "company", "address", 1234, 1)
+		rows.AddRow(carrierId, "1", "company", "address", "+554312343212", 1)
 
 		mock.ExpectQuery(regexp.QuoteMeta(carrier.GetQuery)).
 			WithArgs(carrierId).
