@@ -19,14 +19,21 @@ var (
 		Telephone:   "+554312343212",
 		LocalityID:  1,
 	}
+
+	mockedLocalityTemplate = domain.Locality{
+		ID:           1,
+		LocalityName: "Locality",
+		ProvinceID:   1,
+	}
 )
 
 func TestServiceCreate(t *testing.T) {
 	t.Run("Should return a created carrier", func(t *testing.T) {
-		service, repository := CreateService(t)
+		service, repository, localityRepo := CreateService(t)
 
 		id := 1
 		repository.On("Exists", c.CID).Return(false)
+		localityRepo.On("Get", c.LocalityID).Return(&mockedLocalityTemplate)
 		repository.On("Save", c).Return(id)
 		repository.On("Get", id).Return(&c)
 		result, err := service.Create(c)
@@ -37,7 +44,7 @@ func TestServiceCreate(t *testing.T) {
 	})
 
 	t.Run("Should return a conflict error", func(t *testing.T) {
-		service, repository := CreateService(t)
+		service, repository, _ := CreateService(t)
 
 		repository.On("Exists", c.CID).Return(true)
 		result, err := service.Create(c)
@@ -51,7 +58,7 @@ func TestServiceCreate(t *testing.T) {
 func TestServiceGet(t *testing.T) {
 
 	t.Run("Should return a carrier by id", func(t *testing.T) {
-		service, repository := CreateService(t)
+		service, repository, _ := CreateService(t)
 
 		id := 1
 
@@ -65,7 +72,7 @@ func TestServiceGet(t *testing.T) {
 	})
 
 	t.Run("Should return a resource not found error", func(t *testing.T) {
-		service, repository := CreateService(t)
+		service, repository, _ := CreateService(t)
 
 		id := 99
 		var emptyEmployee *domain.Carrier
@@ -79,11 +86,11 @@ func TestServiceGet(t *testing.T) {
 	})
 }
 
-func CreateService(t *testing.T) (carrier.Service, *mocks.Repository) {
+func CreateService(t *testing.T) (carrier.Service, *mocks.Repository, *localityMocks.Repository) {
 	t.Helper()
 	repository := new(mocks.Repository)
 	localityRepo := new(localityMocks.Repository)
 	service := carrier.NewService(repository, localityRepo)
 
-	return service, repository
+	return service, repository, localityRepo
 }
