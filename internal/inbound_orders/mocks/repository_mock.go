@@ -19,7 +19,7 @@ func (r *Repository) Save(i domain.InboundOrder) int {
 	return args.Get(0).(int)
 }
 
-func (r *Repository) Exists(orderNumber int) bool {
+func (r *Repository) Exists(orderNumber string) bool {
 	args := r.Called(orderNumber)
 	return args.Get(0).(bool)
 }
