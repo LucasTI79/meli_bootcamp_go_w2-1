@@ -1,4 +1,4 @@
-package inbound_orders
+package inbound_order
 
 import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	EmployeeNotFound        = "funcionário não encontrado com o id %d"
-	ProductBatchNotFound    = "lote de produto não encontrado com o id %d"
-	WarehouseNotFound       = "armazém não encontrado com o id %d"
-	ResourceAlreadyExists   = "ordem de entrada com o numero '%s' já existe"
+	EmployeeNotFound      = "funcionário não encontrado com o id %d"
+	ProductBatchNotFound  = "lote de produto não encontrado com o id %d"
+	WarehouseNotFound     = "armazém não encontrado com o id %d"
+	ResourceAlreadyExists = "ordem de entrada com o numero '%s' já existe"
 )
 
 type Service interface {
@@ -20,21 +20,21 @@ type Service interface {
 }
 
 type service struct {
-	repository Repository
-	employeeRepository employee.Repository
+	repository             Repository
+	employeeRepository     employee.Repository
 	productBatchRepository product_batch.Repository
-	warehouseRepository warehouse.Repository
+	warehouseRepository    warehouse.Repository
 }
 
 func NewService(repository Repository, employeeRepository employee.Repository, productBatchRepository product_batch.Repository, warehouseRepository warehouse.Repository) Service {
 	return &service{repository, employeeRepository, productBatchRepository, warehouseRepository}
-} 
+}
 
 func (s *service) Create(inboundOrder domain.InboundOrder) (*domain.InboundOrder, error) {
 	if s.repository.Exists(inboundOrder.OrderNumber) {
 		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, inboundOrder.OrderNumber)
 	}
-	
+
 	employee := s.employeeRepository.Get(inboundOrder.EmployeeId)
 	if employee == nil {
 		return nil, apperr.NewDependentResourceNotFound(EmployeeNotFound, inboundOrder.EmployeeId)
@@ -43,12 +43,12 @@ func (s *service) Create(inboundOrder domain.InboundOrder) (*domain.InboundOrder
 	if productBatch == nil {
 		return nil, apperr.NewDependentResourceNotFound(ProductBatchNotFound, inboundOrder.ProductBatchId)
 	}
-	
+
 	warehouse := s.warehouseRepository.Get(inboundOrder.WarehouseId)
 	if warehouse == nil {
 		return nil, apperr.NewDependentResourceNotFound(WarehouseNotFound, inboundOrder.WarehouseId)
 	}
-	
+
 	id := s.repository.Save(inboundOrder)
 	test := s.repository.Get(id)
 	return test, nil

@@ -1,12 +1,12 @@
-package inbound_orders_test
+package inbound_order_test
 
 import (
 	"testing"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	eMock "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee/mocks"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/inbound_orders"
-	ioMock "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/inbound_orders/mocks"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/inbound_order"
+	ioMock "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/inbound_order/mocks"
 	pbMock "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batch/mocks"
 	wMock "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
@@ -15,22 +15,22 @@ import (
 )
 
 var (
-	date = "2022-10-01 00:00:00"
+	date       = "2022-10-01 00:00:00"
 	dateString = helpers.ToDateTime(date)
-	io = domain.InboundOrder{
-		ID: 1,
-		OrderDate: dateString,
-		OrderNumber: "asdf",
-		EmployeeId: 1,
+	io         = domain.InboundOrder{
+		ID:             1,
+		OrderDate:      dateString,
+		OrderNumber:    "asdf",
+		EmployeeId:     1,
 		ProductBatchId: 1,
-		WarehouseId: 1,
+		WarehouseId:    1,
 	}
-	e = domain.Employee {
-		ID: 1,
+	e = domain.Employee{
+		ID:           1,
 		CardNumberID: "123456",
-		FirstName: "PrimeiroNome",
-		LastName: "Sobrenome",
-		WarehouseID: 3,
+		FirstName:    "PrimeiroNome",
+		LastName:     "Sobrenome",
+		WarehouseID:  3,
 	}
 
 	pb = domain.ProductBatch{
@@ -73,7 +73,7 @@ func TestServiceCreate(t *testing.T) {
 		result, err := service.Create(io)
 
 		assert.Nil(t, result)
-		assert.True(t, apperr.Is[*apperr.DependentResourceNotFound](err))		
+		assert.True(t, apperr.Is[*apperr.DependentResourceNotFound](err))
 	})
 	t.Run("should return dependente resource not found if product batch id doenst exist", func(t *testing.T) {
 		service, ioRepository, eRepository, pbRepository, _ := CreateService(t)
@@ -140,13 +140,13 @@ func TestServiceCreate(t *testing.T) {
 	})
 }
 
-func CreateService(t *testing.T) (inbound_orders.Service, *ioMock.Repository, *eMock.Repository, *pbMock.Repository, *wMock.Repository) {
+func CreateService(t *testing.T) (inbound_order.Service, *ioMock.Repository, *eMock.Repository, *pbMock.Repository, *wMock.Repository) {
 	t.Helper()
 	ioRepository := new(ioMock.Repository)
 	pbRepository := new(pbMock.Repository)
 	eRepository := new(eMock.Repository)
 	wRepository := new(wMock.Repository)
-	service := inbound_orders.NewService(ioRepository, eRepository, pbRepository, wRepository)
+	service := inbound_order.NewService(ioRepository, eRepository, pbRepository, wRepository)
 
 	return service, ioRepository, eRepository, pbRepository, wRepository
 }

@@ -4,16 +4,16 @@ import (
 	"net/http"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batches"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batch"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
 )
 
-type ProductBatches struct {
-	productBatchService product_batches.Service
+type ProductBatch struct {
+	productBatchService product_batch.Service
 }
-type CreateProductBatchesRequest struct {
+type CreateProductBatchRequest struct {
 	BatchNumber        *int     `json:"batch_number" binding:"required"`
 	CurrentQuantity    *int     `json:"current_quantity" binding:"required"`
 	CurrentTemperature *float32 `json:"current_temperature" binding:"required"`
@@ -26,9 +26,9 @@ type CreateProductBatchesRequest struct {
 	SectionID          *int     `json:"section_id" binding:"required"`
 }
 
-func (pb *CreateProductBatchesRequest) ToProductBatches() domain.ProductBatches {
+func (pb *CreateProductBatchRequest) ToProductBatches() domain.ProductBatch {
 
-	return domain.ProductBatches{
+	return domain.ProductBatch{
 		BatchNumber:        *pb.BatchNumber,
 		CurrentQuantity:    *pb.CurrentQuantity,
 		CurrentTemperature: *pb.CurrentTemperature,
@@ -42,8 +42,8 @@ func (pb *CreateProductBatchesRequest) ToProductBatches() domain.ProductBatches 
 	}
 }
 
-func NewProductBatches(service product_batches.Service) *ProductBatches {
-	return &ProductBatches{
+func NewProductBatches(service product_batch.Service) *ProductBatch {
+	return &ProductBatch{
 		productBatchService: service,
 	}
 }
@@ -61,9 +61,9 @@ func NewProductBatches(service product_batches.Service) *ProductBatches {
 // @Failure 422 {object} web.ErrorResponse "Unprocessable Entity"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /product-batches [post]
-func (pb *ProductBatches) Create() gin.HandlerFunc {
+func (pb *ProductBatch) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		request := c.MustGet(RequestParamContext).(CreateProductBatchesRequest)
+		request := c.MustGet(RequestParamContext).(CreateProductBatchRequest)
 
 		created, err := pb.productBatchService.Create(request.ToProductBatches())
 

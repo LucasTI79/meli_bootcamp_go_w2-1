@@ -9,15 +9,15 @@ type Repository struct {
 	mock.Mock
 }
 
-func (r *Repository) Get(id int) *domain.PurchaseOrders {
+func (r *Repository) Get(id int) *domain.PurchaseOrder {
 	args := r.Called(id)
-	return args.Get(0).(*domain.PurchaseOrders)
+	return args.Get(0).(*domain.PurchaseOrder)
 }
 func (r *Repository) Exists(orderNumber string) bool {
 	args := r.Called(orderNumber)
 	return args.Get(0).(bool)
 }
-func (r *Repository) Save(purchaseOrder domain.PurchaseOrders) int {
+func (r *Repository) Save(purchaseOrder domain.PurchaseOrder) int {
 	args := r.Called(purchaseOrder)
 	return args.Get(0).(int)
 }

@@ -1,4 +1,4 @@
-package inbound_orders_test
+package inbound_order_test
 
 import (
 	"database/sql"
@@ -7,20 +7,20 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/inbound_orders"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/inbound_order"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	allDataQuery = regexp.QuoteMeta(inbound_orders.GetQuery)
-	allDataInsertQuery = regexp.QuoteMeta(inbound_orders.InsertQuery)
+	allDataQuery               = regexp.QuoteMeta(inbound_order.GetQuery)
+	allDataInsertQuery         = regexp.QuoteMeta(inbound_order.InsertQuery)
 	mockedInboundOrderTemplate = domain.InboundOrder{
-		ID: 1,
-		OrderDate: dateString,
-		OrderNumber: "asdf",
-		EmployeeId: 1,
+		ID:             1,
+		OrderDate:      dateString,
+		OrderNumber:    "asdf",
+		EmployeeId:     1,
 		ProductBatchId: 1,
-		WarehouseId: 1,
+		WarehouseId:    1,
 	}
 )
 
@@ -36,7 +36,7 @@ func TestRepositoryGet(t *testing.T) {
 
 		mock.ExpectQuery(allDataQuery).WithArgs(inboundOrderId).WillReturnRows(rows)
 
-		repository := inbound_orders.NewRepository(db)
+		repository := inbound_order.NewRepository(db)
 
 		result := repository.Get(inboundOrderId)
 
@@ -51,7 +51,7 @@ func TestRepositoryGet(t *testing.T) {
 
 		mock.ExpectQuery(allDataQuery).WithArgs(inboundOrderId).WillReturnError(sql.ErrNoRows)
 
-		repository := inbound_orders.NewRepository(db)
+		repository := inbound_order.NewRepository(db)
 
 		result := repository.Get(inboundOrderId)
 
@@ -66,7 +66,7 @@ func TestRepositoryGet(t *testing.T) {
 
 		mock.ExpectQuery(allDataQuery).WithArgs(inboundOrderId).WillReturnError(sql.ErrConnDone)
 
-		repository := inbound_orders.NewRepository(db)
+		repository := inbound_order.NewRepository(db)
 
 		assert.Panics(t, func() { repository.Get(inboundOrderId) })
 	})
@@ -82,11 +82,11 @@ func TestRepositoryExists(t *testing.T) {
 		cardNumberId := "123"
 		rows.AddRow(cardNumberId)
 
-		mock.ExpectQuery(regexp.QuoteMeta(inbound_orders.ExistsQuery)).
+		mock.ExpectQuery(regexp.QuoteMeta(inbound_order.ExistsQuery)).
 			WithArgs(cardNumberId).
 			WillReturnRows(rows)
 
-		repository := inbound_orders.NewRepository(db)
+		repository := inbound_order.NewRepository(db)
 
 		result := repository.Exists(cardNumberId)
 
@@ -99,9 +99,9 @@ func TestRepositoryExists(t *testing.T) {
 
 		cardNumberId := "123"
 
-		mock.ExpectQuery(inbound_orders.ExistsQuery).WithArgs(cardNumberId).WillReturnError(sql.ErrNoRows)
+		mock.ExpectQuery(inbound_order.ExistsQuery).WithArgs(cardNumberId).WillReturnError(sql.ErrNoRows)
 
-		repository := inbound_orders.NewRepository(db)
+		repository := inbound_order.NewRepository(db)
 
 		result := repository.Exists(cardNumberId)
 
@@ -114,9 +114,9 @@ func TestRepositoryExists(t *testing.T) {
 
 		cardNumberId := "123"
 
-		mock.ExpectQuery(inbound_orders.ExistsQuery).WithArgs(cardNumberId).WillReturnError(sql.ErrConnDone)
+		mock.ExpectQuery(inbound_order.ExistsQuery).WithArgs(cardNumberId).WillReturnError(sql.ErrConnDone)
 
-		repository := inbound_orders.NewRepository(db)
+		repository := inbound_order.NewRepository(db)
 
 		result := repository.Exists(cardNumberId)
 
@@ -140,7 +140,7 @@ func TestRepositorySave(t *testing.T) {
 			WithArgs(mockedInboundOrder.OrderDate, mockedInboundOrder.OrderNumber, mockedInboundOrder.EmployeeId, mockedInboundOrder.ProductBatchId, mockedInboundOrder.WarehouseId).
 			WillReturnResult(sqlmock.NewResult(int64(lastInsertId), 1))
 
-		repository := inbound_orders.NewRepository(db)
+		repository := inbound_order.NewRepository(db)
 
 		result := repository.Save(mockedInboundOrder)
 
@@ -154,7 +154,7 @@ func TestRepositorySave(t *testing.T) {
 		mockedInboundOrder := mockedInboundOrderTemplate
 		mock.ExpectPrepare(allDataInsertQuery).WillReturnError(sql.ErrConnDone)
 
-		repository := inbound_orders.NewRepository(db)
+		repository := inbound_order.NewRepository(db)
 
 		assert.Panics(t, func() { repository.Save(mockedInboundOrder) })
 	})
@@ -169,7 +169,7 @@ func TestRepositorySave(t *testing.T) {
 			WithArgs(mockedInboundOrder.OrderDate, mockedInboundOrder.OrderNumber, mockedInboundOrder.EmployeeId, mockedInboundOrder.ProductBatchId, mockedInboundOrder.WarehouseId).
 			WillReturnError(sql.ErrConnDone)
 
-		repository := inbound_orders.NewRepository(db)
+		repository := inbound_order.NewRepository(db)
 
 		assert.Panics(t, func() { repository.Save(mockedInboundOrder) })
 	})
@@ -184,7 +184,7 @@ func TestRepositorySave(t *testing.T) {
 			WithArgs(mockedInboundOrder.OrderDate, mockedInboundOrder.OrderNumber, mockedInboundOrder.EmployeeId, mockedInboundOrder.ProductBatchId, mockedInboundOrder.WarehouseId).
 			WillReturnResult(sqlmock.NewErrorResult(sql.ErrConnDone))
 
-		repository := inbound_orders.NewRepository(db)
+		repository := inbound_order.NewRepository(db)
 
 		assert.Panics(t, func() { repository.Save(mockedInboundOrder) })
 	})

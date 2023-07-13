@@ -7,7 +7,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batches/mocks"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batch/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +18,7 @@ const (
 )
 
 var (
-	productBatch = domain.ProductBatches{
+	productBatch = domain.ProductBatch{
 		BatchNumber:        1,
 		CurrentQuantity:    1,
 		CurrentTemperature: 2,
@@ -33,7 +33,7 @@ var (
 )
 
 func TestCreateProductBatches(t *testing.T) {
-	requestObject := handler.CreateProductBatchesRequest{
+	requestObject := handler.CreateProductBatchRequest{
 		BatchNumber:        &productBatch.BatchNumber,
 		CurrentQuantity:    &productBatch.CurrentQuantity,
 		CurrentTemperature: &productBatch.CurrentTemperature,
@@ -51,7 +51,7 @@ func TestCreateProductBatches(t *testing.T) {
 		server.POST(DefinePath(resourceProductsBatchesUri), ValidationMiddleware(requestObject), controller.Create())
 		request, response := MakeRequest("POST", DefinePath(resourceProductsBatchesUri), CreateBody(requestObject))
 
-		var productBatchReturn *domain.ProductBatches
+		var productBatchReturn *domain.ProductBatch
 		service.On("Create", requestObject.ToProductBatches()).Return(productBatchReturn, apperr.NewResourceAlreadyExists(ResourceAlreadyExists))
 
 		server.ServeHTTP(response, request)
@@ -64,7 +64,7 @@ func TestCreateProductBatches(t *testing.T) {
 		server.POST(DefinePath(resourceProductsBatchesUri), ValidationMiddleware(requestObject), controller.Create())
 		request, response := MakeRequest("POST", DefinePath(resourceProductsBatchesUri), CreateBody(requestObject))
 
-		var productBatchReturn *domain.ProductBatches
+		var productBatchReturn *domain.ProductBatch
 		service.On("Create", requestObject.ToProductBatches()).Return(productBatchReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
 
 		server.ServeHTTP(response, request)
@@ -85,7 +85,7 @@ func TestCreateProductBatches(t *testing.T) {
 	})
 }
 
-func InitProductBatchesServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.ProductBatches) {
+func InitProductBatchesServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.ProductBatch) {
 	t.Helper()
 	server := CreateServer()
 	server.Use(middleware.IdValidation())

@@ -9,16 +9,15 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/carrier"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/inbound_orders"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/inbound_order"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/locality"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/order_status"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batch"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batches"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_record"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_type"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/province"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/purchase_orders"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/purchase_order"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
@@ -59,9 +58,11 @@ func (r *router) MapRoutes() {
 	r.buildEmployeeRoutes()
 	r.buildBuyerRoutes()
 	r.buildLocalityRoutes()
+	r.buildCarrierRoutes()
 	r.buildProductRecordRoutes()
-	r.buildCarriersRoutes()
-	r.buildProductBatchesRoutes()
+	r.buildPurchaseOrderRoutes()
+	r.buildInboundOrderRoutes()
+	r.buildProductBatchRoutes()
 }
 
 func (r *router) setGroup() {
@@ -178,14 +179,14 @@ func (r *router) buildLocalityRoutes() {
 	localityRoutes.GET("/report-carriers", controller.ReportCarriers())
 }
 
-func (r *router) buildCarriersRoutes() {
+func (r *router) buildCarrierRoutes() {
 	repository := carrier.NewRepository(r.db)
 	localityRepo := locality.NewRepository(r.db)
 	service := carrier.NewService(repository, localityRepo)
 	controller := handler.NewCarrier(service)
 	carrierGroups := r.rg.Group("carriers")
-	carrierGroups.POST("/", middleware.RequestValidation[handler.CreateCarrierRequest](CreateCanBeBlank), controller.Create())
 
+	carrierGroups.POST("/", middleware.RequestValidation[handler.CreateCarrierRequest](CreateCanBeBlank), controller.Create())
 }
 
 func (r *router) buildProductRecordRoutes() {
@@ -198,40 +199,40 @@ func (r *router) buildProductRecordRoutes() {
 	productRecordRoutes.POST("/", middleware.RequestValidation[handler.CreateProductRecordRequest](CreateCanBeBlank), controller.Create())
 }
 
-func (r *router) buildPurchaseOrdersRoutes() {
-	repo := purchase_orders.NewRepository(r.db)
+func (r *router) buildPurchaseOrderRoutes() {
+	repo := purchase_order.NewRepository(r.db)
 	buyerRepo := buyer.NewRepository(r.db)
 	orderStatusRepo := order_status.NewRepository(r.db)
 	warehouseRepo := warehouse.NewRepository(r.db)
 	carrierRepo := carrier.NewRepository(r.db)
 	productRecordRepo := product_record.NewRepository(r.db)
-	service := purchase_orders.NewService(repo, buyerRepo, orderStatusRepo, warehouseRepo, carrierRepo, productRecordRepo)
+	service := purchase_order.NewService(repo, buyerRepo, orderStatusRepo, warehouseRepo, carrierRepo, productRecordRepo)
 	controller := handler.NewPurchaseOrder(service)
 	purchaseOrdersRoutes := r.rg.Group("/purchase-orders")
 
 	purchaseOrdersRoutes.POST("/", middleware.RequestValidation[handler.CreatePurchaseOrderRequest](CreateCanBeBlank), controller.Create())
 }
 
-func (r *router) buildInboundOrdersRoutes() {
-	repo := inbound_orders.NewRepository(r.db)
+func (r *router) buildInboundOrderRoutes() {
+	repo := inbound_order.NewRepository(r.db)
 	repoEmployee := employee.NewRepository(r.db)
 	repoProductBatch := product_batch.NewRepository(r.db)
 	repoWarehouse := warehouse.NewRepository(r.db)
-	service := inbound_orders.NewService(repo, repoEmployee, repoProductBatch, repoWarehouse)
+	service := inbound_order.NewService(repo, repoEmployee, repoProductBatch, repoWarehouse)
 	controller := handler.NewInboundOrder(service)
 	inboundOrdersRoutes := r.rg.Group("/inbound-orders")
 
 	inboundOrdersRoutes.POST("/", middleware.RequestValidation[handler.CreateInboundOrderRequest](CreateCanBeBlank), controller.Create())
 }
 
-func (r *router) buildProductBatchesRoutes() {
+func (r *router) buildProductBatchRoutes() {
 
-	repo := product_batches.NewRepository(r.db)
+	repo := product_batch.NewRepository(r.db)
 	productRepo := product.NewRepository(r.db)
 	sectionRepo := section.NewRepository(r.db)
-	service := product_batches.NewService(repo, productRepo, sectionRepo)
+	service := product_batch.NewService(repo, productRepo, sectionRepo)
 	controller := handler.NewProductBatches(service)
 	productBatchesRoutes := r.rg.Group("/product-batches")
 
-	productBatchesRoutes.POST("/", middleware.RequestValidation[handler.CreateProductBatchesRequest](CreateCanBeBlank), controller.Create())
+	productBatchesRoutes.POST("/", middleware.RequestValidation[handler.CreateProductBatchRequest](CreateCanBeBlank), controller.Create())
 }

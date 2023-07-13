@@ -1,19 +1,19 @@
-package product_batches_test
+package product_batch_test
 
 import (
 	"testing"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	product_mocks "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product/mocks"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batches"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batches/mocks"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batch"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batch/mocks"
 	section_mocks "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	productBatch = domain.ProductBatches{
+	productBatch = domain.ProductBatch{
 		ID:                 1,
 		BatchNumber:        1,
 		CurrentQuantity:    1,
@@ -88,12 +88,12 @@ func TestServiceCreate(t *testing.T) {
 	})
 }
 
-func CreateService(t *testing.T) (product_batches.Service, *mocks.Repository, *product_mocks.Repository, *section_mocks.Repository) {
+func CreateService(t *testing.T) (product_batch.Service, *mocks.Repository, *product_mocks.Repository, *section_mocks.Repository) {
 	t.Helper()
 	repository := new(mocks.Repository)
 	productRepository := new(product_mocks.Repository)
 	sectionRepository := new(section_mocks.Repository)
-	service := product_batches.NewService(repository, productRepository, sectionRepository)
+	service := product_batch.NewService(repository, productRepository, sectionRepository)
 
 	return service, repository, productRepository, sectionRepository
 }

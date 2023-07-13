@@ -1,34 +1,34 @@
-package purchase_orders_test
+package purchase_order_test
 
 import (
 	"testing"
 
 	buyerMocks "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer/mocks"
 	carrierMocks "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/carrier/mocks"
-	productRecordMocks "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_record/mocks"
-	warehouseMocks "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse/mocks"
-	orderStatusMocks "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/order_status/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/purchase_orders"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/purchase_orders/mocks"
+	orderStatusMocks "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/order_status/mocks"
+	productRecordMocks "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_record/mocks"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/purchase_order"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/purchase_order/mocks"
+	warehouseMocks "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	mockedBuyerTemplate= domain.Buyer {
+	mockedBuyerTemplate = domain.Buyer{
 		ID: 1,
 	}
-	mockedOrderStatusTemplate = domain.OrderStatus {
+	mockedOrderStatusTemplate = domain.OrderStatus{
 		ID: 1,
 	}
-	mockedWarehouseTemplate = domain.Warehouse {
+	mockedWarehouseTemplate = domain.Warehouse{
 		ID: 1,
 	}
-	mockedProductRecordTemplate = domain.ProductRecord {
+	mockedProductRecordTemplate = domain.ProductRecord{
 		ID: 1,
 	}
-	mockedCarrierTemplate = domain.Carrier {
+	mockedCarrierTemplate = domain.Carrier{
 		ID: 1,
 	}
 )
@@ -37,16 +37,16 @@ func TestServiceCreate(t *testing.T) {
 	t.Run("Should return a created purchase order", func(t *testing.T) {
 		service, repository, buyerRepo, orderStatusRepo, warehouseRepo, carrierRepo, productRecordRepo := CreateService(t)
 
-		mockedPurchaseOrder := mockedPurchaseOrderTemplate 
+		mockedPurchaseOrder := mockedPurchaseOrderTemplate
 		mockedBuyer := mockedBuyerTemplate
 		mockedOrderStatus := mockedOrderStatusTemplate
 		mockedWarehouse := mockedWarehouseTemplate
-		mockedProductRecord:= mockedProductRecordTemplate
+		mockedProductRecord := mockedProductRecordTemplate
 		mockedCarrier := mockedCarrierTemplate
-		
+
 		purchaseOrderID := 1
-		
-		repository.On("Exists",mockedPurchaseOrder.OrderNumber).Return(false)
+
+		repository.On("Exists", mockedPurchaseOrder.OrderNumber).Return(false)
 		buyerRepo.On("Get", mockedBuyer.ID).Return(&mockedBuyer)
 		orderStatusRepo.On("Get", mockedOrderStatus.ID).Return(&mockedOrderStatus)
 		warehouseRepo.On("Get", mockedWarehouse.ID).Return(&mockedWarehouse)
@@ -65,9 +65,9 @@ func TestServiceCreate(t *testing.T) {
 	t.Run("Should return a conflict error when order number already exists", func(t *testing.T) {
 		service, repository, _, _, _, _, _ := CreateService(t)
 
-		mockedPurchaseOrder := mockedPurchaseOrderTemplate 
+		mockedPurchaseOrder := mockedPurchaseOrderTemplate
 		repository.On("Exists", mockedPurchaseOrder.OrderNumber).Return(true)
-		
+
 		result, err := service.Create(mockedPurchaseOrder)
 
 		assert.Error(t, err)
@@ -78,7 +78,7 @@ func TestServiceCreate(t *testing.T) {
 	t.Run("Should return a conflict error when buyer id does not exist", func(t *testing.T) {
 		service, repository, buyerRepo, _, _, _, _ := CreateService(t)
 
-		mockedPurchaseOrder := mockedPurchaseOrderTemplate 
+		mockedPurchaseOrder := mockedPurchaseOrderTemplate
 		mockedBuyer := mockedBuyerTemplate
 		var buyerRepositoryGetResult *domain.Buyer
 
@@ -95,7 +95,7 @@ func TestServiceCreate(t *testing.T) {
 	t.Run("Should return a conflict error when order status id does not exist", func(t *testing.T) {
 		service, repository, buyerRepo, orderStatusRepo, _, _, _ := CreateService(t)
 
-		mockedPurchaseOrder := mockedPurchaseOrderTemplate 
+		mockedPurchaseOrder := mockedPurchaseOrderTemplate
 		mockedBuyer := mockedBuyerTemplate
 		mockedOrderStatus := mockedOrderStatusTemplate
 		var orderStatusRepositoryGetResult *domain.OrderStatus
@@ -114,7 +114,7 @@ func TestServiceCreate(t *testing.T) {
 	t.Run("Should return a conflict error when warehouse id does not exist", func(t *testing.T) {
 		service, repository, buyerRepo, orderStatusRepo, warehouseRepo, _, _ := CreateService(t)
 
-		mockedPurchaseOrder := mockedPurchaseOrderTemplate 
+		mockedPurchaseOrder := mockedPurchaseOrderTemplate
 		mockedBuyer := mockedBuyerTemplate
 		mockedOrderStatus := mockedOrderStatusTemplate
 		mockedWarehouse := mockedWarehouseTemplate
@@ -132,13 +132,13 @@ func TestServiceCreate(t *testing.T) {
 		assert.True(t, apperr.Is[*apperr.DependentResourceNotFound](err))
 	})
 	t.Run("Should return a conflict error when product record id does not exist", func(t *testing.T) {
-		service, repository, buyerRepo, orderStatusRepo, warehouseRepo, _, productRecordRepo:= CreateService(t)
+		service, repository, buyerRepo, orderStatusRepo, warehouseRepo, _, productRecordRepo := CreateService(t)
 
-		mockedPurchaseOrder := mockedPurchaseOrderTemplate 
+		mockedPurchaseOrder := mockedPurchaseOrderTemplate
 		mockedBuyer := mockedBuyerTemplate
 		mockedOrderStatus := mockedOrderStatusTemplate
 		mockedWarehouse := mockedWarehouseTemplate
-		mockedProductRecord:= mockedProductRecordTemplate
+		mockedProductRecord := mockedProductRecordTemplate
 		var productRecordRepositoryGetResult *domain.ProductRecord
 
 		repository.On("Exists", mockedPurchaseOrder.OrderNumber).Return(false)
@@ -155,13 +155,13 @@ func TestServiceCreate(t *testing.T) {
 	})
 
 	t.Run("Should return a conflict error when carrier id does not exist", func(t *testing.T) {
-		service, repository, buyerRepo, orderStatusRepo, warehouseRepo, carrierRepo, productRecordRepo:= CreateService(t)
+		service, repository, buyerRepo, orderStatusRepo, warehouseRepo, carrierRepo, productRecordRepo := CreateService(t)
 
-		mockedPurchaseOrder := mockedPurchaseOrderTemplate 
+		mockedPurchaseOrder := mockedPurchaseOrderTemplate
 		mockedBuyer := mockedBuyerTemplate
 		mockedOrderStatus := mockedOrderStatusTemplate
 		mockedWarehouse := mockedWarehouseTemplate
-		mockedProductRecord:= mockedProductRecordTemplate
+		mockedProductRecord := mockedProductRecordTemplate
 		mockedCarrier := mockedCarrierTemplate
 		var carrierRepositoryGetResult *domain.Carrier
 
@@ -180,8 +180,7 @@ func TestServiceCreate(t *testing.T) {
 	})
 }
 
-
-func CreateService(t *testing.T) (purchase_orders.Service, *mocks.Repository, *buyerMocks.Repository, *orderStatusMocks.Repository, *warehouseMocks.Repository, *carrierMocks.Repository, *productRecordMocks.Repository) {
+func CreateService(t *testing.T) (purchase_order.Service, *mocks.Repository, *buyerMocks.Repository, *orderStatusMocks.Repository, *warehouseMocks.Repository, *carrierMocks.Repository, *productRecordMocks.Repository) {
 	t.Helper()
 	repository := new(mocks.Repository)
 	buyerRepo := new(buyerMocks.Repository)
@@ -189,8 +188,7 @@ func CreateService(t *testing.T) (purchase_orders.Service, *mocks.Repository, *b
 	warehouseRepo := new(warehouseMocks.Repository)
 	carrierRepo := new(carrierMocks.Repository)
 	productRecordRepo := new(productRecordMocks.Repository)
-	service := purchase_orders.NewService(repository, buyerRepo, orderStatusRepo, warehouseRepo, carrierRepo, productRecordRepo)
+	service := purchase_order.NewService(repository, buyerRepo, orderStatusRepo, warehouseRepo, carrierRepo, productRecordRepo)
 
-	
 	return service, repository, buyerRepo, orderStatusRepo, warehouseRepo, carrierRepo, productRecordRepo
 }

@@ -1,6 +1,9 @@
 package handler_test
 
 import (
+	"net/http"
+	"testing"
+
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/carrier/mocks"
@@ -8,8 +11,6 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"testing"
 )
 
 var mockedCarrier = domain.Carrier{
@@ -17,7 +18,7 @@ var mockedCarrier = domain.Carrier{
 	CID:         "123",
 	CompanyName: "company",
 	Address:     "Add",
-	Telephone:   1234678768,
+	Telephone:   "1234678768",
 	LocalityID:  1,
 }
 

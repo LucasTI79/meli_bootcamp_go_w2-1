@@ -9,7 +9,7 @@ type Service struct {
 	mock.Mock
 }
 
-func (s *Service) Create(po domain.PurchaseOrders) (*domain.PurchaseOrders, error) {
+func (s *Service) Create(po domain.PurchaseOrder) (*domain.PurchaseOrder, error) {
 	args := s.Called(po)
-	return args.Get(0).(*domain.PurchaseOrders), args.Error(1)
+	return args.Get(0).(*domain.PurchaseOrder), args.Error(1)
 }
