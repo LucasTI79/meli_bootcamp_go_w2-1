@@ -16,21 +16,21 @@ type InboundOrder struct {
 }
 
 type CreateInboundOrderRequest struct {
-	OrderDate string `json:"order_date" binding:"required,datetime=2006-01-02 15:04:05"`
-	OrderNumber int `json:"order_number" binding:"required"`
-	EmployeeId int `json:"employee_id" binding:"required"`
-	ProductBatchId int `json:"product_batch_id" binding:"required"`
-	WarehouseId int `json:"warehouse_id" binding:"required"`
+	OrderDate *string `json:"order_date" binding:"required,datetime=2006-01-02 15:04:05"`
+	OrderNumber *string `json:"order_number" binding:"required,gt=3"`
+	EmployeeId *int `json:"employee_id" binding:"required"`
+	ProductBatchId *int `json:"product_batch_id" binding:"required"`
+	WarehouseId *int `json:"warehouse_id" binding:"required"`
 }
 
 func (i CreateInboundOrderRequest) ToInboundOrder() domain.InboundOrder {
 	return domain.InboundOrder{
 		ID: 0,
-		OrderDate: helpers.ToDateTime(i.OrderDate),
-		OrderNumber: i.OrderNumber,
-		EmployeeId: i.EmployeeId,
-		ProductBatchId: i.ProductBatchId,
-		WarehouseId: i.WarehouseId,
+		OrderDate: helpers.ToDateTime(*i.OrderDate),
+		OrderNumber: *i.OrderNumber,
+		EmployeeId: *i.EmployeeId,
+		ProductBatchId: *i.ProductBatchId,
+		WarehouseId: *i.WarehouseId,
 	}
 }
 

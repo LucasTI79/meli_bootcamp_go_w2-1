@@ -12,7 +12,7 @@ const (
 	EmployeeNotFound        = "funcionario não encontrado com o id %d"
 	ProductBatchNotFound    = "lote de produto não encontrado com o id %d"
 	WarehouseNotFound       = "armazem não encontrado com o id %d"
-	ResourceAlreadyExists   = "ordem de entrada com o numero '%d' já existe"
+	ResourceAlreadyExists   = "ordem de entrada com o numero '%s' já existe"
 )
 
 type Service interface {

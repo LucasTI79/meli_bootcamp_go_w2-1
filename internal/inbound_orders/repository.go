@@ -16,7 +16,7 @@ const (
 type Repository interface {
 	Get(id int) *domain.InboundOrder
 	Save(i domain.InboundOrder) int
-	Exists(orderNumber int) bool
+	Exists(orderNumber string) bool
 }
 
 type repository struct {
@@ -67,7 +67,7 @@ func (r *repository) Save(i domain.InboundOrder) int {
 	return int(id)
 }
 
-func (r *repository) Exists(orderNumber int) bool {
+func (r *repository) Exists(orderNumber string) bool {
 	row := r.db.QueryRow(ExistsQuery, orderNumber)
 	err := row.Scan(&orderNumber)
 	return err == nil
