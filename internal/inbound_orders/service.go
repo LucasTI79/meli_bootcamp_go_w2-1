@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	EmployeeNotFound        = "funcionario não encontrado com o id %d"
+	EmployeeNotFound        = "funcionário não encontrado com o id %d"
 	ProductBatchNotFound    = "lote de produto não encontrado com o id %d"
 	WarehouseNotFound       = "armazém não encontrado com o id %d"
 	ResourceAlreadyExists   = "ordem de entrada com o numero '%s' já existe"
