@@ -55,8 +55,8 @@ func NewEmployee(e employee.Service) *Employee {
 }
 
 // GetAll Employee godoc
-// @Summary List all employees
-// @Description List all employees
+// @Summary Get all employees
+// @Description Return a collection of employees
 // @Tags Employees
 // @Produce json
 // @Success 200 {object} []domain.Employee "Employee"
@@ -74,9 +74,10 @@ func (e *Employee) GetAll() gin.HandlerFunc {
 // @Description Get a employee based on the ID parameter
 // @Tags Employees
 // @Produce json
+// @Param id path int true "Employee id"
 // @Success 200 {object} domain.Employee "Employee"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "ID not found"
+// @Failure 404 {object} web.ErrorResponse "Resource not found"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /employees/{id} [get]
 func (e *Employee) Get() gin.HandlerFunc {
@@ -105,7 +106,6 @@ func (e *Employee) Get() gin.HandlerFunc {
 // @Param request body domain.Employee true "Employee data"
 // @Success 201 {object} domain.Employee "Created employee"
 // @Failure 422 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "ID not found"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /employees [post]
@@ -128,15 +128,16 @@ func (e *Employee) Create() gin.HandlerFunc {
 
 // Update godoc
 // @Summary Update a employee
-// @Description Update employee based on the provided JSON payload
+// @Description Update an existent employee based on the provided id and JSON payload.
 // @Tags Employees
 // @Accept json
 // @Produce json
-// @Param request body domain.Employee true "Employee data to update"
+// @Param id path int true "Employee ID"
+// @Param request body UpdateEmployeeRequest true "Employee data to update"
 // @Success 200 {object} domain.Employee "Updated employee"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 422 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "ID not found error"
+// @Failure 404 {object} web.ErrorResponse "Resourse not found error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /employees/{id} [patch]
@@ -165,12 +166,13 @@ func (e *Employee) Update() gin.HandlerFunc {
 
 // Delete godoc
 // @Summary Delete employee
-// @Description Delete employee based on ID
+// @Description Delete employee based on the provided id
 // @Tags Employees
 // @Produce json
+// @Param id path int true "Employee ID"
 // @Success 204 "No content"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "ID not found error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Router /employees/{id} [delete]
 func (e *Employee) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -197,7 +199,8 @@ func (e *Employee) Delete() gin.HandlerFunc {
 // @Tags Employee
 // @Accept json
 // @Produce json
-// @Success 200 {object} []domain.InboundOrdersByEmployee "List of employees"
+// @Param id query int false "Employee ID"
+// @Success 200 {object} []domain.InboundOrdersByEmployee "Get of employees"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"

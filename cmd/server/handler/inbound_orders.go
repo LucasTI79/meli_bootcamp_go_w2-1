@@ -38,6 +38,18 @@ func NewInboundOrder(service inbound_orders.Service) *InboundOrder {
 	return &InboundOrder{service}
 }
 
+// Create godoc
+// @Summary Create a new inbound_order
+// @Description Create a new inbound_order based on the provided JSON payload
+// @Tags InboundOrders
+// @Accept json
+// @Produce json
+// @Param request body CreateInboundOrderRequest true "InboundOrder data"
+// @Success 201 {object} domain.InboundOrder "Created inbound_order"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /inbound-orders [post]
 func (i *InboundOrder) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		request := c.MustGet(RequestParamContext).(CreateInboundOrderRequest)
