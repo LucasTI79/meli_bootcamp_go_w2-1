@@ -9,11 +9,7 @@ type Warehouse struct {
 	WarehouseCode      string `json:"warehouse_code"`
 	MinimumCapacity    int    `json:"minimum_capacity"`
 	MinimumTemperature int    `json:"minimum_temperature"`
-<<<<<<< HEAD
-	LocalityId         int    `json:"locality_id"`
-=======
 	LocalityID         int    `json:"locality_id"`
->>>>>>> 72a09cc (adjust section handler)
 }
 
 func (w *Warehouse) Overlap(updateWarehouse UpdateWarehouse) {
