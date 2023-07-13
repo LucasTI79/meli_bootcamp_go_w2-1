@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/inbound_orders"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/inbound_order"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/helpers"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
@@ -12,36 +12,36 @@ import (
 )
 
 type InboundOrder struct {
-	service inbound_orders.Service
+	service inbound_order.Service
 }
 
 type CreateInboundOrderRequest struct {
-	OrderDate *string `json:"order_date" binding:"required,datetime=2006-01-02 15:04:05"`
-	OrderNumber *string `json:"order_number" binding:"required,gt=3"`
-	EmployeeId *int `json:"employee_id" binding:"required"`
-	ProductBatchId *int `json:"product_batch_id" binding:"required"`
-	WarehouseId *int `json:"warehouse_id" binding:"required"`
+	OrderDate      *string `json:"order_date" binding:"required,datetime=2006-01-02 15:04:05"`
+	OrderNumber    *string `json:"order_number" binding:"required,gt=3"`
+	EmployeeId     *int    `json:"employee_id" binding:"required"`
+	ProductBatchId *int    `json:"product_batch_id" binding:"required"`
+	WarehouseId    *int    `json:"warehouse_id" binding:"required"`
 }
 
 func (i CreateInboundOrderRequest) ToInboundOrder() domain.InboundOrder {
 	return domain.InboundOrder{
-		ID: 0,
-		OrderDate: helpers.ToDateTime(*i.OrderDate),
-		OrderNumber: *i.OrderNumber,
-		EmployeeId: *i.EmployeeId,
+		ID:             0,
+		OrderDate:      helpers.ToDateTime(*i.OrderDate),
+		OrderNumber:    *i.OrderNumber,
+		EmployeeId:     *i.EmployeeId,
 		ProductBatchId: *i.ProductBatchId,
-		WarehouseId: *i.WarehouseId,
+		WarehouseId:    *i.WarehouseId,
 	}
 }
 
-func NewInboundOrder(service inbound_orders.Service) *InboundOrder {
+func NewInboundOrder(service inbound_order.Service) *InboundOrder {
 	return &InboundOrder{service}
 }
 
 // Create godoc
 // @Summary Create a new inbound_order
 // @Description Create a new inbound_order based on the provided JSON payload
-// @Tags InboundOrders
+// @Tags Inbound Orders
 // @Accept json
 // @Produce json
 // @Param request body CreateInboundOrderRequest true "InboundOrder data"

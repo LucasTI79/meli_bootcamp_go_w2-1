@@ -1,4 +1,4 @@
-package inbound_orders
+package inbound_order
 
 import (
 	"database/sql"
@@ -13,6 +13,7 @@ const (
 	GetQuery    = "SELECT id, order_date, order_number, employee_id, product_batch_id, warehouse_id FROM inbound_orders WHERE id=?"
 	ExistsQuery = "SELECT order_number FROM inbound_orders WHERE order_number=?"
 )
+
 type Repository interface {
 	Get(id int) *domain.InboundOrder
 	Save(i domain.InboundOrder) int
@@ -34,14 +35,14 @@ func (r *repository) Get(id int) *domain.InboundOrder {
 	i := domain.InboundOrder{}
 	var OrderDate string
 	err := row.Scan(&i.ID, &OrderDate, &i.OrderNumber, &i.EmployeeId, &i.ProductBatchId, &i.WarehouseId)
-	
+
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
 		}
 		panic(err)
 	}
-	
+
 	i.OrderDate = helpers.ToDateTime(OrderDate)
 
 	return &i

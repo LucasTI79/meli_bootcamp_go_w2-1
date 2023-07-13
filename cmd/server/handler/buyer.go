@@ -196,14 +196,15 @@ func (b *Buyer) Delete() gin.HandlerFunc {
 // @Description Purchase Orders count by buyer.
 // @Description If no query param is given, bring the report to all purchase orders for all buyers.
 // @Description If a buyer id is specified, bring the amount of purchase orders for this buyer.
-// @Tags Purchase Orders
+// @Tags Buyers
 // @Accept json
 // @Produce json
-// @Success 200 {object} []domain.PuchasesByBuyerReport "List of purchase Orders"
+// @Param id query int false "Buyer ID"
+// @Success 200 {object} []domain.PurchasesByBuyerReport "List of purchase Orders"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /report-purchase-orders[get]
+// @Router /buyers/report-purchase-orders [get]
 func (b *Buyer) ReportPurchases() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Request.URL.Query().Get("id")

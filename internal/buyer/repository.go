@@ -17,12 +17,12 @@ const (
 
 	CountPurchasesByAllBuyers = `SELECT b.id, b.card_number_id, b.first_name, b.last_name, count(po.id) "purchase_orders_count"
 		FROM buyers b
-		JOIN purchase_orders po ON b.id = po.buyer_id
+		LEFT JOIN purchase_orders po ON b.id = po.buyer_id
 		GROUP BY b.id`
 
 	CountPurchasesByBuyer = `SELECT b.id, b.card_number_id, b.first_name, b.last_name, count(po.id) "purchase_orders_count"
 		FROM buyers b
-		JOIN purchase_orders po ON b.id = po.buyer_id
+		LEFT JOIN purchase_orders po ON b.id = po.buyer_id
 		WHERE b.id=?
 		GROUP BY b.id`
 )

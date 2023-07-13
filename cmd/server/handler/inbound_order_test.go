@@ -7,7 +7,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/inbound_orders/mocks"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/inbound_order/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/helpers"
 	"github.com/gin-gonic/gin"
@@ -19,25 +19,25 @@ const (
 )
 
 var (
-	date = "2022-10-01 00:00:00"
-	dateString  = helpers.ToDateTime(date)
+	date               = "2022-10-01 00:00:00"
+	dateString         = helpers.ToDateTime(date)
 	mockedInboundOrder = domain.InboundOrder{
-		ID: 1,
-		OrderDate: dateString,
-		OrderNumber: "asdf",
-		EmployeeId: 1,
+		ID:             1,
+		OrderDate:      dateString,
+		OrderNumber:    "asdf",
+		EmployeeId:     1,
 		ProductBatchId: 1,
-		WarehouseId: 1,
-}
+		WarehouseId:    1,
+	}
 )
 
 func TestCreateInboundOrder(t *testing.T) {
 	requestObject := handler.CreateInboundOrderRequest{
-		OrderDate: &date,
-		OrderNumber: &mockedInboundOrder.OrderNumber,
-		EmployeeId: &mockedInboundOrder.EmployeeId,
+		OrderDate:      &date,
+		OrderNumber:    &mockedInboundOrder.OrderNumber,
+		EmployeeId:     &mockedInboundOrder.EmployeeId,
 		ProductBatchId: &mockedInboundOrder.ProductBatchId,
-		WarehouseId: &mockedEmployeeInboundOrder.WarehouseID,
+		WarehouseId:    &mockedEmployeeInboundOrder.WarehouseID,
 	}
 
 	t.Run("should return 409 conflict when order number already exists", func(t *testing.T) {

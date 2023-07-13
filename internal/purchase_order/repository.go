@@ -1,4 +1,4 @@
-package purchase_orders
+package purchase_order
 
 import (
 	"database/sql"
@@ -15,9 +15,9 @@ const (
 )
 
 type Repository interface {
-	Get(id int) *domain.PurchaseOrders
+	Get(id int) *domain.PurchaseOrder
 	Exists(orderNumber string) bool
-	Save(purchaseOrder domain.PurchaseOrders) int
+	Save(purchaseOrder domain.PurchaseOrder) int
 }
 
 type repository struct {
@@ -30,9 +30,9 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r *repository) Get(id int) *domain.PurchaseOrders {
+func (r *repository) Get(id int) *domain.PurchaseOrder {
 	row := r.db.QueryRow(GetQuery, id)
-	po := domain.PurchaseOrders{}
+	po := domain.PurchaseOrder{}
 	var orderDate string
 
 	err := row.Scan(&po.ID, &po.OrderNumber, &orderDate, &po.TrackingCode, &po.BuyerID, &po.CarrierID, &po.ProductRecordID, &po.OrderStatusID, &po.WarehouseID)
@@ -42,7 +42,7 @@ func (r *repository) Get(id int) *domain.PurchaseOrders {
 		}
 		panic(err)
 	}
-	
+
 	po.OrderDate = helpers.ToDateTime(orderDate)
 
 	return &po
@@ -54,7 +54,7 @@ func (r *repository) Exists(orderNumber string) bool {
 	return err == nil
 }
 
-func (r *repository) Save(po domain.PurchaseOrders) int {
+func (r *repository) Save(po domain.PurchaseOrder) int {
 	stmt, err := r.db.Prepare(InsertQuery)
 	if err != nil {
 		panic(err)
@@ -72,4 +72,3 @@ func (r *repository) Save(po domain.PurchaseOrders) int {
 
 	return int(id)
 }
-

@@ -1,4 +1,4 @@
-package purchase_orders
+package purchase_order
 
 import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
@@ -9,34 +9,35 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 )
+
 const (
-	BuyerNotFound = "comprador não encontrado com o id %d"
-	OrderStatusNotFound = "status da ordem não encontrado com o id %d"
-	WarehouseNotFound = "armazém não encontrado com o id %d"
-	CarrierNotFound = "transportadora não encontrada com o id %d"
+	BuyerNotFound         = "comprador não encontrado com o id %d"
+	OrderStatusNotFound   = "status da ordem não encontrado com o id %d"
+	WarehouseNotFound     = "armazém não encontrado com o id %d"
+	CarrierNotFound       = "transportadora não encontrada com o id %d"
 	ProductRecordNotFound = "registro de produto não encontrado com o id %d"
 	ResourceAlreadyExists = "uma ordem de compra com o número '%s' já existe"
 )
 
 type Service interface {
-	Create(locality domain.PurchaseOrders) (*domain.PurchaseOrders, error)
+	Create(locality domain.PurchaseOrder) (*domain.PurchaseOrder, error)
 }
 
 type service struct {
-	repository         		Repository
-	buyerRepository 		buyer.Repository
-	orderStatusrepository 	order_status.Repository
-	warehouseRepository 	warehouse.Repository
-	carrierRepository 		carrier.Repository
+	repository              Repository
+	buyerRepository         buyer.Repository
+	orderStatusrepository   order_status.Repository
+	warehouseRepository     warehouse.Repository
+	carrierRepository       carrier.Repository
 	productRecordRepository product_record.Repository
 }
 
-func NewService(repository Repository, buyerRepository buyer.Repository, orderStatusrepository 	order_status.Repository, warehouseRepository warehouse.Repository, carrierRepository carrier.Repository, productRecordRepository product_record.Repository) Service {
+func NewService(repository Repository, buyerRepository buyer.Repository, orderStatusrepository order_status.Repository, warehouseRepository warehouse.Repository, carrierRepository carrier.Repository, productRecordRepository product_record.Repository) Service {
 
 	return &service{repository, buyerRepository, orderStatusrepository, warehouseRepository, carrierRepository, productRecordRepository}
 }
 
-func (s *service) Create(po domain.PurchaseOrders) (*domain.PurchaseOrders, error) {
+func (s *service) Create(po domain.PurchaseOrder) (*domain.PurchaseOrder, error) {
 	if s.repository.Exists(po.OrderNumber) {
 		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, po.OrderNumber)
 	}

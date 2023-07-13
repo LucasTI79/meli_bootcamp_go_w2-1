@@ -8,7 +8,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/purchase_orders/mocks"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/purchase_order/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/helpers"
 	"github.com/gin-gonic/gin"
@@ -20,31 +20,31 @@ const (
 )
 
 var (
-	mockedPurchaseOrder = domain.PurchaseOrders {
-		ID: 1,
-		OrderNumber: "order#123",
-		OrderDate: time.Date(2023, 07, 10, 0, 0, 0, 0, time.UTC),
-		TrackingCode: "TRACK007",
-		BuyerID: 1,
-		CarrierID: 1,
+	mockedPurchaseOrder = domain.PurchaseOrder{
+		ID:              1,
+		OrderNumber:     "order#123",
+		OrderDate:       time.Date(2023, 07, 10, 0, 0, 0, 0, time.UTC),
+		TrackingCode:    "TRACK007",
+		BuyerID:         1,
+		CarrierID:       1,
 		ProductRecordID: 1,
-		OrderStatusID: 1,
-		WarehouseID: 1,
+		OrderStatusID:   1,
+		WarehouseID:     1,
 	}
 )
 
 func TestCreatePurchaseOrder(t *testing.T) {
 	orderDate := helpers.ToFormattedDateTime(mockedPurchaseOrder.OrderDate)
 
-	requestObject := handler.CreatePurchaseOrderRequest {
-		OrderNumber: &mockedPurchaseOrder.OrderNumber,
-		OrderDate: &orderDate,
-		TrackingCode: &mockedPurchaseOrder.TrackingCode,
-		BuyerID: &mockedPurchaseOrder.BuyerID,
-		CarrierID: &mockedPurchaseOrder.CarrierID,
+	requestObject := handler.CreatePurchaseOrderRequest{
+		OrderNumber:     &mockedPurchaseOrder.OrderNumber,
+		OrderDate:       &orderDate,
+		TrackingCode:    &mockedPurchaseOrder.TrackingCode,
+		BuyerID:         &mockedPurchaseOrder.BuyerID,
+		CarrierID:       &mockedPurchaseOrder.CarrierID,
 		ProductRecordID: &mockedPurchaseOrder.ProductRecordID,
-		OrderStatusID: &mockedPurchaseOrder.OrderStatusID,
-		WarehouseID: &mockedPurchaseOrder.WarehouseID,
+		OrderStatusID:   &mockedPurchaseOrder.OrderStatusID,
+		WarehouseID:     &mockedPurchaseOrder.WarehouseID,
 	}
 
 	t.Run("Should return conflict error when order number already exists", func(t *testing.T) {
@@ -53,7 +53,7 @@ func TestCreatePurchaseOrder(t *testing.T) {
 		server.POST(DefinePath(ResourcePurchaseOrdersUri), ValidationMiddleware(requestObject), controller.Create())
 		request, response := MakeRequest("POST", DefinePath(ResourcePurchaseOrdersUri), CreateBody(requestObject))
 
-		var serviceReturn *domain.PurchaseOrders
+		var serviceReturn *domain.PurchaseOrder
 		service.On("Create", requestObject.ToPurchaseOrder()).Return(serviceReturn, apperr.NewResourceAlreadyExists(ResourceAlreadyExists))
 
 		server.ServeHTTP(response, request)
@@ -67,7 +67,7 @@ func TestCreatePurchaseOrder(t *testing.T) {
 		server.POST(DefinePath(ResourcePurchaseOrdersUri), ValidationMiddleware(requestObject), controller.Create())
 		request, response := MakeRequest("POST", DefinePath(ResourcePurchaseOrdersUri), CreateBody(requestObject))
 
-		var serviceReturn *domain.PurchaseOrders
+		var serviceReturn *domain.PurchaseOrder
 		service.On("Create", requestObject.ToPurchaseOrder()).Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
 
 		server.ServeHTTP(response, request)
@@ -88,7 +88,6 @@ func TestCreatePurchaseOrder(t *testing.T) {
 		assert.Equal(t, http.StatusCreated, response.Code)
 	})
 }
-
 
 func InitPurchaseOrderServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.PurchaseOrder) {
 	t.Helper()

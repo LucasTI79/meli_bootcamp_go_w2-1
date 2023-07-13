@@ -1,4 +1,4 @@
-package product_batches
+package product_batch
 
 import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
@@ -15,7 +15,7 @@ const (
 )
 
 type Service interface {
-	Create(pb domain.ProductBatches) (*domain.ProductBatches, error)
+	Create(pb domain.ProductBatch) (*domain.ProductBatch, error)
 }
 type service struct {
 	repository        Repository
@@ -31,7 +31,7 @@ func NewService(repository Repository, productRepository product.Repository, sec
 	}
 }
 
-func (s *service) Create(pb domain.ProductBatches) (*domain.ProductBatches, error) {
+func (s *service) Create(pb domain.ProductBatch) (*domain.ProductBatch, error) {
 	if s.repository.Exists(pb.BatchNumber) {
 		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, pb.BatchNumber)
 	}

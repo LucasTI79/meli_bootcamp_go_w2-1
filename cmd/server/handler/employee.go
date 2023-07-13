@@ -196,7 +196,7 @@ func (e *Employee) Delete() gin.HandlerFunc {
 // @Description InboundOrder count by employee.
 // @Description If no query param is given, bring the report to all employees.
 // @Description If a employee id is specified, bring the number of inbound orders for this employee.
-// @Tags Employee
+// @Tags Employees
 // @Accept json
 // @Produce json
 // @Param id query int false "Employee ID"
@@ -204,7 +204,7 @@ func (e *Employee) Delete() gin.HandlerFunc {
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /employees [get]
+// @Router /employees/report-inbound-orders [get]
 func (e *Employee) ReportInboundOrders() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Request.URL.Query().Get("id")
@@ -223,7 +223,6 @@ func (e *Employee) ReportInboundOrders() gin.HandlerFunc {
 		}
 
 		employee, err := e.service.CountInboundOrdersByEmployee(id)
-
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {

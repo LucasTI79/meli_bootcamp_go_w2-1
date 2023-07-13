@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/purchase_orders"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/purchase_order"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/helpers"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
@@ -12,36 +12,36 @@ import (
 )
 
 type PurchaseOrder struct {
-	service purchase_orders.Service
+	service purchase_order.Service
 }
 
 type CreatePurchaseOrderRequest struct {
-	OrderNumber 	*string 	`json:"order_number" binding:"required,gt=3"`
-	OrderDate  		*string		`json:"order_date" binding:"required,datetime=2006-01-02 15:04:05"`
-	TrackingCode   	*string   	`json:"tracking_code" binding:"required"`
-	BuyerID   		*int    	`json:"buyer_id" binding:"required" `
-	CarrierID   	*int    	`json:"carrier_id" binding:"required"`
-	ProductRecordID *int    	`json:"product_record_id" binding:"required"`
-	OrderStatusID  	*int    	`json:"order_status_id" binding:"required"`
-	WarehouseID   	*int    	`json:"warehouse_id" binding:"required"`
+	OrderNumber     *string `json:"order_number" binding:"required,gt=3"`
+	OrderDate       *string `json:"order_date" binding:"required,datetime=2006-01-02 15:04:05"`
+	TrackingCode    *string `json:"tracking_code" binding:"required"`
+	BuyerID         *int    `json:"buyer_id" binding:"required" `
+	CarrierID       *int    `json:"carrier_id" binding:"required"`
+	ProductRecordID *int    `json:"product_record_id" binding:"required"`
+	OrderStatusID   *int    `json:"order_status_id" binding:"required"`
+	WarehouseID     *int    `json:"warehouse_id" binding:"required"`
 }
 
-func (r CreatePurchaseOrderRequest) ToPurchaseOrder() domain.PurchaseOrders{
+func (r CreatePurchaseOrderRequest) ToPurchaseOrder() domain.PurchaseOrder {
 
-	return domain.PurchaseOrders{
-		ID: 0,
-		OrderNumber: *r.OrderNumber,
-		OrderDate: helpers.ToDateTime(*r.OrderDate),
-		TrackingCode: *r.TrackingCode,
-		BuyerID: *r.BuyerID,
-		CarrierID: *r.CarrierID,
+	return domain.PurchaseOrder{
+		ID:              0,
+		OrderNumber:     *r.OrderNumber,
+		OrderDate:       helpers.ToDateTime(*r.OrderDate),
+		TrackingCode:    *r.TrackingCode,
+		BuyerID:         *r.BuyerID,
+		CarrierID:       *r.CarrierID,
 		ProductRecordID: *r.ProductRecordID,
-		OrderStatusID: *r.OrderStatusID,
-		WarehouseID: *r.WarehouseID,
+		OrderStatusID:   *r.OrderStatusID,
+		WarehouseID:     *r.WarehouseID,
 	}
 }
 
-func NewPurchaseOrder(service purchase_orders.Service) *PurchaseOrder{
+func NewPurchaseOrder(service purchase_order.Service) *PurchaseOrder {
 	return &PurchaseOrder{service}
 }
 
