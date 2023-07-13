@@ -2,6 +2,8 @@ package section
 
 import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_type"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 )
 
@@ -18,7 +20,9 @@ type Service interface {
 	Delete(int) error
 }
 type service struct {
-	repository Repository
+	repository            Repository
+	warehouseRepository   warehouse.Repository
+	productTypeRepository product_type.Repository
 }
 
 func NewService(r Repository) Service {
@@ -43,6 +47,13 @@ func (s *service) Create(sc domain.Section) (*domain.Section, error) {
 	if s.repository.Exists(sc.SectionNumber) {
 		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, sc.SectionNumber)
 	}
+
+	productType := s.productTypeRepository.Get(sc.ProductTypeID)
+	if productType == nil {
+		return nil, apperr.NewDependentResourceNotFound(ResourceNotFound, sc.ProductTypeID)
+	}
+
+	s.warehouseRepository.Get(sc.WarehouseID)
 
 	id := s.repository.Save(sc)
 
