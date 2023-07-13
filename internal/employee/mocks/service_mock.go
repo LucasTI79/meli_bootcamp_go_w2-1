@@ -40,6 +40,6 @@ func (s *Service) CountInboundOrdersByAllEmployees() []domain.InboundOrdersByEmp
 }
 
 func (s *Service) CountInboundOrdersByEmployee(id int) (*domain.InboundOrdersByEmployee, error) {
-	args := s.Called()
+	args := s.Called(id)
 	return args.Get(0).(*domain.InboundOrdersByEmployee), args.Error(1)
 }
