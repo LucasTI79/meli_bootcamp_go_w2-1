@@ -29,11 +29,6 @@ var (
 		WarehouseID:        1,
 		ProductTypeID:      1,
 	}
-	pb = domain.ProductsBySectionReport{
-		SectionNumber: 1,
-		SectionID:     1,
-		ProductsCount: 1,
-	}
 )
 
 func TestCreateSection(t *testing.T) {
@@ -49,7 +44,7 @@ func TestCreateSection(t *testing.T) {
 	}
 
 	t.Run("Should return conflict error", func(t *testing.T) {
-		server, service, controller := initProductBatchesServer(t)
+		server, service, controller := initSectionServer(t)
 
 		server.POST(DefinePath(resourceSectionUri), ValidationMiddleware(requestObject), controller.Create())
 		request, response := MakeRequest("POST", DefinePath(resourceSectionUri), CreateBody(requestObject))
@@ -63,7 +58,7 @@ func TestCreateSection(t *testing.T) {
 	})
 
 	t.Run("Should return a created section", func(t *testing.T) {
-		server, service, controller := initProductBatchesServer(t)
+		server, service, controller := initSectionServer(t)
 
 		server.POST(DefinePath(resourceSectionUri), ValidationMiddleware(requestObject), controller.Create())
 		request, response := MakeRequest("POST", DefinePath(resourceSectionUri), CreateBody(requestObject))
@@ -78,7 +73,7 @@ func TestCreateSection(t *testing.T) {
 
 func TestGetSection(t *testing.T) {
 	t.Run("Should return all sections", func(t *testing.T) {
-		server, service, controller := initProductBatchesServer(t)
+		server, service, controller := initSectionServer(t)
 
 		server.GET(DefinePath(resourceSectionUri), controller.GetAll())
 		request, response := MakeRequest("GET", DefinePath(resourceSectionUri), "")
@@ -91,7 +86,7 @@ func TestGetSection(t *testing.T) {
 	})
 
 	t.Run("Should return not found error", func(t *testing.T) {
-		server, service, controller := initProductBatchesServer(t)
+		server, service, controller := initSectionServer(t)
 
 		id := 1
 
@@ -107,7 +102,7 @@ func TestGetSection(t *testing.T) {
 	})
 
 	t.Run("Should return the found section", func(t *testing.T) {
-		server, service, controller := initProductBatchesServer(t)
+		server, service, controller := initSectionServer(t)
 
 		id := 1
 
@@ -135,7 +130,7 @@ func TestUpdateSection(t *testing.T) {
 	}
 
 	t.Run("Should return not found error", func(t *testing.T) {
-		server, service, controller := initProductBatchesServer(t)
+		server, service, controller := initSectionServer(t)
 
 		id := 2
 
@@ -153,7 +148,7 @@ func TestUpdateSection(t *testing.T) {
 	})
 
 	t.Run("Should return conflict error", func(t *testing.T) {
-		server, service, controller := initProductBatchesServer(t)
+		server, service, controller := initSectionServer(t)
 
 		id := 1
 
@@ -171,7 +166,7 @@ func TestUpdateSection(t *testing.T) {
 	})
 
 	t.Run("Should return updated section", func(t *testing.T) {
-		server, service, controller := initProductBatchesServer(t)
+		server, service, controller := initSectionServer(t)
 
 		id := 1
 
@@ -190,7 +185,7 @@ func TestUpdateSection(t *testing.T) {
 
 func TestDeleteSection(t *testing.T) {
 	t.Run("Should return not found error", func(t *testing.T) {
-		server, service, controller := initProductBatchesServer(t)
+		server, service, controller := initSectionServer(t)
 
 		id := 2
 
@@ -205,7 +200,7 @@ func TestDeleteSection(t *testing.T) {
 	})
 
 	t.Run("Should return success", func(t *testing.T) {
-		server, service, controller := initProductBatchesServer(t)
+		server, service, controller := initSectionServer(t)
 
 		id := 1
 
@@ -221,50 +216,64 @@ func TestDeleteSection(t *testing.T) {
 }
 
 func TestReportProducts(t *testing.T) {
-	t.Run("Should return all products by section", func(t *testing.T) {
-		server, service, controller := initProductBatchesServer(t)
+	t.Run("Should return products count by all sections", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
 
 		server.GET(DefinePath(resourceSectionUri), controller.ReportProducts())
-		request, response := MakeRequest("GET", DefinePath(resourceSectionUri)+"/report-products", "")
+		request, response := MakeRequest("GET", DefinePath(resourceSectionUri), "")
 
-		service.On("ReportProducts").Return([]domain.ProductsBySectionReport{})
+		service.On("CountProductsByAllSections").Return([]domain.ProductsBySectionReport{}, nil)
 
 		server.ServeHTTP(response, request)
 
 		assert.Equal(t, http.StatusOK, response.Code)
 	})
+	t.Run("Should return invalid id error", func(t *testing.T) {
+		server, _, controller := initSectionServer(t)
+
+		server.GET(DefinePath(resourceSectionUri), controller.ReportProducts())
+		request, response := MakeRequest("GET", DefinePath(resourceSectionUri)+"?id=abc", "")
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	})
 	t.Run("Should return not found error", func(t *testing.T) {
-		server, service, controller := initProductBatchesServer(t)
+		server, service, controller := initSectionServer(t)
 
-		id := 2
+		server.GET(DefinePath(resourceSectionUri), controller.ReportProducts())
+		request, response := MakeRequest("GET", DefinePath(resourceSectionUri)+"?id=1", "")
 
-		server.GET(DefinePath(resourceSectionUri)+"/report-products?", controller.ReportProducts())
-		request, response := MakeRequest("GET", DefinePathWithId(resourceSectionUri, id), "")
-
+		productId := 1
 		var serviceReturn *domain.ProductsBySectionReport
-		service.On("ReportProducts").Return(serviceReturn, apperr.NewResourceNotFound(ResourceNotFound))
+		service.On("CountProductsBySection", productId).Return(serviceReturn, apperr.NewResourceNotFound(ResourceNotFound))
 
 		server.ServeHTTP(response, request)
 
 		assert.Equal(t, http.StatusNotFound, response.Code)
 	})
-	t.Run("Should return the found section", func(t *testing.T) {
-		server, service, controller := initProductBatchesServer(t)
+	t.Run("Should return products count by section", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
 
-		id := 1
+		server.GET(DefinePath(resourceSectionUri), controller.ReportProducts())
+		request, response := MakeRequest("GET", DefinePath(resourceSectionUri)+"?id=1", "")
 
-		server.GET(DefinePath(resourceSectionUri)+"/report-products", controller.ReportProducts())
-		request, response := MakeRequest("GET", DefinePathWithId(resourceSectionUri, id), "")
-
-		service.On("ReportProducts", id).Return(&pb, nil)
+		productId := 1
+		serviceReturn := domain.ProductsBySectionReport{
+			SectionID:     productId,
+			SectionNumber: 1,
+			ProductsCount: 1,
+		}
+		service.On("CountProductsBySection", productId).Return(&serviceReturn, nil)
 
 		server.ServeHTTP(response, request)
 
 		assert.Equal(t, http.StatusOK, response.Code)
 	})
+
 }
 
-func initProductBatchesServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Section) {
+func initSectionServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Section) {
 	t.Helper()
 	server := CreateServer()
 	server.Use(middleware.IdValidation())
