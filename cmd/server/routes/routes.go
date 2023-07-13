@@ -10,9 +10,11 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/carrier"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/inbound_orders"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/locality"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/order_status"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batch"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_record"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/province"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/purchase_orders"
@@ -55,7 +57,6 @@ func (r *router) MapRoutes() {
 	r.buildEmployeeRoutes()
 	r.buildBuyerRoutes()
 	r.buildLocalityRoutes()
-	r.buildPurchaseOrdersRoutes()
 }
 
 func (r *router) setGroup() {
@@ -134,6 +135,7 @@ func (r *router) buildEmployeeRoutes() {
 
 	employeeRoutes.GET("/", controller.GetAll())
 	employeeRoutes.GET("/:id", controller.Get())
+	employeeRoutes.GET("/report-inbound-orders", controller.ReportInboundOrders())
 	employeeRoutes.POST("/", middleware.RequestValidation[handler.CreateEmployeeRequest](CreateCanBeBlank), controller.Create())
 	employeeRoutes.PATCH("/:id", middleware.RequestValidation[handler.UpdateEmployeeRequest](UpdateCanBeBlank), controller.Update())
 	employeeRoutes.DELETE("/:id", controller.Delete())
@@ -176,4 +178,16 @@ func (r *router) buildPurchaseOrdersRoutes() {
 	purchaseOrdersRoutes := r.rg.Group("/purchase-orders")
 
 	purchaseOrdersRoutes.POST("/", middleware.RequestValidation[handler.CreatePurchaseOrderRequest](CreateCanBeBlank), controller.Create())
+}
+
+func (r *router) buildInboundOrdersRoutes() {
+	repo := inbound_orders.NewRepository(r.db)
+	repoEmployee := employee.NewRepository(r.db)
+	repoProductBatch := product_batch.NewRepository(r.db)
+	repoWarehouse := warehouse.NewRepository(r.db)
+	service := inbound_orders.NewService(repo, repoEmployee, repoProductBatch, repoWarehouse)
+	controller := handler.NewInboundOrder(service)
+	inboundOrdersRoutes := r.rg.Group("/inbound-orders")
+
+	inboundOrdersRoutes.POST("/", middleware.RequestValidation[handler.CreateInboundOrderRequest](CreateCanBeBlank), controller.Create())
 }
