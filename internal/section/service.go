@@ -10,6 +10,8 @@ import (
 const (
 	ResourceNotFound      = "produto não encontrado com o id %d"
 	ResourceAlreadyExists = "um produto com o código '%d' já existe"
+	WarehouseNotFound     = "armazem não encontrado com o id %d"
+	ProductTypeNotFound   = "tipo do produto não encontrado com o id %d"
 )
 
 type Service interface {
@@ -48,12 +50,16 @@ func (s *service) Create(sc domain.Section) (*domain.Section, error) {
 		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, sc.SectionNumber)
 	}
 
-	productType := s.productTypeRepository.Get(sc.ProductTypeID)
-	if productType == nil {
-		return nil, apperr.NewDependentResourceNotFound(ResourceNotFound, sc.ProductTypeID)
+	productTypeById := s.productTypeRepository.Get(sc.ProductTypeID)
+	if productTypeById == nil {
+		return nil, apperr.NewDependentResourceNotFound(ProductTypeNotFound, sc.ProductTypeID)
 	}
 
-	s.warehouseRepository.Get(sc.WarehouseID)
+	warehouseById := s.warehouseRepository.Get(sc.WarehouseID)
+
+	if warehouseById == nil {
+		return nil, apperr.NewDependentResourceNotFound(WarehouseNotFound, sc.ProductTypeID)
+	}
 
 	id := s.repository.Save(sc)
 
@@ -74,6 +80,17 @@ func (s *service) Update(id int, section domain.UpdateSection) (*domain.Section,
 		if sectionNumberExists && sectionNumber != sectionFound.SectionNumber {
 			return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, sectionNumber)
 		}
+	}
+
+	productTypeById := s.productTypeRepository.Get(sectionFound.ProductTypeID)
+	if productTypeById == nil {
+		return nil, apperr.NewDependentResourceNotFound(ProductTypeNotFound, sectionFound.ProductTypeID)
+	}
+
+	warehouseById := s.warehouseRepository.Get(sectionFound.WarehouseID)
+
+	if warehouseById == nil {
+		return nil, apperr.NewDependentResourceNotFound(WarehouseNotFound, sectionFound.ProductTypeID)
 	}
 
 	sectionFound.Overlap(section)
