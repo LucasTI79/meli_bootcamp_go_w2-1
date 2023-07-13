@@ -14,6 +14,17 @@ const (
 	InsertQuery = "INSERT INTO products(description,expiration_rate,freezing_rate,height,lenght,netweight,product_code,recommended_freezing_temperature,width,id_product_type,id_seller) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
 	UpdateQuery = "UPDATE products SET description=?, expiration_rate=?, freezing_rate=?, height=?, lenght=?, netweight=?, product_code=?, recommended_freezing_temperature=?, width=?, id_product_type=?, id_seller=?  WHERE id=?"
 	DeleteQuery = "DELETE FROM products WHERE id=?"
+
+	CountRecordsByAllProductsQuery = `SELECT p.id "product_id", p.description, count(pr.id) "records_count"
+		FROM products p
+		LEFT JOIN product_records pr ON p.id = pr.product_id
+		GROUP BY p.id`
+
+	CountRecordsByProductQuery = `SELECT p.id "product_id", p.description, count(pr.id) "records_count"
+		FROM products p
+		LEFT JOIN product_records pr ON p.id = pr.product_id
+		WHERE p.id=?
+		GROUP BY p.id`
 )
 
 type Repository interface {
@@ -23,6 +34,8 @@ type Repository interface {
 	Save(p domain.Product) int
 	Update(p domain.Product)
 	Delete(id int)
+	CountRecordsByAllProducts() []domain.RecordsByProductReport
+	CountRecordsByProduct(id int) *domain.RecordsByProductReport
 }
 
 type repository struct {
@@ -114,4 +127,35 @@ func (r *repository) Delete(id int) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (r *repository) CountRecordsByAllProducts() []domain.RecordsByProductReport {
+	rows, err := r.db.Query(CountRecordsByAllProductsQuery)
+	if err != nil {
+		panic(err)
+	}
+
+	recordsByProducts := make([]domain.RecordsByProductReport, 0)
+
+	for rows.Next() {
+		record := domain.RecordsByProductReport{}
+		_ = rows.Scan(&record.ProductID, &record.Description, &record.RecordsCount)
+		recordsByProducts = append(recordsByProducts, record)
+	}
+
+	return recordsByProducts
+}
+
+func (r *repository) CountRecordsByProduct(id int) *domain.RecordsByProductReport {
+	rows := r.db.QueryRow(CountRecordsByProductQuery, id)
+	record := domain.RecordsByProductReport{}
+	err := rows.Scan(&record.ProductID, &record.Description, &record.RecordsCount)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		panic(err)
+	}
+
+	return &record
 }

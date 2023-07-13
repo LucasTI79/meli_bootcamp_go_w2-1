@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	record "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_record"
@@ -67,49 +66,5 @@ func (pr *ProductRecord) Create() gin.HandlerFunc {
 		}
 
 		web.Success(c, http.StatusCreated, created)
-	}
-}
-
-// Create godoc
-// @Summary Count records by products
-// @Description Record count by product.
-// @Description If no query param is given, it brings the report to all product records.
-// @Description If a product id is specified, it brings the number of records for this product.
-// @Tags Product Records
-// @Accept json
-// @Produce json
-// @Param id query int false "Product id"
-// @Success 200 {object} []domain.RecordsByProductReport "Report of records by product"
-// @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "Resource not found error"
-// @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /product-records/report-records [get]
-func (pr *ProductRecord) ReportProductRecords() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		idParam := c.Request.URL.Query().Get("id")
-
-		if idParam == "" {
-			result := pr.service.CountRecordsByAllProducts()
-			web.Success(c, http.StatusOK, result)
-			return
-		}
-
-		id, err := strconv.Atoi(idParam)
-
-		if err != nil {
-			web.Error(c, http.StatusBadRequest, InvalidId, idParam)
-			return
-		}
-
-		productRecords, err := pr.service.CountRecordsByProduct(id)
-
-		if err != nil {
-			if apperr.Is[*apperr.ResourceNotFound](err) {
-				web.Error(c, http.StatusNotFound, err.Error())
-				return
-			}
-		}
-
-		web.Success(c, http.StatusOK, productRecords)
 	}
 }

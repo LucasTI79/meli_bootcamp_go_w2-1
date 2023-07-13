@@ -14,8 +14,6 @@ const (
 
 type Service interface {
 	Create(record domain.ProductRecord) (*domain.ProductRecord, error)
-	CountRecordsByAllProducts() []domain.RecordsByProductReport
-	CountRecordsByProduct(id int) (*domain.RecordsByProductReport, error)
 }
 
 type service struct {
@@ -40,18 +38,4 @@ func (s *service) Create(record domain.ProductRecord) (*domain.ProductRecord, er
 
 	id := s.repository.Save(record)
 	return s.repository.Get(id), nil
-}
-
-func (s *service) CountRecordsByAllProducts() []domain.RecordsByProductReport {
-	return s.repository.CountRecordsByAllProducts()
-}
-
-func (s *service) CountRecordsByProduct(id int) (*domain.RecordsByProductReport, error) {
-	productFound := s.productRepository.Get(id)
-
-	if productFound == nil {
-		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
-	}
-
-	return s.repository.CountRecordsByProduct(id), nil
 }

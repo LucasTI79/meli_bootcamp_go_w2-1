@@ -16,6 +16,8 @@ type Service interface {
 	Create(domain.Product) (*domain.Product, error)
 	Update(int, domain.UpdateProduct) (*domain.Product, error)
 	Delete(int) error
+	CountRecordsByAllProducts() []domain.RecordsByProductReport
+	CountRecordsByProduct(id int) (*domain.RecordsByProductReport, error)
 }
 
 type service struct {
@@ -79,4 +81,18 @@ func (s *service) Delete(id int) error {
 
 	s.repository.Delete(id)
 	return nil
+}
+
+func (s *service) CountRecordsByAllProducts() []domain.RecordsByProductReport {
+	return s.repository.CountRecordsByAllProducts()
+}
+
+func (s *service) CountRecordsByProduct(id int) (*domain.RecordsByProductReport, error) {
+	productFound := s.repository.Get(id)
+
+	if productFound == nil {
+		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
+	}
+
+	return s.repository.CountRecordsByProduct(id), nil
 }

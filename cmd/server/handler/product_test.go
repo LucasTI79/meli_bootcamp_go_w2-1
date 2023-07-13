@@ -224,6 +224,66 @@ func TestDeleteProduct(t *testing.T) {
 	})
 }
 
+func TestReportProductRecords(t *testing.T) {
+	t.Run("Should return records count report of all products", func(t *testing.T) {
+		server, service, controller := InitProductServer(t)
+
+		server.GET(DefinePath(ResourceProductRecordsUri), controller.ReportRecords())
+		request, response := MakeRequest("GET", DefinePath(ResourceProductRecordsUri), "")
+
+		service.On("CountRecordsByAllProducts").Return([]domain.RecordsByProductReport{}, nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
+
+	t.Run("Should return invalid id error", func(t *testing.T) {
+		server, _, controller := InitProductServer(t)
+
+		server.GET(DefinePath(ResourceProductRecordsUri), controller.ReportRecords())
+		request, response := MakeRequest("GET", DefinePath(ResourceProductRecordsUri)+"?id=abc", "")
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	})
+
+	t.Run("Should return not found error", func(t *testing.T) {
+		server, service, controller := InitProductServer(t)
+
+		server.GET(DefinePath(ResourceProductRecordsUri), controller.ReportRecords())
+		request, response := MakeRequest("GET", DefinePath(ResourceProductRecordsUri)+"?id=1", "")
+
+		recordId := 1
+		var serviceReturn *domain.RecordsByProductReport
+		service.On("CountRecordsByProduct", recordId).Return(serviceReturn, apperr.NewResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	})
+
+	t.Run("Should return records count report by product", func(t *testing.T) {
+		server, service, controller := InitProductServer(t)
+
+		server.GET(DefinePath(ResourceProductRecordsUri), controller.ReportRecords())
+		request, response := MakeRequest("GET", DefinePath(ResourceProductRecordsUri)+"?id=1", "")
+
+		recordId := 1
+		serviceReturn := domain.RecordsByProductReport{
+			ProductID:    1,
+			Description:  "Description",
+			RecordsCount: 1,
+		}
+		service.On("CountRecordsByProduct", recordId).Return(&serviceReturn, nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
+}
+
 func InitProductServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Product) {
 	t.Helper()
 	server := CreateServer()

@@ -95,6 +95,7 @@ func (r *router) buildProductRoutes() {
 	productRoutes.POST("/", middleware.RequestValidation[handler.CreateProductRequest](CreateCanBeBlank), controller.Create())
 	productRoutes.PATCH("/:id", middleware.RequestValidation[handler.UpdateProductRequest](UpdateCanBeBlank), controller.Update())
 	productRoutes.DELETE("/:id", controller.Delete())
+	productRoutes.GET("/report-records", controller.ReportRecords())
 }
 
 func (r *router) buildSectionRoutes() {
@@ -168,5 +169,4 @@ func (r *router) buildProductRecordRoutes() {
 	productRecordRoutes := r.rg.Group("/product-records")
 
 	productRecordRoutes.POST("/", middleware.RequestValidation[handler.CreateProductRecordRequest](CreateCanBeBlank), controller.Create())
-	productRecordRoutes.GET("/report-records", controller.ReportProductRecords())
 }

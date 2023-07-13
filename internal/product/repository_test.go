@@ -378,3 +378,81 @@ func SetupMock(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
 	assert.NoError(t, err)
 	return db, mock
 }
+
+func TestRepositoryCountRecordsByAllProducts(t *testing.T) {
+	t.Run("Should return records count report by all products", func(t *testing.T) {
+		db, mock := SetupMock(t)
+		defer db.Close()
+
+		columns := []string{"product_id", "description", "records_count"}
+		rows := sqlmock.NewRows(columns)
+		rows.AddRow(1, "", 1)
+
+		mock.ExpectQuery(regexp.QuoteMeta(product.CountRecordsByAllProductsQuery)).WillReturnRows(rows)
+
+		repository := product.NewRepository(db)
+
+		result := repository.CountRecordsByAllProducts()
+
+		assert.Equal(t, len(result), 1)
+	})
+
+	t.Run("Should throw panic when query execution fails", func(t *testing.T) {
+		db, mock := SetupMock(t)
+		defer db.Close()
+
+		mock.ExpectQuery(regexp.QuoteMeta(product.CountRecordsByAllProductsQuery)).WillReturnError(sql.ErrConnDone)
+
+		repository := product.NewRepository(db)
+
+		assert.Panics(t, func() { repository.CountRecordsByAllProducts() })
+	})
+}
+
+func TestRepositoryCountRecordsByProduct(t *testing.T) {
+	t.Run("Should return records count report by specified product id", func(t *testing.T) {
+		db, mock := SetupMock(t)
+		defer db.Close()
+
+		columns := []string{"product_id", "description", "records_count"}
+		rows := sqlmock.NewRows(columns)
+		productId := 1
+		rows.AddRow(1, "", 1)
+
+		mock.ExpectQuery(regexp.QuoteMeta(product.CountRecordsByProductQuery)).
+			WithArgs(productId).
+			WillReturnRows(rows)
+
+		repository := product.NewRepository(db)
+
+		result := repository.CountRecordsByProduct(productId)
+
+		assert.NotNil(t, result)
+	})
+
+	t.Run("Should throw panic when query execution fails", func(t *testing.T) {
+		db, mock := SetupMock(t)
+		defer db.Close()
+
+		recordId := 1
+		mock.ExpectQuery(regexp.QuoteMeta(product.CountRecordsByProductQuery)).WillReturnError(sql.ErrNoRows)
+
+		repository := product.NewRepository(db)
+
+		result := repository.CountRecordsByProduct(recordId)
+
+		assert.Nil(t, result)
+	})
+
+	t.Run("Should throw panic when query execution fails", func(t *testing.T) {
+		db, mock := SetupMock(t)
+		defer db.Close()
+
+		recordId := 1
+		mock.ExpectQuery(regexp.QuoteMeta(product.CountRecordsByProductQuery)).WillReturnError(sql.ErrConnDone)
+
+		repository := product.NewRepository(db)
+
+		assert.Panics(t, func() { repository.CountRecordsByProduct(recordId) })
+	})
+}

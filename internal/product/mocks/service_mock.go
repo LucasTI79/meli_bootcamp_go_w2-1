@@ -33,3 +33,13 @@ func (s *Service) Delete(id int) error {
 	args := s.Called(id)
 	return args.Error(0)
 }
+
+func (s *Service) CountRecordsByAllProducts() []domain.RecordsByProductReport {
+	args := s.Called()
+	return args.Get(0).([]domain.RecordsByProductReport)
+}
+
+func (s *Service) CountRecordsByProduct(id int) (*domain.RecordsByProductReport, error) {
+	args := s.Called(id)
+	return args.Get(0).(*domain.RecordsByProductReport), args.Error(1)
+}
