@@ -26,19 +26,19 @@ type CreateProductBatchesRequest struct {
 	SectionID          *int     `json:"section_id" binding:"required"`
 }
 
-func (s *CreateProductBatchesRequest) ToProductBatches() domain.ProductBatches {
+func (pb *CreateProductBatchesRequest) ToProductBatches() domain.ProductBatches {
 
 	return domain.ProductBatches{
-		BatchNumber:        *s.BatchNumber,
-		CurrentQuantity:    *s.CurrentQuantity,
-		CurrentTemperature: *s.CurrentTemperature,
-		DueDate:            *s.DueDate,
-		InitialQuantity:    *s.InitialQuantity,
-		ManufacturingDate:  *s.ManufacturingDate,
-		ManufacturingHour:  *s.ManufacturingHour,
-		MinimumTemperature: *s.MinimumTemperature,
-		ProductID:          *s.ProductID,
-		SectionID:          *s.SectionID,
+		BatchNumber:        *pb.BatchNumber,
+		CurrentQuantity:    *pb.CurrentQuantity,
+		CurrentTemperature: *pb.CurrentTemperature,
+		DueDate:            *pb.DueDate,
+		InitialQuantity:    *pb.InitialQuantity,
+		ManufacturingDate:  *pb.ManufacturingDate,
+		ManufacturingHour:  *pb.ManufacturingHour,
+		MinimumTemperature: *pb.MinimumTemperature,
+		ProductID:          *pb.ProductID,
+		SectionID:          *pb.SectionID,
 	}
 }
 

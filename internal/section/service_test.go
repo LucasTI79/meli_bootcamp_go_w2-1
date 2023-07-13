@@ -209,7 +209,7 @@ func TestCountProductsByAllSections(t *testing.T) {
 }
 
 func TestCountProductsBySection(t *testing.T) {
-	t.Run("Should return  product by section by a specified id", func(t *testing.T) {
+	t.Run("Should return amount of products by section by a specified id", func(t *testing.T) {
 		service, repository := CreateService(t)
 
 		mockedProductsBySec := mockedProductsBySection
