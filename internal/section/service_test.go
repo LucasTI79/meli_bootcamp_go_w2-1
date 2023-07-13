@@ -1,6 +1,8 @@
 package section_test
 
 import (
+	mocks3 "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_type/mocks"
+	mocks2 "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse/mocks"
 	"testing"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
@@ -190,6 +192,8 @@ func TestServiceDelete(t *testing.T) {
 func CreateService(t *testing.T) (section.Service, *mocks.Repository) {
 	t.Helper()
 	repository := new(mocks.Repository)
-	service := section.NewService(repository)
+	warehouseRepo := new(mocks2.Repository)
+	productTypeRepo := new(mocks3.Repository)
+	service := section.NewService(repository, warehouseRepo, productTypeRepo)
 	return service, repository
 }
