@@ -21,17 +21,15 @@ type Locality struct {
 }
 
 type CreateLocalityRequest struct {
-	LocalityName string `json:"locality_name" binding:"required"`
-	ProvinceID   int    `json:"province_id" binding:"required"`
+	LocalityName *string `json:"locality_name" binding:"required"`
+	ProvinceID   *int    `json:"province_id" binding:"required"`
 }
 
 func (s CreateLocalityRequest) ToLocality() domain.Locality {
-	s.LocalityName = helpers.ToFormattedAddress(s.LocalityName)
-
 	return domain.Locality{
 		ID:           0,
-		LocalityName: s.LocalityName,
-		ProvinceID:   s.ProvinceID,
+		LocalityName: helpers.ToFormattedAddress(*s.LocalityName),
+		ProvinceID:   *s.ProvinceID,
 	}
 }
 
@@ -40,12 +38,12 @@ func NewLocality(service locality.Service) *Locality {
 }
 
 // Create godoc
-// @Summary Create a new locality
-// @Description Create a new locality based on the provided JSON payload
+// @Summary Create a locality
+// @Description Create a new locality based on the provided JSON payload.
 // @Tags Localities
 // @Accept json
 // @Produce json
-// @Param request body CreateLocalityRequest true "Locality data"
+// @Param request body CreateLocalityRequest true "Locality to be created"
 // @Success 201 {object} domain.Locality "Created locality"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 422 {object} web.ErrorResponse "Validation error"
@@ -74,17 +72,18 @@ func (l *Locality) Create() gin.HandlerFunc {
 
 // Create godoc
 // @Summary Count sellers by locality
-// @Description Seller count by location.
-// @Description If no query param is given, bring the report to all localities.
-// @Description If a location id is specified, bring the number of sellers for this locality.
+// @Description Seller count by locality.
+// @Description If no query param is given, it brings the report to all localities.
+// @Description If a location id is specified, it brings the number of sellers for this locality.
 // @Tags Localities
 // @Accept json
 // @Produce json
-// @Success 200 {object} []domain.SellersByLocalityReport "List of localities"
+// @Param id query int false "Locality id"
+// @Success 200 {object} []domain.SellersByLocalityReport "Report of sellers by locality"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /localities [get]
+// @Router /localities/report-sellers [get]
 func (l *Locality) ReportSellers() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Request.URL.Query().Get("id")
