@@ -27,8 +27,10 @@ type service struct {
 	productTypeRepository product_type.Repository
 }
 
-func NewService(r Repository) Service {
-	return &service{repository: r}
+func NewService(r Repository, warehouseRepository warehouse.Repository, productTypeRepository product_type.Repository) Service {
+	return &service{repository: r,
+		warehouseRepository:   warehouseRepository,
+		productTypeRepository: productTypeRepository}
 }
 
 func (s *service) GetAll() []domain.Section {

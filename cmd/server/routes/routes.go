@@ -2,6 +2,7 @@ package routes
 
 import (
 	"database/sql"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_type"
 	"github.com/swaggo/swag/example/basic/docs"
 	"os"
 
@@ -97,7 +98,9 @@ func (r *router) buildProductRoutes() {
 
 func (r *router) buildSectionRoutes() {
 	repository := section.NewRepository(r.db)
-	service := section.NewService(repository)
+	warehouseRepository := warehouse.NewRepository(r.db)
+	productTypeRepository := product_type.NewRepository(r.db)
+	service := section.NewService(repository, warehouseRepository, productTypeRepository)
 	controller := handler.NewSection(service)
 	sectionRoutes := r.rg.Group("/sections")
 

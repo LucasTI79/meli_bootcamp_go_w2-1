@@ -10,7 +10,7 @@ type Repository interface {
 	Get(id int) *domain.ProductType
 }
 
-const GetQuery = "SELECT * FROM product_type WHERE id=?"
+const GetQuery = "SELECT * FROM product_types WHERE id=?"
 
 type repository struct {
 	db *sql.DB
