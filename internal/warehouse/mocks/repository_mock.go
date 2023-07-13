@@ -1,10 +1,6 @@
 package mocks
 
 import (
-<<<<<<< HEAD
-
-=======
->>>>>>> bf6410e (adjust test)
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/stretchr/testify/mock"
 )
