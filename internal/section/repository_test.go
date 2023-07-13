@@ -214,7 +214,7 @@ func TestRepositorySave(t *testing.T) {
 		mockedSection3 := mockedSectionTemplate
 		mock.ExpectPrepare(regexp.QuoteMeta(section.InsertQuery))
 		mock.ExpectExec(regexp.QuoteMeta(section.InsertQuery)).
-			WithArgs(mockedSection3.ID, mockedSection3.SectionNumber, mockedSection3.CurrentTemperature, mockedSection3.MinimumTemperature, mockedSection3.CurrentCapacity, mockedSection3.MinimumCapacity, mockedSection3.MaximumCapacity, mockedSection3.WarehouseID, mockedSection3.ProductTypeID).
+			WithArgs(mockedSection3.SectionNumber, mockedSection3.CurrentTemperature, mockedSection3.MinimumTemperature, mockedSection3.CurrentCapacity, mockedSection3.MinimumCapacity, mockedSection3.MaximumCapacity, mockedSection3.WarehouseID, mockedSection3.ProductTypeID).
 			WillReturnResult(sqlmock.NewErrorResult(sql.ErrConnDone))
 
 		repository := section.NewRepository(db)
