@@ -15,6 +15,7 @@ import (
 
 const (
 	ResourceEmployeesUri = "/employees"
+	ResourceReportInboundOrdersUri = "/employees/report-inbound-orders"
 )
 
 var (
@@ -24,6 +25,15 @@ var (
 		FirstName:    "PrimeiroNome",
 		LastName:     "Sobrenome",
 		WarehouseID:  2,
+	}
+
+	mockedEmployeeInboundOrder = domain.InboundOrdersByEmployee{
+		ID:           1,
+		CardNumberID: "123456",
+		FirstName:    "PrimeiroNome",
+		LastName:     "Sobrenome",
+		WarehouseID:  2,
+		InboundOrdersCount: 1,
 	}
 )
 
@@ -194,6 +204,64 @@ func TestDeleteEmployee(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		assert.Equal(t, http.StatusNoContent, response.Code)
+	})
+}
+
+func TestReportInboundOrders(t *testing.T) {
+	t.Run("Should return sucess with all inbound orders by employee if no id was found", func(t *testing.T) {
+		server, service, controller := InitEmployeeServer(t)
+
+		server.GET(DefinePath(ResourceReportInboundOrdersUri), controller.ReportInboundOrders())
+		request, response := MakeRequest("GET", DefinePath(ResourceReportInboundOrdersUri), "")
+		
+		service.On("CountInboundOrdersByAllEmployees").Return([]domain.InboundOrdersByEmployee{})
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
+	t.Run("Should return status not found if no employee was found with given id", func(t *testing.T) {
+		server, service, controller := InitEmployeeServer(t)
+
+		queryId := "?id=10"
+		id := 10
+		serviceReturn := &domain.InboundOrdersByEmployee{}
+
+		server.GET(DefinePath(ResourceReportInboundOrdersUri), controller.ReportInboundOrders())
+		request, response := MakeRequest("GET", DefinePath(ResourceReportInboundOrdersUri)+queryId, "")
+
+		service.On("CountInboundOrdersByEmployee", id).Return(serviceReturn, apperr.NewResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	})
+	t.Run("should return error if id format is invalid", func(t *testing.T) {
+		server, _, controller := InitEmployeeServer(t)
+
+		queryId := "?id=asdasd"
+
+		server.GET(DefinePath(ResourceReportInboundOrdersUri), controller.ReportInboundOrders())
+		request, response := MakeRequest("GET", DefinePath(ResourceReportInboundOrdersUri)+queryId, "")
+		server.ServeHTTP(response, request)
+		
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	})
+	t.Run("should return employee with inbound orders count if given id is valid", func(t *testing.T) {
+		server, service, controller := InitEmployeeServer(t)
+
+		queryId := "?id=1"
+		id := 1
+		serviceReturn := &domain.InboundOrdersByEmployee{}
+
+		server.GET(DefinePath(ResourceReportInboundOrdersUri), controller.ReportInboundOrders())
+		request, response := MakeRequest("GET", DefinePath(ResourceReportInboundOrdersUri)+queryId, "")
+		service.On("CountInboundOrdersByEmployee", id).Return(serviceReturn, nil)
+		
+		server.ServeHTTP(response, request)
+
+
+		assert.Equal(t, http.StatusOK, response.Code)
 	})
 }
 
