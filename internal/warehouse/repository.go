@@ -54,7 +54,7 @@ func (r *repository) GetAll() []domain.Warehouse {
 func (r *repository) Get(id int) *domain.Warehouse {
 	row := r.db.QueryRow(GetQuery, id)
 	w := domain.Warehouse{}
-	err := row.Scan(&w.ID, &w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumCapacity, &w.MinimumTemperature)
+	err := row.Scan(&w.ID, &w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumCapacity, &w.MinimumTemperature, &w.LocalityID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil

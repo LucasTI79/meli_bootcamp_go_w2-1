@@ -2,12 +2,16 @@ package section
 
 import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_type"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 )
 
 const (
 	ResourceNotFound      = "seção não encontrada com o id %d"
 	ResourceAlreadyExists = "um produto com o código '%d' já existe"
+	WarehouseNotFound     = "armazem não encontrado com o id %d"
+	ProductTypeNotFound   = "tipo do produto não encontrado com o id %d"
 )
 
 type Service interface {
@@ -20,11 +24,15 @@ type Service interface {
 	CountProductsBySection(id int) (*domain.ProductsBySectionReport, error)
 }
 type service struct {
-	repository Repository
+	repository            Repository
+	warehouseRepository   warehouse.Repository
+	productTypeRepository product_type.Repository
 }
 
-func NewService(r Repository) Service {
-	return &service{repository: r}
+func NewService(r Repository, warehouseRepository warehouse.Repository, productTypeRepository product_type.Repository) Service {
+	return &service{repository: r,
+		warehouseRepository:   warehouseRepository,
+		productTypeRepository: productTypeRepository}
 }
 
 func (s *service) GetAll() []domain.Section {
@@ -46,6 +54,17 @@ func (s *service) Create(sc domain.Section) (*domain.Section, error) {
 		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, sc.SectionNumber)
 	}
 
+	productTypeById := s.productTypeRepository.Get(sc.ProductTypeID)
+	if productTypeById == nil {
+		return nil, apperr.NewDependentResourceNotFound(ProductTypeNotFound, sc.ProductTypeID)
+	}
+
+	warehouseById := s.warehouseRepository.Get(sc.WarehouseID)
+
+	if warehouseById == nil {
+		return nil, apperr.NewDependentResourceNotFound(WarehouseNotFound, sc.ProductTypeID)
+	}
+
 	id := s.repository.Save(sc)
 
 	return s.repository.Get(id), nil
@@ -65,6 +84,17 @@ func (s *service) Update(id int, section domain.UpdateSection) (*domain.Section,
 		if sectionNumberExists && sectionNumber != sectionFound.SectionNumber {
 			return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, sectionNumber)
 		}
+	}
+
+	productTypeById := s.productTypeRepository.Get(sectionFound.ProductTypeID)
+	if productTypeById == nil {
+		return nil, apperr.NewDependentResourceNotFound(ProductTypeNotFound, sectionFound.ProductTypeID)
+	}
+
+	warehouseById := s.warehouseRepository.Get(sectionFound.WarehouseID)
+
+	if warehouseById == nil {
+		return nil, apperr.NewDependentResourceNotFound(WarehouseNotFound, sectionFound.ProductTypeID)
 	}
 
 	sectionFound.Overlap(section)

@@ -135,6 +135,10 @@ func (s *Section) Create() gin.HandlerFunc {
 				web.Error(ctx, http.StatusConflict, err.Error())
 				return
 			}
+			if apperr.Is[*apperr.DependentResourceNotFound](err) {
+				web.Error(ctx, http.StatusConflict, err.Error())
+				return
+			}
 		}
 
 		web.Success(ctx, http.StatusCreated, created)
