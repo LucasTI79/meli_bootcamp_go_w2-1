@@ -12,6 +12,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/locality"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_record"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_type"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/province"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
@@ -86,7 +87,9 @@ func (r *router) buildSellerRoutes() {
 
 func (r *router) buildProductRoutes() {
 	repo := product.NewRepository(r.db)
-	service := product.NewService(repo)
+	productTypeRepo := product_type.NewRepository(r.db)
+	sellerRepo := seller.NewRepository(r.db)
+	service := product.NewService(repo, productTypeRepo, sellerRepo)
 	controller := handler.NewProduct(service)
 	productRoutes := r.rg.Group("/products")
 

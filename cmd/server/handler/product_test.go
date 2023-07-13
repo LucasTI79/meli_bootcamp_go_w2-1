@@ -63,6 +63,20 @@ func TestCreateProduct(t *testing.T) {
 		assert.Equal(t, http.StatusConflict, response.Code)
 	})
 
+	t.Run("Should return dependent resource not found error", func(t *testing.T) {
+		server, service, controller := InitProductServer(t)
+
+		server.POST(DefinePath(ResourceProductsUri), ValidationMiddleware(requestObject), controller.Create())
+		request, response := MakeRequest("POST", DefinePath(ResourceProductsUri), CreateBody(requestObject))
+
+		var serviceReturn *domain.Product
+		service.On("Create", requestObject.ToProduct()).Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceAlreadyExists))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
 	t.Run("Should return a created product", func(t *testing.T) {
 		server, service, controller := InitProductServer(t)
 
@@ -168,6 +182,24 @@ func TestUpdateProduct(t *testing.T) {
 		service.On(
 			"Update", id, requestObject.ToUpdateProduct()).
 			Return(serviceReturn, apperr.NewResourceAlreadyExists(ResourceAlreadyExists))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
+	t.Run("Should return dependent resource not found error", func(t *testing.T) {
+		server, service, controller := InitProductServer(t)
+
+		id := 1
+
+		server.PATCH(DefinePath(ResourceProductsUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceProductsUri, id), CreateBody(requestObject))
+
+		var serviceReturn *domain.Product
+		service.On(
+			"Update", id, requestObject.ToUpdateProduct()).
+			Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
 
 		server.ServeHTTP(response, request)
 

@@ -6,26 +6,8 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product"
 	"github.com/stretchr/testify/assert"
-)
-
-var (
-	mockedProductTemplate = domain.Product{
-		ID:             1,
-		Description:    "Description",
-		ExpirationRate: 1,
-		FreezingRate:   1,
-		Height:         1,
-		Length:         1,
-		Netweight:      1,
-		ProductCode:    "123",
-		RecomFreezTemp: 1,
-		Width:          1,
-		ProductTypeID:  1,
-		SellerID:       1,
-	}
 )
 
 func TestRepositoryGetAll(t *testing.T) {
@@ -371,14 +353,6 @@ func TestRepositoryDelete(t *testing.T) {
 	})
 }
 
-func SetupMock(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
-	t.Helper()
-
-	db, mock, err := sqlmock.New()
-	assert.NoError(t, err)
-	return db, mock
-}
-
 func TestRepositoryCountRecordsByAllProducts(t *testing.T) {
 	t.Run("Should return records count report by all products", func(t *testing.T) {
 		db, mock := SetupMock(t)
@@ -455,4 +429,12 @@ func TestRepositoryCountRecordsByProduct(t *testing.T) {
 
 		assert.Panics(t, func() { repository.CountRecordsByProduct(recordId) })
 	})
+}
+
+func SetupMock(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
+	t.Helper()
+
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+	return db, mock
 }

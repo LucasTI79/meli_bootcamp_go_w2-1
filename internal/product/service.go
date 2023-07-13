@@ -2,12 +2,16 @@ package product
 
 import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_type"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 )
 
 const (
 	ResourceNotFound      = "produto não encontrado com o id %d"
 	ResourceAlreadyExists = "um produto com o código '%s' já existe"
+	ProductTypeNotFound   = "tipo de produto não encontrado com o id %d"
+	SellerNotFound        = "vendedor não encontrado com o id %d"
 )
 
 type Service interface {
@@ -21,11 +25,13 @@ type Service interface {
 }
 
 type service struct {
-	repository Repository
+	repository            Repository
+	productTypeRepository product_type.Repository
+	sellerRepository      seller.Repository
 }
 
-func NewService(repository Repository) Service {
-	return &service{repository}
+func NewService(repository Repository, productTypeRepository product_type.Repository, sellerRerepository seller.Repository) Service {
+	return &service{repository, productTypeRepository, sellerRerepository}
 }
 
 func (s *service) GetAll() []domain.Product {
@@ -45,6 +51,18 @@ func (s *service) Get(id int) (*domain.Product, error) {
 func (s *service) Create(product domain.Product) (*domain.Product, error) {
 	if s.repository.Exists(product.ProductCode) {
 		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, product.ProductCode)
+	}
+
+	productTypeFound := s.productTypeRepository.Get(product.ProductTypeID)
+
+	if productTypeFound == nil {
+		return nil, apperr.NewDependentResourceNotFound(ProductTypeNotFound, product.ProductTypeID)
+	}
+
+	sellerFound := s.sellerRepository.Get(product.SellerID)
+
+	if sellerFound == nil {
+		return nil, apperr.NewDependentResourceNotFound(SellerNotFound, product.SellerID)
 	}
 
 	id := s.repository.Save(product)
@@ -68,6 +86,19 @@ func (s *service) Update(id int, product domain.UpdateProduct) (*domain.Product,
 	}
 
 	productFound.Overlap(product)
+
+	productTypeFound := s.productTypeRepository.Get(productFound.ProductTypeID)
+
+	if productTypeFound == nil {
+		return nil, apperr.NewDependentResourceNotFound(ProductTypeNotFound, product.ProductTypeID)
+	}
+
+	sellerFound := s.sellerRepository.Get(productFound.SellerID)
+
+	if sellerFound == nil {
+		return nil, apperr.NewDependentResourceNotFound(SellerNotFound, product.SellerID)
+	}
+
 	s.repository.Update(*productFound)
 	return s.repository.Get(id), nil
 }
