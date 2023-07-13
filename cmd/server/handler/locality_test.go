@@ -19,12 +19,17 @@ const (
 
 var (
 	mockedLocality = domain.Locality{
-		ID: 1,
+		ID:           1,
+		LocalityName: "Locality",
+		ProvinceID:   1,
 	}
 )
 
 func TestCreateLocality(t *testing.T) {
-	requestObject := handler.CreateLocalityRequest{}
+	requestObject := handler.CreateLocalityRequest{
+		LocalityName: &mockedLocality.LocalityName,
+		ProvinceID:   &mockedLocality.ProvinceID,
+	}
 
 	t.Run("Should return conflict error when locality name already exists", func(t *testing.T) {
 		server, service, controller := InitLocalityServer(t)

@@ -23,11 +23,3 @@ func (r *Repository) Save(locality domain.ProductRecord) int {
 	args := r.Called(locality)
 	return args.Get(0).(int)
 }
-func (r *Repository) CountRecordsByAllProducts() []domain.RecordsByProductReport {
-	args := r.Called()
-	return args.Get(0).([]domain.RecordsByProductReport)
-}
-func (r *Repository) CountRecordsByProduct(id int) *domain.RecordsByProductReport {
-	args := r.Called(id)
-	return args.Get(0).(*domain.RecordsByProductReport)
-}
