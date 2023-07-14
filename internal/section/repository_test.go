@@ -161,16 +161,12 @@ func TestRepositorySave(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		columns := []string{"section_number"}
-		rows := sqlmock.NewRows(columns)
-		rows.AddRow(1)
-
 		lastInsertId := 1
 		mockedSection := mockedSectionTemplate
 
 		mock.ExpectPrepare(regexp.QuoteMeta(section.InsertQuery))
 		mock.ExpectExec(regexp.QuoteMeta(section.InsertQuery)).
-			WithArgs(mockedSection.SectionNumber, mockedSection.ProductTypeID, mockedSection.CurrentCapacity, mockedSection.CurrentCapacity, mockedSection.MinimumCapacity, mockedSection.MaximumCapacity, mockedSection.WarehouseID, mockedSection.ProductTypeID).
+			WithArgs(mockedSection.SectionNumber, mockedSection.CurrentTemperature, mockedSection.MinimumTemperature, mockedSection.CurrentCapacity, mockedSection.MinimumCapacity, mockedSection.MaximumCapacity, mockedSection.WarehouseID, mockedSection.ProductTypeID).
 			WillReturnResult(sqlmock.NewResult(int64(lastInsertId), 1))
 
 		repository := section.NewRepository(db)
@@ -231,7 +227,7 @@ func TestRepositoryUpdate(t *testing.T) {
 		mockedSection := mockedSectionTemplate
 		mock.ExpectPrepare(regexp.QuoteMeta(section.UpdateQuery))
 		mock.ExpectExec(regexp.QuoteMeta(section.UpdateQuery)).
-			WithArgs(mockedSection.ID, mockedSection.SectionNumber, mockedSection.CurrentTemperature, mockedSection.MinimumTemperature, mockedSection.CurrentCapacity, mockedSection.MinimumCapacity, mockedSection.MaximumCapacity, mockedSection.WarehouseID, mockedSection.ProductTypeID).
+			WithArgs(mockedSection.SectionNumber, mockedSection.CurrentTemperature, mockedSection.MinimumTemperature, mockedSection.CurrentCapacity, mockedSection.MinimumCapacity, mockedSection.MaximumCapacity, mockedSection.WarehouseID, mockedSection.ProductTypeID, mockedSection.ID).
 			WillReturnResult(sqlmock.NewResult(int64(mockedSection.ID), 1))
 
 		repository := section.NewRepository(db)

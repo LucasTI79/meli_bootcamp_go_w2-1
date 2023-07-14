@@ -19,7 +19,7 @@ var (
 		WarehouseCode:      "123",
 		MinimumCapacity:    1,
 		MinimumTemperature: 1,
-		LocalityID: 1,
+		LocalityID:         1,
 	}
 
 	l = domain.Locality{
@@ -28,7 +28,7 @@ var (
 )
 
 func TestServiceCreate(t *testing.T) {
-	t.Run("Should return a created warehous", func(t *testing.T) {
+	t.Run("Should return a created warehouse", func(t *testing.T) {
 		service, repository, localityRepository := CreateService(t)
 
 		id := 1
