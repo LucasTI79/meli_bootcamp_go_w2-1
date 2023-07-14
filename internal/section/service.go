@@ -9,7 +9,7 @@ import (
 
 const (
 	ResourceNotFound      = "seção não encontrada com o id %d"
-	ResourceAlreadyExists = "um produto com o código '%d' já existe"
+	ResourceAlreadyExists = "uma seção com o código '%d' já existe"
 	WarehouseNotFound     = "armazem não encontrado com o id %d"
 	ProductTypeNotFound   = "tipo do produto não encontrado com o id %d"
 )
@@ -55,6 +55,7 @@ func (s *service) Create(sc domain.Section) (*domain.Section, error) {
 	}
 
 	productTypeById := s.productTypeRepository.Get(sc.ProductTypeID)
+
 	if productTypeById == nil {
 		return nil, apperr.NewDependentResourceNotFound(ProductTypeNotFound, sc.ProductTypeID)
 	}
@@ -62,7 +63,7 @@ func (s *service) Create(sc domain.Section) (*domain.Section, error) {
 	warehouseById := s.warehouseRepository.Get(sc.WarehouseID)
 
 	if warehouseById == nil {
-		return nil, apperr.NewDependentResourceNotFound(WarehouseNotFound, sc.ProductTypeID)
+		return nil, apperr.NewDependentResourceNotFound(WarehouseNotFound, sc.WarehouseID)
 	}
 
 	id := s.repository.Save(sc)
@@ -86,7 +87,10 @@ func (s *service) Update(id int, section domain.UpdateSection) (*domain.Section,
 		}
 	}
 
+	sectionFound.Overlap(section)
+
 	productTypeById := s.productTypeRepository.Get(sectionFound.ProductTypeID)
+
 	if productTypeById == nil {
 		return nil, apperr.NewDependentResourceNotFound(ProductTypeNotFound, sectionFound.ProductTypeID)
 	}
@@ -94,10 +98,9 @@ func (s *service) Update(id int, section domain.UpdateSection) (*domain.Section,
 	warehouseById := s.warehouseRepository.Get(sectionFound.WarehouseID)
 
 	if warehouseById == nil {
-		return nil, apperr.NewDependentResourceNotFound(WarehouseNotFound, sectionFound.ProductTypeID)
+		return nil, apperr.NewDependentResourceNotFound(WarehouseNotFound, sectionFound.WarehouseID)
 	}
 
-	sectionFound.Overlap(section)
 	s.repository.Update(*sectionFound)
 	return s.repository.Get(id), nil
 }

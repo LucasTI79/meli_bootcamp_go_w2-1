@@ -16,7 +16,7 @@ fmt:
 .PHONY: test
 test:
 	@echo "=> Running tests"
-	@go test ./... -covermode=atomic -coverpkg=./... -count=1 -race
+	@go test ./... -coverprofile=./coverage.out -coverpkg=./... -count=1
 
 .PHONY: test-cover
 test-cover:

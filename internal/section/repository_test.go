@@ -161,21 +161,17 @@ func TestRepositorySave(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		columns := []string{"section_number"}
-		rows := sqlmock.NewRows(columns)
-		rows.AddRow(1)
-
 		lastInsertId := 1
-		mockedSection1 := mockedSectionTemplate
+		mockedSection := mockedSectionTemplate
 
 		mock.ExpectPrepare(regexp.QuoteMeta(section.InsertQuery))
 		mock.ExpectExec(regexp.QuoteMeta(section.InsertQuery)).
-			WithArgs(mockedSection1.SectionNumber, mockedSection1.ProductTypeID, mockedSection1.CurrentCapacity, mockedSection1.CurrentCapacity, mockedSection1.MinimumCapacity, mockedSection1.MaximumCapacity, mockedSection1.WarehouseID, mockedSection1.ProductTypeID).
+			WithArgs(mockedSection.SectionNumber, mockedSection.CurrentTemperature, mockedSection.MinimumTemperature, mockedSection.CurrentCapacity, mockedSection.MinimumCapacity, mockedSection.MaximumCapacity, mockedSection.WarehouseID, mockedSection.ProductTypeID).
 			WillReturnResult(sqlmock.NewResult(int64(lastInsertId), 1))
 
 		repository := section.NewRepository(db)
 
-		result := repository.Save(mockedSection1)
+		result := repository.Save(mockedSection)
 
 		assert.Equal(t, lastInsertId, result)
 	})
@@ -196,30 +192,30 @@ func TestRepositorySave(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		mockedSection2 := mockedSectionTemplate
+		mockedSection := mockedSectionTemplate
 		mock.ExpectPrepare(regexp.QuoteMeta(section.InsertQuery))
 		mock.ExpectExec(regexp.QuoteMeta(section.InsertQuery)).
-			WithArgs(mockedSection2.ID, mockedSection2.SectionNumber, mockedSection2.CurrentTemperature, mockedSection2.MinimumTemperature, mockedSection2.CurrentCapacity, mockedSection2.MinimumCapacity, mockedSection2.MaximumCapacity, mockedSection2.WarehouseID, mockedSection2.ProductTypeID).
+			WithArgs(mockedSection.ID, mockedSection.SectionNumber, mockedSection.CurrentTemperature, mockedSection.MinimumTemperature, mockedSection.CurrentCapacity, mockedSection.MinimumCapacity, mockedSection.MaximumCapacity, mockedSection.WarehouseID, mockedSection.ProductTypeID).
 			WillReturnError(sql.ErrConnDone)
 
 		repository := section.NewRepository(db)
 
-		assert.Panics(t, func() { repository.Save(mockedSection2) })
+		assert.Panics(t, func() { repository.Save(mockedSection) })
 	})
 
 	t.Run("Should throw panic when sql has error", func(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		mockedSection3 := mockedSectionTemplate
+		mockedSection := mockedSectionTemplate
 		mock.ExpectPrepare(regexp.QuoteMeta(section.InsertQuery))
 		mock.ExpectExec(regexp.QuoteMeta(section.InsertQuery)).
-			WithArgs(mockedSection3.SectionNumber, mockedSection3.CurrentTemperature, mockedSection3.MinimumTemperature, mockedSection3.CurrentCapacity, mockedSection3.MinimumCapacity, mockedSection3.MaximumCapacity, mockedSection3.WarehouseID, mockedSection3.ProductTypeID).
+			WithArgs(mockedSection.SectionNumber, mockedSection.CurrentTemperature, mockedSection.MinimumTemperature, mockedSection.CurrentCapacity, mockedSection.MinimumCapacity, mockedSection.MaximumCapacity, mockedSection.WarehouseID, mockedSection.ProductTypeID).
 			WillReturnResult(sqlmock.NewErrorResult(sql.ErrConnDone))
 
 		repository := section.NewRepository(db)
 
-		assert.Panics(t, func() { repository.Save(mockedSection3) })
+		assert.Panics(t, func() { repository.Save(mockedSection) })
 	})
 }
 
@@ -228,15 +224,15 @@ func TestRepositoryUpdate(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		mockedSection3 := mockedSectionTemplate
+		mockedSection := mockedSectionTemplate
 		mock.ExpectPrepare(regexp.QuoteMeta(section.UpdateQuery))
 		mock.ExpectExec(regexp.QuoteMeta(section.UpdateQuery)).
-			WithArgs(mockedSection3.ID, mockedSection3.SectionNumber, mockedSection3.CurrentTemperature, mockedSection3.MinimumTemperature, mockedSection3.CurrentCapacity, mockedSection3.MinimumCapacity, mockedSection3.MaximumCapacity, mockedSection3.WarehouseID, mockedSection3.ProductTypeID).
-			WillReturnResult(sqlmock.NewResult(int64(mockedSection3.ID), 1))
+			WithArgs(mockedSection.SectionNumber, mockedSection.CurrentTemperature, mockedSection.MinimumTemperature, mockedSection.CurrentCapacity, mockedSection.MinimumCapacity, mockedSection.MaximumCapacity, mockedSection.WarehouseID, mockedSection.ProductTypeID, mockedSection.ID).
+			WillReturnResult(sqlmock.NewResult(int64(mockedSection.ID), 1))
 
 		repository := section.NewRepository(db)
 
-		assert.NotPanics(t, func() { repository.Update(mockedSection3) })
+		assert.NotPanics(t, func() { repository.Update(mockedSection) })
 	})
 
 	t.Run("Should throw panic when expected prepare fails", func(t *testing.T) {
@@ -255,15 +251,15 @@ func TestRepositoryUpdate(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		mockedSection5 := mockedSectionTemplate
+		mockedSection := mockedSectionTemplate
 		mock.ExpectPrepare(regexp.QuoteMeta(section.UpdateQuery))
 		mock.ExpectExec(regexp.QuoteMeta(section.UpdateQuery)).
-			WithArgs(mockedSection5.ID, mockedSection5.SectionNumber, mockedSection5.CurrentTemperature, mockedSection5.MinimumTemperature, mockedSection5.CurrentCapacity, mockedSection5.MinimumCapacity, mockedSection5.MaximumCapacity, mockedSection5.WarehouseID, mockedSection5.ProductTypeID).
+			WithArgs(mockedSection.ID, mockedSection.SectionNumber, mockedSection.CurrentTemperature, mockedSection.MinimumTemperature, mockedSection.CurrentCapacity, mockedSection.MinimumCapacity, mockedSection.MaximumCapacity, mockedSection.WarehouseID, mockedSection.ProductTypeID).
 			WillReturnError(sql.ErrConnDone)
 
 		repository := section.NewRepository(db)
 
-		assert.Panics(t, func() { repository.Update(mockedSection5) })
+		assert.Panics(t, func() { repository.Update(mockedSection) })
 	})
 }
 
@@ -272,42 +268,42 @@ func TestRepositoryDelete(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		mockedSection6 := mockedSectionTemplate
+		mockedSection := mockedSectionTemplate
 		mock.ExpectPrepare(regexp.QuoteMeta(section.DeleteQuery))
 		mock.ExpectExec(regexp.QuoteMeta(section.DeleteQuery)).
-			WithArgs(mockedSection6.ID).
-			WillReturnResult(sqlmock.NewResult(int64(mockedSection6.ID), 1))
+			WithArgs(mockedSection.ID).
+			WillReturnResult(sqlmock.NewResult(int64(mockedSection.ID), 1))
 
 		repository := section.NewRepository(db)
 
-		assert.NotPanics(t, func() { repository.Delete(mockedSection6.ID) })
+		assert.NotPanics(t, func() { repository.Delete(mockedSection.ID) })
 	})
 
 	t.Run("Should throw panic when expected prepare fails", func(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		mockedSection7 := mockedSectionTemplate
+		mockedSection := mockedSectionTemplate
 		mock.ExpectPrepare(regexp.QuoteMeta(section.DeleteQuery)).WillReturnError(sql.ErrConnDone)
 
 		repository := section.NewRepository(db)
 
-		assert.Panics(t, func() { repository.Delete(mockedSection7.ID) })
+		assert.Panics(t, func() { repository.Delete(mockedSection.ID) })
 	})
 
 	t.Run("Should throw panic when expected exec fails", func(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		mockedSection8 := mockedSectionTemplate
+		mockedSection := mockedSectionTemplate
 		mock.ExpectPrepare(regexp.QuoteMeta(section.DeleteQuery))
 		mock.ExpectExec(regexp.QuoteMeta(section.DeleteQuery)).
-			WithArgs(mockedSection8.ID).
+			WithArgs(mockedSection.ID).
 			WillReturnError(sql.ErrConnDone)
 
 		repository := section.NewRepository(db)
 
-		assert.Panics(t, func() { repository.Delete(mockedSection8.ID) })
+		assert.Panics(t, func() { repository.Delete(mockedSection.ID) })
 	})
 }
 

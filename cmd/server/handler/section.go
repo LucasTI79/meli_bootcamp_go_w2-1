@@ -16,14 +16,14 @@ type Section struct {
 }
 
 type CreateSectionRequest struct {
-	SectionNumber      *int `json:"section_number" binding:"required"`
-	CurrentTemperature *int `json:"current_temperature" binding:"required"`
-	MinimumTemperature *int `json:"minimum_temperature" binding:"required"`
-	CurrentCapacity    *int `json:"current_capacity" binding:"required"`
-	MinimumCapacity    *int `json:"minimum_capacity" binding:"required"`
-	MaximumCapacity    *int `json:"maximum_capacity" binding:"required"`
-	WarehouseID        *int `json:"warehouse_id" binding:"required"`
-	ProductTypeID      *int `json:"product_type_id" binding:"required"`
+	SectionNumber      *int     `json:"section_number" binding:"required"`
+	CurrentTemperature *float32 `json:"current_temperature" binding:"required"`
+	MinimumTemperature *float32 `json:"minimum_temperature" binding:"required"`
+	CurrentCapacity    *int     `json:"current_capacity" binding:"required"`
+	MinimumCapacity    *int     `json:"minimum_capacity" binding:"required"`
+	MaximumCapacity    *int     `json:"maximum_capacity" binding:"required"`
+	WarehouseID        *int     `json:"warehouse_id" binding:"required"`
+	ProductTypeID      *int     `json:"product_type_id" binding:"required"`
 }
 
 func (r CreateSectionRequest) ToSection() domain.Section {
@@ -41,14 +41,14 @@ func (r CreateSectionRequest) ToSection() domain.Section {
 }
 
 type UpdateSectionRequest struct {
-	SectionNumber      *int `json:"section_number"`
-	CurrentTemperature *int `json:"current_temperature"`
-	MinimumTemperature *int `json:"minimum_temperature"`
-	CurrentCapacity    *int `json:"current_capacity"`
-	MinimumCapacity    *int `json:"minimum_capacity"`
-	MaximumCapacity    *int `json:"maximum_capacity"`
-	WarehouseID        *int `json:"warehouse_id"`
-	ProductTypeID      *int `json:"product_type_id"`
+	SectionNumber      *int     `json:"section_number"`
+	CurrentTemperature *float32 `json:"current_temperature"`
+	MinimumTemperature *float32 `json:"minimum_temperature"`
+	CurrentCapacity    *int     `json:"current_capacity"`
+	MinimumCapacity    *int     `json:"minimum_capacity"`
+	MaximumCapacity    *int     `json:"maximum_capacity"`
+	WarehouseID        *int     `json:"warehouse_id"`
+	ProductTypeID      *int     `json:"product_type_id"`
 }
 
 func (r UpdateSectionRequest) ToUpdateSection() domain.UpdateSection {
@@ -106,6 +106,7 @@ func (s *Section) Get() gin.HandlerFunc {
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
 				web.Error(ctx, http.StatusNotFound, err.Error())
+				return
 			}
 		}
 		web.Success(ctx, http.StatusOK, section)
@@ -169,8 +170,11 @@ func (s *Section) Update() gin.HandlerFunc {
 				web.Error(ctx, http.StatusNotFound, err.Error())
 				return
 			}
-
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
+				web.Error(ctx, http.StatusConflict, err.Error())
+				return
+			}
+			if apperr.Is[*apperr.DependentResourceNotFound](err) {
 				web.Error(ctx, http.StatusConflict, err.Error())
 				return
 			}
@@ -215,9 +219,9 @@ func (s *Section) Delete() gin.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Success 200 {object} []domain.ProductsBySectionReport "List of products by section"
-// @Failure 400 {object} web.ErrorResponse InvalidId
+// @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
-// @Router /api/v1/sections/report-product [get]
+// @Router /sections/report-products [get]
 func (s *Section) ReportProducts() gin.HandlerFunc {
 	return func(c *gin.Context) {
 

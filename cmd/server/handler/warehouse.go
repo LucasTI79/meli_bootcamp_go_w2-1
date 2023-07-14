@@ -17,6 +17,7 @@ type CreateWarehouseRequest struct {
 	WarehouseCode      *string `json:"warehouse_code" binding:"required"`
 	MinimumCapacity    *int    `json:"minimum_capacity" binding:"required"`
 	MinimumTemperature *int    `json:"minimum_temperature" binding:"required"`
+	LocalityID         *int    `json:"locality_id" binding:"required"`
 }
 
 func (w CreateWarehouseRequest) ToWarehouse() domain.Warehouse {
@@ -27,6 +28,7 @@ func (w CreateWarehouseRequest) ToWarehouse() domain.Warehouse {
 		WarehouseCode:      *w.WarehouseCode,
 		MinimumCapacity:    *w.MinimumCapacity,
 		MinimumTemperature: *w.MinimumTemperature,
+		LocalityID:         *w.LocalityID,
 	}
 }
 
@@ -36,6 +38,7 @@ type UpdateWarehouseRequest struct {
 	WarehouseCode      *string `json:"warehouse_code"`
 	MinimumCapacity    *int    `json:"minimum_capacity"`
 	MinimumTemperature *int    `json:"minimum_temperature"`
+	LocalityID         *int    `json:"locality_id"`
 }
 
 func (w UpdateWarehouseRequest) ToUpdateWarehouse() domain.UpdateWarehouse {
@@ -47,6 +50,7 @@ func (w UpdateWarehouseRequest) ToUpdateWarehouse() domain.UpdateWarehouse {
 		WarehouseCode:      w.WarehouseCode,
 		MinimumCapacity:    w.MinimumCapacity,
 		MinimumTemperature: w.MinimumTemperature,
+		LocalityID:         w.LocalityID,
 	}
 }
 
@@ -129,6 +133,10 @@ func (w *Warehouse) Create() gin.HandlerFunc {
 				web.Error(c, http.StatusConflict, err.Error())
 				return
 			}
+			if apperr.Is[*apperr.DependentResourceNotFound](err) {
+				web.Error(c, http.StatusConflict, err.Error())
+				return
+			}
 		}
 
 		web.Success(c, http.StatusCreated, created)
@@ -164,6 +172,10 @@ func (w *Warehouse) Update() gin.HandlerFunc {
 				return
 			}
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
+				web.Error(c, http.StatusConflict, err.Error())
+				return
+			}
+			if apperr.Is[*apperr.DependentResourceNotFound](err) {
 				web.Error(c, http.StatusConflict, err.Error())
 				return
 			}

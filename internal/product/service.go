@@ -90,13 +90,13 @@ func (s *service) Update(id int, product domain.UpdateProduct) (*domain.Product,
 	productTypeFound := s.productTypeRepository.Get(productFound.ProductTypeID)
 
 	if productTypeFound == nil {
-		return nil, apperr.NewDependentResourceNotFound(ProductTypeNotFound, product.ProductTypeID)
+		return nil, apperr.NewDependentResourceNotFound(ProductTypeNotFound, productFound.ProductTypeID)
 	}
 
 	sellerFound := s.sellerRepository.Get(productFound.SellerID)
 
 	if sellerFound == nil {
-		return nil, apperr.NewDependentResourceNotFound(SellerNotFound, product.SellerID)
+		return nil, apperr.NewDependentResourceNotFound(SellerNotFound, productFound.SellerID)
 	}
 
 	s.repository.Update(*productFound)

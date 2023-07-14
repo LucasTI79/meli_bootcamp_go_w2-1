@@ -1,24 +1,15 @@
 package warehouse
 
 import (
-	"errors"
-
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/locality"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 )
 
 const (
 	ResourceNotFound      = "armazém não encontrado com o id '%d'"
 	ResourceAlreadyExists = "já existe um armazém com o código '%s'"
-)
-
-// Errors
-var (
-	ErrWarehouseNotFound  = errors.New("warehouse not found")
-	ErrWarehouseExists    = errors.New("warehouse already exists")
-	ErrInvalidID          = errors.New("invalid ID")
-	ErrInvalidPhoneNumber = errors.New("invalid phone number")
-	ErrMissingField       = errors.New("missing required field")
+	LocalityNotFound      = "localidade não encontrada com o id '%d'"
 )
 
 type Service interface {
@@ -30,11 +21,12 @@ type Service interface {
 }
 
 type service struct {
-	repository Repository
+	repository         Repository
+	localityRepository locality.Repository
 }
 
-func NewService(r Repository) Service {
-	return &service{repository: r}
+func NewService(repository Repository, localityRepository locality.Repository) Service {
+	return &service{repository, localityRepository}
 }
 
 func (s *service) GetAll() []domain.Warehouse {
@@ -56,6 +48,12 @@ func (s *service) Create(warehouse domain.Warehouse) (*domain.Warehouse, error) 
 		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, warehouse.WarehouseCode)
 	}
 
+	locality := s.localityRepository.Get(warehouse.LocalityID)
+
+	if locality == nil {
+		return nil, apperr.NewDependentResourceNotFound(LocalityNotFound, warehouse.LocalityID)
+	}
+
 	warehouseId := s.repository.Save(warehouse)
 	return s.repository.Get(warehouseId), nil
 }
@@ -74,10 +72,15 @@ func (s *service) Update(id int, warehouse domain.UpdateWarehouse) (*domain.Ware
 		if warehouseExists && warehouseCode != warehouseFound.WarehouseCode {
 			return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, warehouseCode)
 		}
-
 	}
 
 	warehouseFound.Overlap(warehouse)
+
+	locality := s.localityRepository.Get(warehouseFound.LocalityID)
+
+	if locality == nil {
+		return nil, apperr.NewDependentResourceNotFound(LocalityNotFound, warehouseFound.LocalityID)
+	}
 
 	s.repository.Update(*warehouseFound)
 

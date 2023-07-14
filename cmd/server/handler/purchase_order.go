@@ -52,7 +52,7 @@ func NewPurchaseOrder(service purchase_order.Service) *PurchaseOrder {
 // @Accept json
 // @Produce json
 // @Param request body CreatePurchaseOrderRequest true "Purchase order data"
-// @Success 201 {object} domain.PurchaseOrders "Created purchase order"
+// @Success 201 {object} domain.PurchaseOrder "Created purchase order"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
 // @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"

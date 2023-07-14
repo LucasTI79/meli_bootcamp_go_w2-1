@@ -2,6 +2,7 @@ package product_batch_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	product_mocks "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product/mocks"
@@ -18,9 +19,9 @@ var (
 		BatchNumber:        1,
 		CurrentQuantity:    1,
 		CurrentTemperature: 2,
-		DueDate:            "2021-01-01",
+		DueDate:            time.Date(2021, 01, 01, 10, 10, 10, 10, time.UTC),
 		InitialQuantity:    10,
-		ManufacturingDate:  "2021-01-01",
+		ManufacturingDate:  time.Date(2021, 01, 01, 10, 10, 10, 10, time.UTC),
 		ManufacturingHour:  10,
 		MinimumTemperature: 0,
 		ProductID:          1,

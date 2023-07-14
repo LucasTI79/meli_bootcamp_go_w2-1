@@ -49,6 +49,20 @@ func TestCreateCarrier(t *testing.T) {
 		assert.Equal(t, http.StatusConflict, response.Code)
 	})
 
+	t.Run("Should return conflict error if a dependent resourse was not found", func(t *testing.T) {
+		server, service, controller := InitCarrierServer(t)
+
+		server.POST(DefinePath(ResourceCarriersUri), ValidationMiddleware(requestObject), controller.Create())
+		request, response := MakeRequest("POST", DefinePath(ResourceCarriersUri), CreateBody(requestObject))
+
+		var serviceReturn *domain.Carrier
+		service.On("Create", requestObject.ToCarrier()).Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
 	t.Run("Should return a created carrier", func(t *testing.T) {
 		server, service, controller := InitCarrierServer(t)
 

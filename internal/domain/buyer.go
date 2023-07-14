@@ -21,7 +21,7 @@ type PurchasesByBuyerReport struct {
 	CardNumberID   string `json:"card_number_id"`
 	FirstName      string `json:"first_name"`
 	LastName       string `json:"last_name"`
-	PurchasesCount int    `json:"purchases_count"`
+	PurchasesCount int    `json:"purchase_orders_count"`
 }
 
 func (p *Buyer) Overlap(product UpdateBuyer) {

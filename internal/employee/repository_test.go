@@ -18,7 +18,7 @@ var (
 		CardNumberID: "123456",
 		FirstName: "PrimeiroNome",
 		LastName: "Sobrenome",
-		WarehouseID: 3,
+		WarehouseID: 1,
 	}
 	mockedEmployeeUInboundOrders = domain.InboundOrdersByEmployee{
 		ID: 1,

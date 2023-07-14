@@ -6,20 +6,8 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
 	"github.com/stretchr/testify/assert"
-)
-
-var (
-	mockedWarehouseTemplate = domain.Warehouse{
-		ID:                 1,
-		Address:            "address",
-		Telephone:          "telephone",
-		WarehouseCode:      "warehouse_code",
-		MinimumCapacity:    1,
-		MinimumTemperature: 1,
-	}
 )
 
 func TestRepositoryGetAll(t *testing.T) {
@@ -50,14 +38,14 @@ func TestRepositoryGetAll(t *testing.T) {
 }
 
 func TestRepositoryGet(t *testing.T) {
-	t.Run("Should return a seller by specified id", func(t *testing.T) {
+	t.Run("Should return a warehouse by specified id", func(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		columns := []string{"id", "address", "telephone", "warehouse_code", "minimum_capacity", "minimum_temperature"}
+		columns := []string{"id", "address", "telephone", "warehouse_code", "minimum_capacity", "minimum_temperature", "locality_id"}
 		rows := sqlmock.NewRows(columns)
 		warehouseId := 1
-		rows.AddRow(warehouseId, "address", "telephone", "warehouse_code", 1, 1)
+		rows.AddRow(warehouseId, "address", "telephone", "warehouse_code", 1, 1, 1)
 
 		mock.ExpectQuery(warehouse.GetQuery).WithArgs(warehouseId).WillReturnRows(rows)
 
@@ -154,16 +142,16 @@ func TestRepositorySave(t *testing.T) {
 		db, mock := SetupMock(t)
 		defer db.Close()
 
-		columns := []string{"address", "telephone", "warehouse_code", "minimum_capacity", "minimum_temperature"}
+		columns := []string{"address", "telephone", "warehouse_code", "minimum_capacity", "minimum_temperature", "locality_id"}
 		rows := sqlmock.NewRows(columns)
-		rows.AddRow("address", "telephone", "warehouse_code", 1, 1)
+		rows.AddRow("address", "telephone", "warehouse_code", 1, 1, 1)
 
 		lastInsertId := 1
 		mockedWarehouse := mockedWarehouseTemplate
 
 		mock.ExpectPrepare(regexp.QuoteMeta(warehouse.InsertQuery))
 		mock.ExpectExec(regexp.QuoteMeta(warehouse.InsertQuery)).
-			WithArgs(mockedWarehouse.Address, mockedWarehouse.Telephone, mockedWarehouse.WarehouseCode, mockedWarehouse.MinimumCapacity, mockedWarehouse.MinimumTemperature).
+			WithArgs(mockedWarehouse.Address, mockedWarehouse.Telephone, mockedWarehouse.WarehouseCode, mockedWarehouse.MinimumCapacity, mockedWarehouse.MinimumTemperature, mockedWarehouse.LocalityID).
 			WillReturnResult(sqlmock.NewResult(int64(lastInsertId), 1))
 
 		repository := warehouse.NewRepository(db)
@@ -191,7 +179,7 @@ func TestRepositorySave(t *testing.T) {
 		mockedWarehouse := mockedWarehouseTemplate
 		mock.ExpectPrepare(regexp.QuoteMeta(warehouse.InsertQuery))
 		mock.ExpectExec(regexp.QuoteMeta(warehouse.InsertQuery)).
-			WithArgs(mockedWarehouseTemplate.Address, mockedWarehouse.Telephone, mockedWarehouse.WarehouseCode, mockedWarehouse.MinimumCapacity, mockedWarehouse.MinimumTemperature).
+			WithArgs(mockedWarehouseTemplate.Address, mockedWarehouse.Telephone, mockedWarehouse.WarehouseCode, mockedWarehouse.MinimumCapacity, mockedWarehouse.MinimumTemperature, mockedWarehouse.LocalityID).
 			WillReturnError(sql.ErrConnDone)
 
 		repository := warehouse.NewRepository(db)
@@ -206,7 +194,7 @@ func TestRepositorySave(t *testing.T) {
 		mockedWarehouse := mockedWarehouseTemplate
 		mock.ExpectPrepare(regexp.QuoteMeta(warehouse.InsertQuery))
 		mock.ExpectExec(regexp.QuoteMeta(warehouse.InsertQuery)).
-			WithArgs(mockedWarehouseTemplate.Address, mockedWarehouse.Telephone, mockedWarehouse.WarehouseCode, mockedWarehouse.MinimumCapacity, mockedWarehouse.MinimumTemperature).
+			WithArgs(mockedWarehouseTemplate.Address, mockedWarehouse.Telephone, mockedWarehouse.WarehouseCode, mockedWarehouse.MinimumCapacity, mockedWarehouse.MinimumTemperature, mockedWarehouse.LocalityID).
 			WillReturnResult(sqlmock.NewErrorResult(sql.ErrConnDone))
 
 		repository := warehouse.NewRepository(db)
@@ -223,7 +211,7 @@ func TestRepositoryUpdate(t *testing.T) {
 		mockedWarehouse := mockedWarehouseTemplate
 		mock.ExpectPrepare(regexp.QuoteMeta(warehouse.UpdateQuery))
 		mock.ExpectExec(regexp.QuoteMeta(warehouse.UpdateQuery)).
-			WithArgs(mockedWarehouse.Address, mockedWarehouse.Telephone, mockedWarehouse.WarehouseCode, mockedWarehouse.MinimumCapacity, mockedWarehouse.MinimumTemperature, mockedWarehouse.ID).
+			WithArgs(mockedWarehouse.Address, mockedWarehouse.Telephone, mockedWarehouse.WarehouseCode, mockedWarehouse.MinimumCapacity, mockedWarehouse.MinimumTemperature, mockedWarehouse.LocalityID, mockedWarehouse.ID).
 			WillReturnResult(sqlmock.NewResult(int64(mockedWarehouse.ID), 1))
 
 		repository := warehouse.NewRepository(db)

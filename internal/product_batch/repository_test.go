@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
@@ -17,9 +18,9 @@ var (
 		BatchNumber:        1,
 		CurrentQuantity:    1,
 		CurrentTemperature: 2,
-		DueDate:            "2021-01-01",
+		DueDate:            time.Date(2021, 01, 01, 10, 10, 10, 10, time.UTC),
 		InitialQuantity:    10,
-		ManufacturingDate:  "2021-01-01",
+		ManufacturingDate:  time.Date(2021, 01, 01, 10, 10, 10, 10, time.UTC),
 		ManufacturingHour:  10,
 		MinimumTemperature: 0,
 		ProductID:          1,
@@ -68,7 +69,7 @@ func TestRepositoryGet(t *testing.T) {
 		rows := sqlmock.NewRows(columns)
 		batchNumber := 1
 
-		rows.AddRow(batchNumber, 1, 1, 2, "2021-01-01", 10, "2021-01-01", 10, 0, 1, 1)
+		rows.AddRow(batchNumber, 1, 1, 2, "2021-01-01 10:00:00", 10, "2021-01-01 10:00:00", 10, 0, 1, 1)
 
 		mock.ExpectQuery(regexp.QuoteMeta(product_batch.GetQuery)).
 			WithArgs(batchNumber).
@@ -87,7 +88,7 @@ func TestRepositoryGet(t *testing.T) {
 		columns := []string{"id", "batch_number", "current_quantity", "current_temperature", "due_date", "initial_quantity", "manufacturing_date", "manufacturing_hour", "minimum_temperature", "product_id", "section_id"}
 		rows := sqlmock.NewRows(columns)
 		batchNumber := 1
-		rows.AddRow(batchNumber, 1, 1, 2, "2021-01-01", 10, "2021-01-01", 10, 0, 1, 1)
+		rows.AddRow(batchNumber, 1, 1, 2, "2021-01-01 10:00:00", 10, "2021-01-01 10:00:00", 10, 0, 1, 1)
 
 		mock.ExpectQuery(product_batch.GetQuery).WithArgs(batchNumber).WillReturnError(sql.ErrNoRows)
 

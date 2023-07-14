@@ -18,7 +18,7 @@ const (
 )
 
 var (
-	w = domain.Warehouse{
+	mockedWarehouse = domain.Warehouse{
 		ID:                 1,
 		Address:            "Address",
 		Telephone:          "234566",
@@ -30,11 +30,12 @@ var (
 
 func TestCreateWarehouse(t *testing.T) {
 	requestObject := handler.CreateWarehouseRequest{
-		Address:            &w.Address,
-		Telephone:          &w.Telephone,
-		WarehouseCode:      &w.WarehouseCode,
-		MinimumCapacity:    &w.MinimumCapacity,
-		MinimumTemperature: &w.MinimumTemperature,
+		Address:            &mockedWarehouse.Address,
+		Telephone:          &mockedWarehouse.Telephone,
+		WarehouseCode:      &mockedWarehouse.WarehouseCode,
+		MinimumCapacity:    &mockedWarehouse.MinimumCapacity,
+		MinimumTemperature: &mockedWarehouse.MinimumTemperature,
+		LocalityID:         &mockedWarehouse.LocalityID,
 	}
 
 	t.Run("Should return conflict error", func(t *testing.T) {
@@ -51,13 +52,27 @@ func TestCreateWarehouse(t *testing.T) {
 		assert.Equal(t, http.StatusConflict, response.Code)
 	})
 
+	t.Run("Should return dependent resource not found error", func(t *testing.T) {
+		server, service, controller := InitWarehouseServer(t)
+
+		server.POST(DefinePath(ResourceWarehouseUri), ValidationMiddleware(requestObject), controller.Create())
+		request, response := MakeRequest("POST", DefinePath(ResourceWarehouseUri), CreateBody(requestObject))
+
+		var serviceReturn *domain.Warehouse
+		service.On("Create", requestObject.ToWarehouse()).Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
 	t.Run("Should return a created warehouse", func(t *testing.T) {
 		server, service, controller := InitWarehouseServer(t)
 
 		server.POST(DefinePath(ResourceWarehouseUri), ValidationMiddleware(requestObject), controller.Create())
 		request, response := MakeRequest("POST", DefinePath(ResourceWarehouseUri), CreateBody(requestObject))
 
-		service.On("Create", requestObject.ToWarehouse()).Return(&w, nil)
+		service.On("Create", requestObject.ToWarehouse()).Return(&mockedWarehouse, nil)
 
 		server.ServeHTTP(response, request)
 
@@ -103,7 +118,7 @@ func TestGetWarehouse(t *testing.T) {
 		server.GET(DefinePath(ResourceWarehouseUri)+"/:id", controller.Get())
 		request, response := MakeRequest("GET", DefinePathWithId(ResourceWarehouseUri, id), "")
 
-		service.On("Get", id).Return(&w, nil)
+		service.On("Get", id).Return(&mockedWarehouse, nil)
 
 		server.ServeHTTP(response, request)
 
@@ -113,11 +128,11 @@ func TestGetWarehouse(t *testing.T) {
 
 func TestUpdateWarehouse(t *testing.T) {
 	requestObject := handler.UpdateWarehouseRequest{
-		Address:            &w.Address,
-		Telephone:          &w.Telephone,
-		WarehouseCode:      &w.WarehouseCode,
-		MinimumCapacity:    &w.MinimumCapacity,
-		MinimumTemperature: &w.MinimumTemperature,
+		Address:            &mockedWarehouse.Address,
+		Telephone:          &mockedWarehouse.Telephone,
+		WarehouseCode:      &mockedWarehouse.WarehouseCode,
+		MinimumCapacity:    &mockedWarehouse.MinimumCapacity,
+		MinimumTemperature: &mockedWarehouse.MinimumTemperature,
 	}
 
 	t.Run("Should return not found error", func(t *testing.T) {
@@ -156,6 +171,24 @@ func TestUpdateWarehouse(t *testing.T) {
 		assert.Equal(t, http.StatusConflict, response.Code)
 	})
 
+	t.Run("Should return dependent resource not found error", func(t *testing.T) {
+		server, service, controller := InitWarehouseServer(t)
+
+		id := 1
+
+		server.PATCH(DefinePath(ResourceWarehouseUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceWarehouseUri, id), CreateBody(requestObject))
+
+		var serviceReturn *domain.Warehouse
+		service.On(
+			"Update", id, requestObject.ToUpdateWarehouse()).
+			Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
 	t.Run("Should return updated product", func(t *testing.T) {
 		server, service, controller := InitWarehouseServer(t)
 
@@ -166,7 +199,7 @@ func TestUpdateWarehouse(t *testing.T) {
 
 		service.On(
 			"Update", id, requestObject.ToUpdateWarehouse()).
-			Return(&w, nil)
+			Return(&mockedWarehouse, nil)
 
 		server.ServeHTTP(response, request)
 
