@@ -24,18 +24,20 @@ var (
 		CompanyName: "Company Name",
 		Address:     "Address",
 		Telephone:   "Telephone",
+		LocalityID:  1,
 	}
 )
 
 func TestCreateSeller(t *testing.T) {
 	requestObject := handler.CreateSellerRequest{
-		CID:         mockedSeller.CID,
-		CompanyName: mockedSeller.CompanyName,
-		Address:     mockedSeller.Address,
-		Telephone:   mockedSeller.Telephone,
+		CID:         &mockedSeller.CID,
+		CompanyName: &mockedSeller.CompanyName,
+		Address:     &mockedSeller.Address,
+		Telephone:   &mockedSeller.Telephone,
+		LocalityID:  &mockedSeller.LocalityID,
 	}
 
-	t.Run("Should return conflict error", func(t *testing.T) {
+	t.Run("Should return conflict error when cid already exists", func(t *testing.T) {
 		server, service, controller := InitSellerServer(t)
 
 		server.POST(DefinePath(ResourceSellersUri), ValidationMiddleware(requestObject), controller.Create())
@@ -43,6 +45,20 @@ func TestCreateSeller(t *testing.T) {
 
 		var serviceReturn *domain.Seller
 		service.On("Create", requestObject.ToSeller()).Return(serviceReturn, apperr.NewResourceAlreadyExists(ResourceAlreadyExists))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
+	t.Run("Should return conflict error when locality id not exists", func(t *testing.T) {
+		server, service, controller := InitSellerServer(t)
+
+		server.POST(DefinePath(ResourceSellersUri), ValidationMiddleware(requestObject), controller.Create())
+		request, response := MakeRequest("POST", DefinePath(ResourceSellersUri), CreateBody(requestObject))
+
+		var serviceReturn *domain.Seller
+		service.On("Create", requestObject.ToSeller()).Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
 
 		server.ServeHTTP(response, request)
 
@@ -135,7 +151,7 @@ func TestUpdateSeller(t *testing.T) {
 		assert.Equal(t, http.StatusNotFound, response.Code)
 	})
 
-	t.Run("Should return conflict error", func(t *testing.T) {
+	t.Run("Should return conflict error when cid already exists", func(t *testing.T) {
 		server, service, controller := InitSellerServer(t)
 
 		id := 1
@@ -147,6 +163,24 @@ func TestUpdateSeller(t *testing.T) {
 		service.On(
 			"Update", id, requestObject.ToUpdateSeller()).
 			Return(serviceReturn, apperr.NewResourceAlreadyExists(ResourceAlreadyExists))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
+	t.Run("Should return conflict error when locality id not exists", func(t *testing.T) {
+		server, service, controller := InitSellerServer(t)
+
+		id := 1
+
+		server.PATCH(DefinePath(ResourceSellersUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceSellersUri, id), CreateBody(requestObject))
+
+		var serviceReturn *domain.Seller
+		service.On(
+			"Update", id, requestObject.ToUpdateSeller()).
+			Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
 
 		server.ServeHTTP(response, request)
 

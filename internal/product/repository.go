@@ -1,21 +1,41 @@
 package product
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
 
-// Repository encapsulates the storage of a Product.
+const (
+	GetAllQuery = "SELECT id, description, expiration_rate, freezing_rate, height, lenght, netweight, product_code, recommended_freezing_temperature, width, id_product_type, id_seller FROM products;"
+	GetQuery    = "SELECT id, description, expiration_rate, freezing_rate, height, lenght, netweight, product_code, recommended_freezing_temperature, width, id_product_type, id_seller FROM products WHERE id=?;"
+	ExistsQuery = "SELECT product_code FROM products WHERE product_code=?;"
+	InsertQuery = "INSERT INTO products(description,expiration_rate,freezing_rate,height,lenght,netweight,product_code,recommended_freezing_temperature,width,id_product_type,id_seller) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
+	UpdateQuery = "UPDATE products SET description=?, expiration_rate=?, freezing_rate=?, height=?, lenght=?, netweight=?, product_code=?, recommended_freezing_temperature=?, width=?, id_product_type=?, id_seller=?  WHERE id=?"
+	DeleteQuery = "DELETE FROM products WHERE id=?"
+
+	CountRecordsByAllProductsQuery = `SELECT p.id "product_id", p.description, count(pr.id) "records_count"
+		FROM products p
+		LEFT JOIN product_records pr ON p.id = pr.product_id
+		GROUP BY p.id`
+
+	CountRecordsByProductQuery = `SELECT p.id "product_id", p.description, count(pr.id) "records_count"
+		FROM products p
+		LEFT JOIN product_records pr ON p.id = pr.product_id
+		WHERE p.id=?
+		GROUP BY p.id`
+)
+
 type Repository interface {
-	GetAll(ctx context.Context) []domain.Product
-	Get(ctx context.Context, id int) *domain.Product
-	Exists(ctx context.Context, productCode string) bool
-	Save(ctx context.Context, p domain.Product) int
-	Update(ctx context.Context, p domain.Product)
-	Delete(ctx context.Context, id int)
+	GetAll() []domain.Product
+	Get(id int) *domain.Product
+	Exists(productCode string) bool
+	Save(p domain.Product) int
+	Update(p domain.Product)
+	Delete(id int)
+	CountRecordsByAllProducts() []domain.RecordsByProductReport
+	CountRecordsByProduct(id int) *domain.RecordsByProductReport
 }
 
 type repository struct {
@@ -28,9 +48,8 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r *repository) GetAll(ctx context.Context) []domain.Product {
-	query := "SELECT * FROM products;"
-	rows, err := r.db.Query(query)
+func (r *repository) GetAll() []domain.Product {
+	rows, err := r.db.Query(GetAllQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -46,9 +65,8 @@ func (r *repository) GetAll(ctx context.Context) []domain.Product {
 	return products
 }
 
-func (r *repository) Get(ctx context.Context, id int) *domain.Product {
-	query := "SELECT * FROM products WHERE id=?;"
-	row := r.db.QueryRow(query, id)
+func (r *repository) Get(id int) *domain.Product {
+	row := r.db.QueryRow(GetQuery, id)
 	p := domain.Product{}
 	err := row.Scan(&p.ID, &p.Description, &p.ExpirationRate, &p.FreezingRate, &p.Height, &p.Length, &p.Netweight, &p.ProductCode, &p.RecomFreezTemp, &p.Width, &p.ProductTypeID, &p.SellerID)
 
@@ -62,16 +80,14 @@ func (r *repository) Get(ctx context.Context, id int) *domain.Product {
 	return &p
 }
 
-func (r *repository) Exists(ctx context.Context, productCode string) bool {
-	query := "SELECT product_code FROM products WHERE product_code=?;"
-	row := r.db.QueryRow(query, productCode)
+func (r *repository) Exists(productCode string) bool {
+	row := r.db.QueryRow(ExistsQuery, productCode)
 	err := row.Scan(&productCode)
 	return err == nil
 }
 
-func (r *repository) Save(ctx context.Context, p domain.Product) int {
-	query := "INSERT INTO products(description,expiration_rate,freezing_rate,height,lenght,netweight,product_code,recommended_freezing_temperature,width,id_product_type,id_seller) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
-	stmt, err := r.db.Prepare(query)
+func (r *repository) Save(p domain.Product) int {
+	stmt, err := r.db.Prepare(InsertQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -89,9 +105,8 @@ func (r *repository) Save(ctx context.Context, p domain.Product) int {
 	return int(id)
 }
 
-func (r *repository) Update(ctx context.Context, p domain.Product) {
-	query := "UPDATE products SET description=?, expiration_rate=?, freezing_rate=?, height=?, lenght=?, netweight=?, product_code=?, recommended_freezing_temperature=?, width=?, id_product_type=?, id_seller=?  WHERE id=?"
-	stmt, err := r.db.Prepare(query)
+func (r *repository) Update(p domain.Product) {
+	stmt, err := r.db.Prepare(UpdateQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -102,9 +117,8 @@ func (r *repository) Update(ctx context.Context, p domain.Product) {
 	}
 }
 
-func (r *repository) Delete(ctx context.Context, id int) {
-	query := "DELETE FROM products WHERE id=?"
-	stmt, err := r.db.Prepare(query)
+func (r *repository) Delete(id int) {
+	stmt, err := r.db.Prepare(DeleteQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -113,4 +127,35 @@ func (r *repository) Delete(ctx context.Context, id int) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (r *repository) CountRecordsByAllProducts() []domain.RecordsByProductReport {
+	rows, err := r.db.Query(CountRecordsByAllProductsQuery)
+	if err != nil {
+		panic(err)
+	}
+
+	recordsByProducts := make([]domain.RecordsByProductReport, 0)
+
+	for rows.Next() {
+		record := domain.RecordsByProductReport{}
+		_ = rows.Scan(&record.ProductID, &record.Description, &record.RecordsCount)
+		recordsByProducts = append(recordsByProducts, record)
+	}
+
+	return recordsByProducts
+}
+
+func (r *repository) CountRecordsByProduct(id int) *domain.RecordsByProductReport {
+	rows := r.db.QueryRow(CountRecordsByProductQuery, id)
+	record := domain.RecordsByProductReport{}
+	err := rows.Scan(&record.ProductID, &record.Description, &record.RecordsCount)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		panic(err)
+	}
+
+	return &record
 }

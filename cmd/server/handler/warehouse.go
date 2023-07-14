@@ -6,6 +6,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/helpers"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
 )
@@ -16,16 +17,18 @@ type CreateWarehouseRequest struct {
 	WarehouseCode      *string `json:"warehouse_code" binding:"required"`
 	MinimumCapacity    *int    `json:"minimum_capacity" binding:"required"`
 	MinimumTemperature *int    `json:"minimum_temperature" binding:"required"`
+	LocalityID         *int    `json:"locality_id" binding:"required"`
 }
 
 func (w CreateWarehouseRequest) ToWarehouse() domain.Warehouse {
 	return domain.Warehouse{
 		ID:                 0,
-		Address:            *w.Address,
+		Address:            helpers.ToFormattedAddress(*w.Address),
 		Telephone:          *w.Telephone,
 		WarehouseCode:      *w.WarehouseCode,
 		MinimumCapacity:    *w.MinimumCapacity,
 		MinimumTemperature: *w.MinimumTemperature,
+		LocalityID:         *w.LocalityID,
 	}
 }
 
@@ -35,15 +38,19 @@ type UpdateWarehouseRequest struct {
 	WarehouseCode      *string `json:"warehouse_code"`
 	MinimumCapacity    *int    `json:"minimum_capacity"`
 	MinimumTemperature *int    `json:"minimum_temperature"`
+	LocalityID         *int    `json:"locality_id"`
 }
 
 func (w UpdateWarehouseRequest) ToUpdateWarehouse() domain.UpdateWarehouse {
+	*w.Address = helpers.ToFormattedAddress(*w.Address)
+
 	return domain.UpdateWarehouse{
 		Address:            w.Address,
 		Telephone:          w.Telephone,
 		WarehouseCode:      w.WarehouseCode,
 		MinimumCapacity:    w.MinimumCapacity,
 		MinimumTemperature: w.MinimumTemperature,
+		LocalityID:         w.LocalityID,
 	}
 }
 
@@ -58,21 +65,21 @@ func NewWarehouse(w warehouse.Service) *Warehouse {
 }
 
 // Get godoc
-// @Summary Get warehouse by ID
+// @Summary Get a warehouse by id
 // @Tags Warehouses
-// @Description This endpoint retrieves the information of a warehouse by its ID
-// @Accept  json
-// @Produce  json
-// @Param id path string true "Warehouse ID"
-// @Success 200 {object} domain.Warehouse
-// @Failure 400 {object} web.ErrorResponse "ID de armazem invalido"
-// @Failure 404 {object} web.ErrorResponse "Armazem nao encontrado"
+// @Description Get a warehouse based on the provided id. Returns a not found error if the warehouse does not exist.
+// @Produce json
+// @Param id path string true "Warehouse id"
+// @Success 200 {object} domain.Warehouse "Obtained warehouse"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /warehouses/{id} [get]
 func (w *Warehouse) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 
-		warehouse, err := w.service.Get(c.Request.Context(), id)
+		warehouse, err := w.service.Get(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -85,42 +92,45 @@ func (w *Warehouse) Get() gin.HandlerFunc {
 	}
 }
 
-// GetAll godoc
-// @Summary Get all warehouses
+// Get All godoc
+// @Summary List all warehouses
+// @Description Returns a collection of existing warehouses.
 // @Tags Warehouses
-// @Description Get all warehouses
-// @Accept  json
-// @Produce  json
-// @Success 200 {array} domain.Warehouse
-// @Failure 500 {object} web.ErrorResponse "Falha ao obter os armazéns"
+// @Produce json
+// @Success 200 {array} domain.Warehouse "List of all warehouses"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /warehouses [get]
 func (w *Warehouse) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		warehouses := w.service.GetAll(c.Request.Context())
+		warehouses := w.service.GetAll()
 		web.Success(c, http.StatusOK, warehouses)
 	}
 }
 
 // Create godoc
 // @Summary Create a warehouse
+// @Description Create a new warehouse based on the provided JSON payload.
 // @Tags Warehouses
-// @Description Create a new warehouse
-// @Accept  json
-// @Produce  json
-// @Success 201 {object} domain.Warehouse
-// @Failure 400 {object} web.ErrorResponse "Invalid data"
+// @Accept json
+// @Produce json
+// @Param request body CreateWarehouseRequest true "Warehouse to be created"
+// @Success 201 {object} domain.Warehouse "Created warehouse"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
-// @Failure 422 {object} web.ErrorResponse "Unprocessable Entity"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /warehouses [post]
 func (w *Warehouse) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		request := c.MustGet(RequestParamContext).(CreateWarehouseRequest)
 
-		created, err := w.service.Create(c, request.ToWarehouse())
+		created, err := w.service.Create(request.ToWarehouse())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
+				web.Error(c, http.StatusConflict, err.Error())
+				return
+			}
+			if apperr.Is[*apperr.DependentResourceNotFound](err) {
 				web.Error(c, http.StatusConflict, err.Error())
 				return
 			}
@@ -132,23 +142,25 @@ func (w *Warehouse) Create() gin.HandlerFunc {
 
 // Update godoc
 // @Summary Update a warehouse
+// @Description Update an existent warehouse based on the provided id and JSON payload.
 // @Tags Warehouses
-// @Description This endpoint allows updating the information of an existing warehouse
-// @Accept  json
-// @Produce  json
-// @Param token header string true "Authentication token"
-// @Success 200 {object} domain.Warehouse "Warehouse updated successfully"
-// @Failure 400 {object} web.ErrorResponse "Corpo da requisição inválido"
-// @Failure 404 {object} web.ErrorResponse "Not found"
-// @Failure 409 {object} web.ErrorResponse "Codigo de armazem ja registrado!"
-// @Failure 500 {object} web.ErrorResponse "Erro interno no servidor."
-// @Router /warehouses [put]
+// @Accept json
+// @Produce json
+// @Param id path int true "Warehouse id"
+// @Param request body UpdateWarehouseRequest true "Warehouse data"
+// @Success 200 {object} domain.Warehouse "Updated warehouse"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /warehouses [patch]
 func (w *Warehouse) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 		request := c.MustGet(RequestParamContext).(UpdateWarehouseRequest)
 
-		updated, err := w.service.Update(c.Request.Context(), id, request.ToUpdateWarehouse())
+		updated, err := w.service.Update(id, request.ToUpdateWarehouse())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -159,6 +171,10 @@ func (w *Warehouse) Update() gin.HandlerFunc {
 				web.Error(c, http.StatusConflict, err.Error())
 				return
 			}
+			if apperr.Is[*apperr.DependentResourceNotFound](err) {
+				web.Error(c, http.StatusConflict, err.Error())
+				return
+			}
 		}
 
 		web.Success(c, http.StatusOK, updated)
@@ -166,22 +182,20 @@ func (w *Warehouse) Update() gin.HandlerFunc {
 }
 
 // Delete godoc
-// @Summary Delete a warehouse by ID
+// @Summary Delete a warehouse
+// @Description Delete a warehouse based on the provided id.
 // @Tags Warehouses
-// @Description This endpoint allows deleting a warehouse by its ID
-// @Accept  json
-// @Produce  json
-// @Param id path string true "Warehouse ID"
-// @Success 204 {object} domain.Warehouse "No Content"
-// @Failure 400 {object} web.ErrorResponse "ID invalido"
-// @Failure 404 {object} web.ErrorResponse "Armazém não encontrado!"
-// @Failure 500 {object} web.ErrorResponse "Falha ao excluir o armazem"
-// @Router /warehouses/{id} [delete] "Falha ao excluir o armazem"
+// @Param id path string true "Warehouse id"
+// @Success 204 "No content"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /warehouses/{id} [delete]
 func (w *Warehouse) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 
-		err := w.service.Delete(c, id)
+		err := w.service.Delete(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {

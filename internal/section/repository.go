@@ -1,20 +1,32 @@
 package section
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
 
+const (
+	GetAllQuery                     = "SELECT * FROM sections;"
+	GetQuery                        = "SELECT * FROM sections WHERE id=?;"
+	ExistsQuery                     = "SELECT section_number FROM sections WHERE section_number=?;"
+	InsertQuery                     = "INSERT INTO sections(section_number, current_temperature, minimum_temperature, current_capacity, minimum_capacity, maximum_capacity, warehouse_id, id_product_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);"
+	UpdateQuery                     = "UPDATE sections SET section_number=?, current_temperature=?, minimum_temperature=?, current_capacity=?, minimum_capacity=?, maximum_capacity=?, warehouse_id=?, id_product_type=? WHERE id=?;"
+	DeleteQuery                     = "DELETE FROM sections WHERE id=?"
+	CountProductsByAllSectionsQuery = `SELECT s.id "section_id", s.section_number, COUNT(pb.product_id) "product_count" FROM sections s LEFT JOIN product_batches pb ON s.id = pb.section_id GROUP BY s.id`
+	CountProductsBySectionQuery     = `SELECT s.id "section_id", s.section_number, COUNT(pb.product_id) "product_count" FROM sections s LEFT JOIN product_batches pb ON s.id = pb.section_id WHERE s.id=? GROUP BY s.id`
+)
+
 type Repository interface {
-	GetAll(ctx context.Context) []domain.Section
-	Get(ctx context.Context, id int) *domain.Section
-	Exists(ctx context.Context, sectionNumber int) bool
-	Save(ctx context.Context, sc domain.Section) int
-	Update(ctx context.Context, s domain.Section)
-	Delete(ctx context.Context, id int)
+	GetAll() []domain.Section
+	Get(id int) *domain.Section
+	Exists(sectionNumber int) bool
+	Save(sc domain.Section) int
+	Update(s domain.Section)
+	Delete(id int)
+	CountProductsByAllSections() []domain.ProductsBySectionReport
+	CountProductsBySection(id int) *domain.ProductsBySectionReport
 }
 
 type repository struct {
@@ -27,13 +39,11 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r *repository) GetAll(ctx context.Context) []domain.Section {
-	query := "SELECT * FROM sections;"
-	rows, err := r.db.Query(query)
+func (r *repository) GetAll() []domain.Section {
+	rows, err := r.db.Query(GetAllQuery)
 	if err != nil {
 		panic(err)
 	}
-
 	sections := make([]domain.Section, 0)
 
 	for rows.Next() {
@@ -41,13 +51,11 @@ func (r *repository) GetAll(ctx context.Context) []domain.Section {
 		_ = rows.Scan(&s.ID, &s.SectionNumber, &s.CurrentTemperature, &s.MinimumTemperature, &s.CurrentCapacity, &s.MinimumCapacity, &s.MaximumCapacity, &s.WarehouseID, &s.ProductTypeID)
 		sections = append(sections, s)
 	}
-
 	return sections
 }
 
-func (r *repository) Get(ctx context.Context, id int) *domain.Section {
-	query := "SELECT * FROM sections WHERE id=?;"
-	row := r.db.QueryRow(query, id)
+func (r *repository) Get(id int) *domain.Section {
+	row := r.db.QueryRow(GetQuery, id)
 	s := domain.Section{}
 	err := row.Scan(&s.ID, &s.SectionNumber, &s.CurrentTemperature, &s.MinimumTemperature, &s.CurrentCapacity, &s.MinimumCapacity, &s.MaximumCapacity, &s.WarehouseID, &s.ProductTypeID)
 	if err != nil {
@@ -56,20 +64,17 @@ func (r *repository) Get(ctx context.Context, id int) *domain.Section {
 		}
 		panic(err)
 	}
-
 	return &s
 }
 
-func (r *repository) Exists(ctx context.Context, sectionNumber int) bool {
-	query := "SELECT section_number FROM sections WHERE section_number=?;"
-	row := r.db.QueryRow(query, sectionNumber)
+func (r *repository) Exists(sectionNumber int) bool {
+	row := r.db.QueryRow(ExistsQuery, sectionNumber)
 	err := row.Scan(&sectionNumber)
 	return err == nil
 }
 
-func (r *repository) Save(ctx context.Context, sc domain.Section) int {
-	query := "INSERT INTO sections(section_number, current_temperature, minimum_temperature, current_capacity, minimum_capacity, maximum_capacity, warehouse_id, id_product_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);"
-	stmt, err := r.db.Prepare(query)
+func (r *repository) Save(sc domain.Section) int {
+	stmt, err := r.db.Prepare(InsertQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -78,18 +83,15 @@ func (r *repository) Save(ctx context.Context, sc domain.Section) int {
 	if err != nil {
 		panic(err)
 	}
-
 	id, err := res.LastInsertId()
 	if err != nil {
 		panic(err)
 	}
-
 	return int(id)
 }
 
-func (r *repository) Update(ctx context.Context, s domain.Section) {
-	query := "UPDATE sections SET section_number=?, current_temperature=?, minimum_temperature=?, current_capacity=?, minimum_capacity=?, maximum_capacity=?, warehouse_id=?, id_product_type=? WHERE id=?;"
-	stmt, err := r.db.Prepare(query)
+func (r *repository) Update(s domain.Section) {
+	stmt, err := r.db.Prepare(UpdateQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -100,15 +102,40 @@ func (r *repository) Update(ctx context.Context, s domain.Section) {
 	}
 }
 
-func (r *repository) Delete(ctx context.Context, id int) {
-	query := "DELETE FROM sections WHERE id=?;"
-	stmt, err := r.db.Prepare(query)
+func (r *repository) Delete(id int) {
+	stmt, err := r.db.Prepare(DeleteQuery)
 	if err != nil {
 		panic(err)
 	}
-
 	_, err = stmt.Exec(id)
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (r *repository) CountProductsByAllSections() []domain.ProductsBySectionReport {
+	rows, err := r.db.Query(CountProductsByAllSectionsQuery)
+	if err != nil {
+		panic(err)
+	}
+	productBatches := make([]domain.ProductsBySectionReport, 0)
+	for rows.Next() {
+		pb := domain.ProductsBySectionReport{}
+		_ = rows.Scan(&pb.SectionID, &pb.SectionNumber, &pb.ProductsCount)
+		productBatches = append(productBatches, pb)
+	}
+	return productBatches
+}
+
+func (r *repository) CountProductsBySection(id int) *domain.ProductsBySectionReport {
+	rows := r.db.QueryRow(CountProductsBySectionQuery, id)
+	pb := domain.ProductsBySectionReport{}
+	err := rows.Scan(&pb.SectionID, &pb.SectionNumber, &pb.ProductsCount)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		panic(err)
+	}
+	return &pb
 }

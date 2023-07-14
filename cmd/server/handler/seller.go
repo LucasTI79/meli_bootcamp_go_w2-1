@@ -6,6 +6,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/seller"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/helpers"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
 )
@@ -15,19 +16,21 @@ type Seller struct {
 }
 
 type CreateSellerRequest struct {
-	CID         int    `json:"cid" binding:"required"`
-	CompanyName string `json:"company_name" binding:"required"`
-	Address     string `json:"address" binding:"required"`
-	Telephone   string `json:"telephone" binding:"required,e164"`
+	CID         *int    `json:"cid" binding:"required"`
+	CompanyName *string `json:"company_name" binding:"required"`
+	Address     *string `json:"address" binding:"required"`
+	Telephone   *string `json:"telephone" binding:"required,e164"`
+	LocalityID  *int    `json:"locality_id" binding:"required"`
 }
 
-func (r CreateSellerRequest) ToSeller() domain.Seller {
+func (s CreateSellerRequest) ToSeller() domain.Seller {
 	return domain.Seller{
 		ID:          0,
-		CID:         r.CID,
-		CompanyName: r.CompanyName,
-		Address:     r.Address,
-		Telephone:   r.Telephone,
+		CID:         *s.CID,
+		CompanyName: *s.CompanyName,
+		Address:     helpers.ToFormattedAddress(*s.Address),
+		Telephone:   *s.Telephone,
+		LocalityID:  *s.LocalityID,
 	}
 }
 
@@ -36,14 +39,18 @@ type UpdateSellerRequest struct {
 	CompanyName *string `json:"company_name"`
 	Address     *string `json:"address"`
 	Telephone   *string `json:"telephone" binding:"omitempty,e164"`
+	LocalityID  *int    `json:"locality_id" binding:"omitempty"`
 }
 
-func (r UpdateSellerRequest) ToUpdateSeller() domain.UpdateSeller {
+func (s UpdateSellerRequest) ToUpdateSeller() domain.UpdateSeller {
+	*s.Address = helpers.ToFormattedAddress(*s.Address)
+
 	return domain.UpdateSeller{
-		CID:         r.CID,
-		CompanyName: r.CompanyName,
-		Address:     r.Address,
-		Telephone:   r.Telephone,
+		CID:         s.CID,
+		CompanyName: s.CompanyName,
+		Address:     s.Address,
+		Telephone:   s.Telephone,
+		LocalityID:  s.LocalityID,
 	}
 }
 
@@ -52,38 +59,36 @@ func NewSeller(service seller.Service) *Seller {
 }
 
 // Create godoc
-// @Summary List sellers
-// @Description List all sellers
+// @Summary List all sellers
+// @Description Returns a collection of existing sellers.
 // @Tags Sellers
-// @Accept json
 // @Produce json
-// @Success 200 {object} []domain.Seller "List of sellers"
+// @Success 200 {object} []domain.Seller "List of all sellers"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sellers [get]
-func (p *Seller) GetAll() gin.HandlerFunc {
+func (s *Seller) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		sellers := p.service.GetAll(c.Request.Context())
+		sellers := s.service.GetAll()
 		web.Success(c, http.StatusOK, sellers)
 	}
 }
 
 // Get godoc
 // @Summary Get a seller by id
-// @Description Get a seller based on the provided id
+// @Description Get a seller based on the provided id. Returns a not found error if the seller does not exist.
 // @Tags Sellers
-// @Accept json
 // @Produce json
 // @Param id path int true "Seller Id"
-// @Success 200 {object} []domain.Seller "Created seller"
+// @Success 200 {object} []domain.Seller "Obtained seller"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sellers/{id} [get]
-func (p *Seller) Get() gin.HandlerFunc {
+func (s *Seller) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 
-		seller, err := p.service.Get(c.Request.Context(), id)
+		seller, err := s.service.Get(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -97,26 +102,29 @@ func (p *Seller) Get() gin.HandlerFunc {
 }
 
 // Create godoc
-// @Summary Create a new seller
-// @Description Create a new seller based on the provided JSON payload
+// @Summary Create a seller
+// @Description Create a new seller based on the provided JSON payload.
 // @Tags Sellers
 // @Accept json
 // @Produce json
-// @Param request body CreateSellerRequest true "Seller data"
+// @Param request body CreateSellerRequest true "Seller to be created"
 // @Success 201 {object} domain.Seller "Created seller"
-// @Failure 422 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "Not found error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sellers [post]
-func (p *Seller) Create() gin.HandlerFunc {
+func (s *Seller) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		request := c.MustGet(RequestParamContext).(CreateSellerRequest)
 
-		created, err := p.service.Create(c.Request.Context(), request.ToSeller())
+		created, err := s.service.Create(request.ToSeller())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
+				web.Error(c, http.StatusConflict, err.Error())
+				return
+			}
+			if apperr.Is[*apperr.DependentResourceNotFound](err) {
 				web.Error(c, http.StatusConflict, err.Error())
 				return
 			}
@@ -128,25 +136,25 @@ func (p *Seller) Create() gin.HandlerFunc {
 
 // Update godoc
 // @Summary Update a seller
-// @Description Update an existent seller based on the provided JSON payload
+// @Description Update an existent seller based on the provided id and JSON payload.
 // @Tags Sellers
 // @Accept json
 // @Produce json
 // @Param id path int true "Seller id"
-// @Param request body UpdateSellerRequest true "Seller data"
+// @Param seller body UpdateSellerRequest true "Seller data to be updated"
 // @Success 200 {object} domain.Seller "Updated seller"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sellers/{id} [patch]
-func (p *Seller) Update() gin.HandlerFunc {
+func (s *Seller) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 		request := c.MustGet(RequestParamContext).(UpdateSellerRequest)
 
-		response, err := p.service.Update(c.Request.Context(), id, request.ToUpdateSeller())
+		response, err := s.service.Update(id, request.ToUpdateSeller())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -158,6 +166,11 @@ func (p *Seller) Update() gin.HandlerFunc {
 				web.Error(c, http.StatusConflict, err.Error())
 				return
 			}
+
+			if apperr.Is[*apperr.DependentResourceNotFound](err) {
+				web.Error(c, http.StatusConflict, err.Error())
+				return
+			}
 		}
 
 		web.Success(c, http.StatusOK, response)
@@ -166,21 +179,19 @@ func (p *Seller) Update() gin.HandlerFunc {
 
 // Delete godoc
 // @Summary Delete a seller
-// @Description Delete a seller based on the provided JSON payload
+// @Description Delete a seller based on the provided id.
 // @Tags Sellers
-// @Accept json
-// @Produce json
 // @Param id path int true "Seller id"
-// @Success 204
+// @Success 204 "No content"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sellers/{id} [delete]
-func (p *Seller) Delete() gin.HandlerFunc {
+func (s *Seller) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 
-		err := p.service.Delete(c.Request.Context(), id)
+		err := s.service.Delete(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {

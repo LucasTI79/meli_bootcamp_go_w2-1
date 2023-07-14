@@ -1,10 +1,10 @@
 package warehouse_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	localityMock "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/locality/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse/mocks"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
@@ -12,78 +12,107 @@ import (
 )
 
 var (
-	w = domain.Warehouse{
+	mockedWarehouseTemplate = domain.Warehouse{
 		ID:                 1,
 		Address:            "Address",
 		Telephone:          "12345",
 		WarehouseCode:      "123",
 		MinimumCapacity:    1,
 		MinimumTemperature: 1,
+		LocalityID:         1,
+	}
+
+	l = domain.Locality{
+		ID: 1,
 	}
 )
 
 func TestServiceCreate(t *testing.T) {
 	t.Run("Should return a created warehouse", func(t *testing.T) {
-		service, repository := CreateService(t)
+		service, repository, localityRepository := CreateService(t)
 
+		mockedWarehouse := mockedWarehouseTemplate
 		id := 1
-		repository.On("Save", w).Return(id)
-		repository.On("Get", id).Return(&w)
-		repository.On("Exists", w.WarehouseCode).Return(false)
-		result, err := service.Create(context.TODO(), w)
+
+		repository.On("Exists", mockedWarehouse.WarehouseCode).Return(false)
+		localityRepository.On("Get", mockedWarehouse.LocalityID).Return(&l)
+		repository.On("Save", mockedWarehouse).Return(id)
+		repository.On("Get", id).Return(&mockedWarehouse)
+
+		result, err := service.Create(mockedWarehouse)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, w, *result)
+		assert.Equal(t, mockedWarehouse, *result)
 	})
 
-	t.Run("Should return a conflict error", func(t *testing.T) {
-		service, repository := CreateService(t)
+	t.Run("Should return a conflict error if warehouse already exists", func(t *testing.T) {
+		service, repository, _ := CreateService(t)
 
-		repository.On("Exists", w.WarehouseCode).Return(true)
-		result, err := service.Create(context.TODO(), w)
+		mockedWarehouse := mockedWarehouseTemplate
+
+		repository.On("Exists", mockedWarehouse.WarehouseCode).Return(true)
+		result, err := service.Create(mockedWarehouse)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.True(t, apperr.Is[*apperr.ResourceAlreadyExists](err))
 	})
+
+	t.Run("should return a conflict error if locality id doesn't exist", func(t *testing.T) {
+		service, repository, localityRepository := CreateService(t)
+
+		var emptyLocality *domain.Locality
+		mockedWarehouse := mockedWarehouseTemplate
+
+		repository.On("Exists", mockedWarehouse.WarehouseCode).Return(false)
+		localityRepository.On("Get", mockedWarehouse.LocalityID).Return(emptyLocality)
+
+		result, err := service.Create(mockedWarehouse)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.DependentResourceNotFound](err))
+	})
 }
 
 func TestServiceGet(t *testing.T) {
 	t.Run("Should return a list of warehouses", func(t *testing.T) {
-		service, repository := CreateService(t)
+		service, repository, _ := CreateService(t)
 
-		expected := []domain.Warehouse{w}
+		mockedWarehouse := mockedWarehouseTemplate
+		expected := []domain.Warehouse{mockedWarehouse}
 
 		repository.On("GetAll").Return(expected)
-		result := service.GetAll(context.TODO())
+		result := service.GetAll()
 
 		assert.NotEmpty(t, result)
 		assert.Equal(t, len(result), 1)
-		assert.Equal(t, result[0], w)
+		assert.Equal(t, result[0], mockedWarehouse)
 	})
 
 	t.Run("Should return a warehouse by specified id", func(t *testing.T) {
-		service, repository := CreateService(t)
+		service, repository, _ := CreateService(t)
 
 		id := 1
+		mockedWarehouse := mockedWarehouseTemplate
 
-		repository.On("Get", id).Return(&w)
-		result, err := service.Get(context.TODO(), id)
+		repository.On("Get", id).Return(&mockedWarehouse)
+		result, err := service.Get(id)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, *result, w)
+		assert.Equal(t, *result, mockedWarehouse)
 	})
 
 	t.Run("Should return a not found error", func(t *testing.T) {
-		service, repository := CreateService(t)
+		service, repository, _ := CreateService(t)
 
 		id := 1
 		var respositoryResult *domain.Warehouse
 
 		repository.On("Get", id).Return(respositoryResult)
-		result, err := service.Get(context.TODO(), id)
+		result, err := service.Get(id)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -93,7 +122,7 @@ func TestServiceGet(t *testing.T) {
 
 func TestServiceUpdate(t *testing.T) {
 	t.Run("Should return a not found error", func(t *testing.T) {
-		service, repository := CreateService(t)
+		service, repository, _ := CreateService(t)
 
 		id := 2
 		warehouseCode := "153"
@@ -104,7 +133,7 @@ func TestServiceUpdate(t *testing.T) {
 		var respositoryResult *domain.Warehouse
 
 		repository.On("Get", id).Return(respositoryResult)
-		result, err := service.Update(context.TODO(), id, updateWarehouse)
+		result, err := service.Update(id, updateWarehouse)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -112,7 +141,7 @@ func TestServiceUpdate(t *testing.T) {
 	})
 
 	t.Run("Should return a conflict error", func(t *testing.T) {
-		service, repository := CreateService(t)
+		service, repository, _ := CreateService(t)
 
 		id := 1
 		warehouseCode := "496"
@@ -120,18 +149,41 @@ func TestServiceUpdate(t *testing.T) {
 			ID:            &id,
 			WarehouseCode: &warehouseCode,
 		}
+		mockedWarehouse := mockedWarehouseTemplate
 
-		repository.On("Get", id).Return(&w)
+		repository.On("Get", id).Return(&mockedWarehouse)
 		repository.On("Exists", warehouseCode).Return(true)
-		result, err := service.Update(context.TODO(), id, updateWarehouse)
+		result, err := service.Update(id, updateWarehouse)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.True(t, apperr.Is[*apperr.ResourceAlreadyExists](err))
 	})
 
+	t.Run("Should return a locality dependent not found error", func(t *testing.T) {
+		service, repository, localityRepository := CreateService(t)
+
+		id := 1
+		warehouseCode := "496"
+		updateWarehouse := domain.UpdateWarehouse{
+			ID:            &id,
+			WarehouseCode: &warehouseCode,
+		}
+		mockedWarehouse := mockedWarehouseTemplate
+		var emptyLocality *domain.Locality
+
+		repository.On("Get", id).Return(&mockedWarehouse)
+		repository.On("Exists", warehouseCode).Return(false)
+		localityRepository.On("Get", mockedWarehouse.LocalityID).Return(emptyLocality)
+		result, err := service.Update(id, updateWarehouse)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.DependentResourceNotFound](err))
+	})
+
 	t.Run("Should return an updated warehouse", func(t *testing.T) {
-		service, repository := CreateService(t)
+		service, repository, localityRepository := CreateService(t)
 
 		id := 1
 		warehouseCode := "123"
@@ -141,14 +193,16 @@ func TestServiceUpdate(t *testing.T) {
 			Address:       &address,
 			WarehouseCode: &warehouseCode,
 		}
-		updatedWarehouse := w
+		mockedWarehouse := mockedWarehouseTemplate
+		updatedWarehouse := mockedWarehouse
 		updatedWarehouse.Overlap(updateWarehouse)
 
-		repository.On("Get", id).Return(&w)
+		repository.On("Get", id).Return(&mockedWarehouse)
 		repository.On("Exists", warehouseCode).Return(true)
+		localityRepository.On("Get", mockedWarehouse.LocalityID).Return(&domain.Locality{})
 		repository.On("Update", updatedWarehouse)
 		repository.On("Get", id).Return(&updatedWarehouse)
-		result, err := service.Update(context.TODO(), id, updateWarehouse)
+		result, err := service.Update(id, updateWarehouse)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -158,34 +212,36 @@ func TestServiceUpdate(t *testing.T) {
 
 func TestServiceDelete(t *testing.T) {
 	t.Run("Should return not found error", func(t *testing.T) {
-		service, repository := CreateService(t)
+		service, repository, _ := CreateService(t)
 
 		id := 1
 		var respositoryResult *domain.Warehouse
 
 		repository.On("Get", id).Return(respositoryResult)
-		err := service.Delete(context.TODO(), id)
+		err := service.Delete(id)
 
 		assert.Error(t, err)
 		assert.True(t, apperr.Is[*apperr.ResourceNotFound](err))
 	})
 
 	t.Run("Should delete a warehouse with success", func(t *testing.T) {
-		service, repository := CreateService(t)
+		service, repository, _ := CreateService(t)
 
 		id := 1
+		mockedWarehouse := mockedWarehouseTemplate
 
-		repository.On("Get", 1).Return(&w)
+		repository.On("Get", 1).Return(&mockedWarehouse)
 		repository.On("Delete", id)
-		err := service.Delete(context.TODO(), id)
+		err := service.Delete(id)
 
 		assert.NoError(t, err)
 	})
 }
 
-func CreateService(t *testing.T) (warehouse.Service, *mocks.Repository) {
+func CreateService(t *testing.T) (warehouse.Service, *mocks.Repository, *localityMock.Repository) {
 	t.Helper()
 	repository := new(mocks.Repository)
-	service := warehouse.NewService(repository)
-	return service, repository
+	localityRepository := new(localityMock.Repository)
+	service := warehouse.NewService(repository, localityRepository)
+	return service, repository, localityRepository
 }

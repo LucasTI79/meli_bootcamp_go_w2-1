@@ -57,6 +57,20 @@ func TestCreateSection(t *testing.T) {
 		assert.Equal(t, http.StatusConflict, response.Code)
 	})
 
+	t.Run("Should return dependent not found error", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		server.POST(DefinePath(resourceSectionUri), ValidationMiddleware(requestObject), controller.Create())
+		request, response := MakeRequest("POST", DefinePath(resourceSectionUri), CreateBody(requestObject))
+
+		var serviceReturn *domain.Section
+		service.On("Create", requestObject.ToSection()).Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
 	t.Run("Should return a created section", func(t *testing.T) {
 		server, service, controller := initSectionServer(t)
 
@@ -165,6 +179,24 @@ func TestUpdateSection(t *testing.T) {
 		assert.Equal(t, http.StatusConflict, response.Code)
 	})
 
+	t.Run("Should return dependent resource not found error", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		id := 1
+
+		server.PATCH(DefinePath(resourceSectionUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(resourceSectionUri, id), CreateBody(requestObject))
+
+		var serviceReturn *domain.Section
+		service.On(
+			"Update", id, requestObject.ToUpdateSection()).
+			Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
 	t.Run("Should return updated section", func(t *testing.T) {
 		server, service, controller := initSectionServer(t)
 
@@ -213,6 +245,64 @@ func TestDeleteSection(t *testing.T) {
 
 		assert.Equal(t, http.StatusNoContent, response.Code)
 	})
+}
+
+func TestReportProducts(t *testing.T) {
+	t.Run("Should return products count by all sections", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		server.GET(DefinePath(resourceSectionUri), controller.ReportProducts())
+		request, response := MakeRequest("GET", DefinePath(resourceSectionUri), "")
+
+		service.On("CountProductsByAllSections").Return([]domain.ProductsBySectionReport{}, nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
+	t.Run("Should return invalid id error", func(t *testing.T) {
+		server, _, controller := initSectionServer(t)
+
+		server.GET(DefinePath(resourceSectionUri), controller.ReportProducts())
+		request, response := MakeRequest("GET", DefinePath(resourceSectionUri)+"?id=abc", "")
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	})
+	t.Run("Should return not found error", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		server.GET(DefinePath(resourceSectionUri), controller.ReportProducts())
+		request, response := MakeRequest("GET", DefinePath(resourceSectionUri)+"?id=1", "")
+
+		productId := 1
+		var serviceReturn *domain.ProductsBySectionReport
+		service.On("CountProductsBySection", productId).Return(serviceReturn, apperr.NewResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	})
+	t.Run("Should return products count by section", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		server.GET(DefinePath(resourceSectionUri), controller.ReportProducts())
+		request, response := MakeRequest("GET", DefinePath(resourceSectionUri)+"?id=1", "")
+
+		productId := 1
+		serviceReturn := domain.ProductsBySectionReport{
+			SectionID:     productId,
+			SectionNumber: 1,
+			ProductsCount: 1,
+		}
+		service.On("CountProductsBySection", productId).Return(&serviceReturn, nil)
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
+
 }
 
 func initSectionServer(t *testing.T) (*gin.Engine, *mocks.Service, *handler.Section) {

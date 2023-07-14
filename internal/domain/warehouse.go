@@ -9,6 +9,7 @@ type Warehouse struct {
 	WarehouseCode      string `json:"warehouse_code"`
 	MinimumCapacity    int    `json:"minimum_capacity"`
 	MinimumTemperature int    `json:"minimum_temperature"`
+	LocalityID         int    `json:"locality_id"`
 }
 
 func (w *Warehouse) Overlap(updateWarehouse UpdateWarehouse) {
@@ -18,6 +19,7 @@ func (w *Warehouse) Overlap(updateWarehouse UpdateWarehouse) {
 	w.WarehouseCode = helpers.Fill(updateWarehouse.WarehouseCode, w.WarehouseCode).(string)
 	w.MinimumCapacity = helpers.Fill(updateWarehouse.MinimumCapacity, w.MinimumCapacity).(int)
 	w.MinimumTemperature = helpers.Fill(updateWarehouse.MinimumTemperature, w.MinimumTemperature).(int)
+	w.LocalityID = helpers.Fill(updateWarehouse.LocalityID, w.LocalityID).(int)
 }
 
 type UpdateWarehouse struct {
@@ -27,4 +29,5 @@ type UpdateWarehouse struct {
 	WarehouseCode      *string `json:"warehouse_code"`
 	MinimumCapacity    *int    `json:"minimum_capacity"`
 	MinimumTemperature *int    `json:"minimum_temperature"`
+	LocalityID         *int    `json:"locality_id"`
 }

@@ -8,6 +8,7 @@ type Seller struct {
 	CompanyName string `json:"company_name"`
 	Address     string `json:"address"`
 	Telephone   string `json:"telephone"`
+	LocalityID  int    `json:"locality_id"`
 }
 
 type UpdateSeller struct {
@@ -16,6 +17,7 @@ type UpdateSeller struct {
 	CompanyName *string `json:"company_name,omitempty"`
 	Address     *string `json:"address,omitempty"`
 	Telephone   *string `json:"telephone,omitempty"`
+	LocalityID  *int    `json:"locality_id,omitempty"`
 }
 
 func (p *Seller) Overlap(product UpdateSeller) {
@@ -25,4 +27,5 @@ func (p *Seller) Overlap(product UpdateSeller) {
 	p.CompanyName = helpers.Fill(product.CompanyName, p.CompanyName).(string)
 	p.Address = helpers.Fill(product.Address, p.Address).(string)
 	p.Telephone = helpers.Fill(product.Telephone, p.Telephone).(string)
+	p.LocalityID = helpers.Fill(product.LocalityID, p.LocalityID).(int)
 }

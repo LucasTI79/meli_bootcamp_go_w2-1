@@ -1,19 +1,27 @@
 package warehouse
 
 import (
-	"context"
 	"database/sql"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 )
 
+const (
+	GetAllQuery = "SELECT id, address, telephone, warehouse_code, minimum_capacity, minimum_temperature, locality_id FROM warehouses"
+	GetQuery    = "SELECT id, address, telephone, warehouse_code, minimum_capacity, minimum_temperature, locality_id FROM warehouses WHERE id=?"
+	ExistsQuery = "SELECT warehouse_code FROM warehouses WHERE warehouse_code=?"
+	InsertQuery = "INSERT INTO warehouses (address, telephone, warehouse_code, minimum_capacity, minimum_temperature, locality_id) VALUES (?, ?, ?, ?, ?,?)"
+	UpdateQuery = "UPDATE warehouses SET address=?, telephone=?, warehouse_code=?, minimum_capacity=?, minimum_temperature=?, locality_id=? WHERE id=?"
+	DeleteQuery = "DELETE FROM warehouses WHERE id=?"
+)
+
 type Repository interface {
-	GetAll(ctx context.Context) []domain.Warehouse
-	Get(ctx context.Context, id int) *domain.Warehouse
-	Exists(ctx context.Context, warehouseCode string) bool
-	Save(ctx context.Context, w domain.Warehouse) int
-	Update(ctx context.Context, w domain.Warehouse)
-	Delete(ctx context.Context, id int)
+	GetAll() []domain.Warehouse
+	Get(id int) *domain.Warehouse
+	Exists(warehouseCode string) bool
+	Save(w domain.Warehouse) int
+	Update(w domain.Warehouse)
+	Delete(id int)
 }
 
 type repository struct {
@@ -26,9 +34,8 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r *repository) GetAll(ctx context.Context) []domain.Warehouse {
-	query := "SELECT * FROM warehouses"
-	rows, err := r.db.QueryContext(ctx, query)
+func (r *repository) GetAll() []domain.Warehouse {
+	rows, err := r.db.Query(GetAllQuery)
 	if err != nil {
 		panic(err)
 	}
@@ -37,18 +44,17 @@ func (r *repository) GetAll(ctx context.Context) []domain.Warehouse {
 
 	for rows.Next() {
 		w := domain.Warehouse{}
-		_ = rows.Scan(&w.ID, &w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumCapacity, &w.MinimumTemperature)
+		_ = rows.Scan(&w.ID, &w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumCapacity, &w.MinimumTemperature, &w.LocalityID)
 		warehouses = append(warehouses, w)
 	}
 
 	return warehouses
 }
 
-func (r *repository) Get(ctx context.Context, id int) *domain.Warehouse {
-	query := "SELECT * FROM warehouses WHERE id=?;"
-	row := r.db.QueryRow(query, id)
+func (r *repository) Get(id int) *domain.Warehouse {
+	row := r.db.QueryRow(GetQuery, id)
 	w := domain.Warehouse{}
-	err := row.Scan(&w.ID, &w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumCapacity, &w.MinimumTemperature)
+	err := row.Scan(&w.ID, &w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumCapacity, &w.MinimumTemperature, &w.LocalityID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil
@@ -59,21 +65,19 @@ func (r *repository) Get(ctx context.Context, id int) *domain.Warehouse {
 	return &w
 }
 
-func (r *repository) Exists(ctx context.Context, warehouseCode string) bool {
-	query := "SELECT warehouse_code FROM warehouses WHERE warehouse_code=?;"
-	row := r.db.QueryRow(query, warehouseCode)
+func (r *repository) Exists(warehouseCode string) bool {
+	row := r.db.QueryRow(ExistsQuery, warehouseCode)
 	err := row.Scan(&warehouseCode)
 	return err == nil
 }
 
-func (r *repository) Save(ctx context.Context, w domain.Warehouse) int {
-	query := "INSERT INTO warehouses (address, telephone, warehouse_code, minimum_capacity, minimum_temperature) VALUES (?, ?, ?, ?, ?)"
-	stmt, err := r.db.Prepare(query)
+func (r *repository) Save(w domain.Warehouse) int {
+	stmt, err := r.db.Prepare(InsertQuery)
 	if err != nil {
 		panic(err)
 	}
 
-	res, err := stmt.Exec(w.Address, w.Telephone, w.WarehouseCode, w.MinimumCapacity, w.MinimumTemperature)
+	res, err := stmt.Exec(w.Address, w.Telephone, w.WarehouseCode, w.MinimumCapacity, w.MinimumTemperature, w.LocalityID)
 	if err != nil {
 		panic(err)
 	}
@@ -86,22 +90,20 @@ func (r *repository) Save(ctx context.Context, w domain.Warehouse) int {
 	return int(id)
 }
 
-func (r *repository) Update(ctx context.Context, w domain.Warehouse) {
-	query := "UPDATE warehouses SET address=?, telephone=?, warehouse_code=?, minimum_capacity=?, minimum_temperature=? WHERE id=?"
-	stmt, err := r.db.Prepare(query)
+func (r *repository) Update(w domain.Warehouse) {
+	stmt, err := r.db.Prepare(UpdateQuery)
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = stmt.Exec(&w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumCapacity, &w.MinimumTemperature, &w.ID)
+	_, err = stmt.Exec(&w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumCapacity, &w.MinimumTemperature, &w.LocalityID, &w.ID)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (r *repository) Delete(ctx context.Context, id int) {
-	query := "DELETE FROM warehouses WHERE id=?"
-	stmt, err := r.db.Prepare(query)
+func (r *repository) Delete(id int) {
+	stmt, err := r.db.Prepare(DeleteQuery)
 	if err != nil {
 		panic(err)
 	}

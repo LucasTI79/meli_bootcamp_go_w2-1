@@ -2,12 +2,17 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	invalidId = "o id '%s' é inválido"
 )
 
 type CreateBuyerRequest struct {
@@ -38,38 +43,32 @@ func (r UpdateBuyerRequest) ToUpdateBuyer() domain.UpdateBuyer {
 	}
 }
 
-func (buyerRequest UpdateBuyerRequest) IsBlank() bool {
-	return buyerRequest.CardNumberID == nil &&
-		buyerRequest.FirstName == nil &&
-		buyerRequest.LastName == nil
-}
-
 type Buyer struct {
-	buyerService buyer.IService
+	buyerService buyer.Service
 }
 
-func NewBuyer(b buyer.IService) *Buyer {
+func NewBuyer(b buyer.Service) *Buyer {
 	return &Buyer{
 		buyerService: b,
 	}
 }
 
 // Get godoc
-// @Summary List buyer based on ID
-// @Description get buyer by ID
+// @Summary Get a buyer by id
+// @Description Get a buyer based on the provided id. Returns a not found error if the buyer does not exist.
 // @Tags Buyers
-// @Accept json
 // @Produce json
-// @Param id path int true "ID do comprador"
-// @Success 200 {object} domain.Buyer "List a specific Buyer according to ID"
+// @Param id path int true "Buyer id"
+// @Success 200 {object} domain.Buyer "Obtained buyer"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "Buyer not found"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /buyers/{id} [get]
 func (b *Buyer) Get() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 
-		buyer, err := b.buyerService.Get(c.Request.Context(), id)
+		buyer, err := b.buyerService.Get(id)
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
 				web.Error(c, http.StatusNotFound, err.Error())
@@ -83,38 +82,36 @@ func (b *Buyer) Get() gin.HandlerFunc {
 
 // GetAll godoc
 // @Summary List all buyers
-// @Description getAll buyers
+// @Description Returns a collection of existing buyers.
 // @Tags Buyers
-// @Accept json
 // @Produce json
-// @Success 200 {object} domain.Buyer "List of all Buyers"
-// @Failure 204 {object} web.ErrorResponse "Buyer not found"
-// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Success 200 {object} domain.Buyer "List of all buyers"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /buyers [get]
 func (b *Buyer) GetAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		buyers := b.buyerService.GetAll(c.Request.Context())
+		buyers := b.buyerService.GetAll()
 		web.Success(c, http.StatusOK, buyers)
 	}
 }
 
 // Create godoc
-// @Summary Create new buyer
-// @Description Create a new buyer based on the provided JSON payload
+// @Summary Create a buyer
+// @Description Create a new buyer based on the provided JSON payload.
 // @Tags Buyers
 // @Accept json
 // @Produce json
-// @Param buyer body domain.Buyer true "Buyer to be created"
+// @Param request body domain.Buyer true "Buyer data"
 // @Success 201 {object} domain.Buyer "Created buyer"
-// @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 422 {object} web.ErrorResponse "Json Parse error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /buyers [post]
 func (b *Buyer) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		request := c.MustGet(RequestParamContext).(CreateBuyerRequest)
 
-		buyer, err := b.buyerService.Create(c.Request.Context(), request.ToBuyer())
+		buyer, err := b.buyerService.Create(request.ToBuyer())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
@@ -128,18 +125,18 @@ func (b *Buyer) Create() gin.HandlerFunc {
 }
 
 // Update godoc
-// @Summary Update a buyer based on ID
-// @Description Update a specific buyer based on the provided JSON payload
+// @Summary Update a buyer
+// @Description Update an existent buyer based on the provided id and JSON payload.
 // @Tags Buyers
 // @Accept json
 // @Produce json
-// @Param buyer body domain.UpdateBuyer true "Buyer to be updated"
-// @Param id path int true "ID do comprador"
-// @Success 200 {object} domain.Buyer "Buyer with updated information"
+// @Param id path int true "Buyer ID"
+// @Param buyer body domain.UpdateBuyer true "Buyer data to update"
+// @Success 200 {object} domain.Buyer "Updated buyer"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "Buyer not found"
-// @Failure 422 {object} web.ErrorResponse "Json Parse error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /buyers/{id} [patch]
 func (b *Buyer) Update() gin.HandlerFunc {
@@ -147,7 +144,7 @@ func (b *Buyer) Update() gin.HandlerFunc {
 		id := c.GetInt("Id")
 		request := c.MustGet(RequestParamContext).(UpdateBuyerRequest)
 
-		updated, err := b.buyerService.Update(c.Request.Context(), id, request.ToUpdateBuyer())
+		updated, err := b.buyerService.Update(id, request.ToUpdateBuyer())
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -166,20 +163,20 @@ func (b *Buyer) Update() gin.HandlerFunc {
 }
 
 // Delete godoc
-// @Summary Delete a buyer based on ID
-// @Description Delete a specific buyer based on ID
+// @Summary Delete a buyer
+// @Description Delete a buyer based on the provided id.
 // @Tags Buyers
-// @Param id path int true "ID do comprador"
+// @Param id path int true "Buyer ID"
 // @Success 204 "No content"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "Buyer not found"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /buyers/{id} [delete]
 func (b *Buyer) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetInt("Id")
 
-		err := b.buyerService.Delete(c.Request.Context(), id)
+		err := b.buyerService.Delete(id)
 
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
@@ -189,5 +186,48 @@ func (b *Buyer) Delete() gin.HandlerFunc {
 		}
 
 		web.Success(c, http.StatusNoContent, nil)
+	}
+}
+
+// Create godoc
+// @Summary Count purchase orders by buyer
+// @Description Purchase Orders count by buyer.
+// @Description If no query param is given, bring the report of all purchase orders for all buyers.
+// @Description If a buyer id is specified, bring the amount of purchase orders for this buyer.
+// @Tags Buyers
+// @Produce json
+// @Param id query int false "Buyer ID"
+// @Success 200 {object} []domain.PurchasesByBuyerReport "List of purchase Orders by Buyer"
+// @Failure 400 {object} web.ErrorResponse "Validation error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /buyers/report-purchase-orders [get]
+func (b *Buyer) ReportPurchases() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idParam := c.Request.URL.Query().Get("id")
+
+		if idParam == "" {
+			result := b.buyerService.CountPurchasesByAllBuyers()
+			web.Success(c, http.StatusOK, result)
+			return
+		}
+
+		id, err := strconv.Atoi(idParam)
+
+		if err != nil {
+			web.Error(c, http.StatusBadRequest, InvalidId, idParam)
+			return
+		}
+
+		purchases, err := b.buyerService.CountPurchasesByBuyer(id)
+
+		if err != nil {
+			if apperr.Is[*apperr.ResourceNotFound](err) {
+				web.Error(c, http.StatusNotFound, err.Error())
+				return
+			}
+		}
+
+		web.Success(c, http.StatusOK, purchases)
 	}
 }
