@@ -26,7 +26,7 @@ type CreateProductRequest struct {
 	Height         *float32 `json:"height" binding:"required"`
 	Length         *float32 `json:"length" binding:"required"`
 	Netweight      *float32 `json:"netweight" binding:"required"`
-	ProductCode    *string  `json:"product_code" binding:"required"`
+	ProductCode    *string  `json:"product_code" binding:"required,gt=3"`
 	RecomFreezTemp *float32 `json:"recommended_freezing_temperature" binding:"required"`
 	Width          *float32 `json:"width" binding:"required"`
 	ProductTypeID  *int     `json:"product_type_id" binding:"required"`

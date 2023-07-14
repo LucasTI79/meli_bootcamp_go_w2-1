@@ -7,11 +7,11 @@ import (
 )
 
 const (
-	GetAllQuery = "SELECT id, address, telephone, warehouse_code, minimum_capacity, minimum_temperature FROM warehouses"
-	GetQuery    = "SELECT id, address, telephone, warehouse_code, minimum_capacity, minimum_temperature FROM warehouses WHERE id=?"
+	GetAllQuery = "SELECT id, address, telephone, warehouse_code, minimum_capacity, minimum_temperature, locality_id FROM warehouses"
+	GetQuery    = "SELECT id, address, telephone, warehouse_code, minimum_capacity, minimum_temperature, locality_id FROM warehouses WHERE id=?"
 	ExistsQuery = "SELECT warehouse_code FROM warehouses WHERE warehouse_code=?"
-	InsertQuery = "INSERT INTO warehouses (address, telephone, warehouse_code, minimum_capacity, minimum_temperature) VALUES (?, ?, ?, ?, ?)"
-	UpdateQuery = "UPDATE warehouses SET address=?, telephone=?, warehouse_code=?, minimum_capacity=?, minimum_temperature=? WHERE id=?"
+	InsertQuery = "INSERT INTO warehouses (address, telephone, warehouse_code, minimum_capacity, minimum_temperature, locality_id) VALUES (?, ?, ?, ?, ?,?)"
+	UpdateQuery = "UPDATE warehouses SET address=?, telephone=?, warehouse_code=?, minimum_capacity=?, minimum_temperature=?, locality_id=? WHERE id=?"
 	DeleteQuery = "DELETE FROM warehouses WHERE id=?"
 )
 
@@ -44,7 +44,7 @@ func (r *repository) GetAll() []domain.Warehouse {
 
 	for rows.Next() {
 		w := domain.Warehouse{}
-		_ = rows.Scan(&w.ID, &w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumCapacity, &w.MinimumTemperature)
+		_ = rows.Scan(&w.ID, &w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumCapacity, &w.MinimumTemperature, &w.LocalityID)
 		warehouses = append(warehouses, w)
 	}
 
@@ -77,7 +77,7 @@ func (r *repository) Save(w domain.Warehouse) int {
 		panic(err)
 	}
 
-	res, err := stmt.Exec(w.Address, w.Telephone, w.WarehouseCode, w.MinimumCapacity, w.MinimumTemperature)
+	res, err := stmt.Exec(w.Address, w.Telephone, w.WarehouseCode, w.MinimumCapacity, w.MinimumTemperature, w.LocalityID)
 	if err != nil {
 		panic(err)
 	}
@@ -96,7 +96,7 @@ func (r *repository) Update(w domain.Warehouse) {
 		panic(err)
 	}
 
-	_, err = stmt.Exec(&w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumCapacity, &w.MinimumTemperature, &w.ID)
+	_, err = stmt.Exec(&w.Address, &w.Telephone, &w.WarehouseCode, &w.MinimumCapacity, &w.MinimumTemperature, &w.LocalityID, &w.ID)
 	if err != nil {
 		panic(err)
 	}

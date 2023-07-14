@@ -6,6 +6,7 @@ import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_batch"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/helpers"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/web"
 	"github.com/gin-gonic/gin"
 )
@@ -17,9 +18,9 @@ type CreateProductBatchRequest struct {
 	BatchNumber        *int     `json:"batch_number" binding:"required"`
 	CurrentQuantity    *int     `json:"current_quantity" binding:"required"`
 	CurrentTemperature *float32 `json:"current_temperature" binding:"required"`
-	DueDate            *string  `json:"due_date" binding:"required"`
+	DueDate            *string  `json:"due_date" binding:"required,datetime=2006-01-02 15:04:05"`
 	InitialQuantity    *int     `json:"initial_quantity" binding:"required"`
-	ManufacturingDate  *string  `json:"manufacturing_date" binding:"required"`
+	ManufacturingDate  *string  `json:"manufacturing_date" binding:"required,datetime=2006-01-02 15:04:05"`
 	ManufacturingHour  *int     `json:"manufacturing_hour" binding:"required"`
 	MinimumTemperature *float32 `json:"minimum_temperature" binding:"required"`
 	ProductID          *int     `json:"product_id" binding:"required"`
@@ -32,9 +33,9 @@ func (pb *CreateProductBatchRequest) ToProductBatches() domain.ProductBatch {
 		BatchNumber:        *pb.BatchNumber,
 		CurrentQuantity:    *pb.CurrentQuantity,
 		CurrentTemperature: *pb.CurrentTemperature,
-		DueDate:            *pb.DueDate,
+		DueDate:            helpers.ToDateTime(*pb.DueDate),
 		InitialQuantity:    *pb.InitialQuantity,
-		ManufacturingDate:  *pb.ManufacturingDate,
+		ManufacturingDate:  helpers.ToDateTime(*pb.ManufacturingDate),
 		ManufacturingHour:  *pb.ManufacturingHour,
 		MinimumTemperature: *pb.MinimumTemperature,
 		ProductID:          *pb.ProductID,
@@ -49,13 +50,13 @@ func NewProductBatches(service product_batch.Service) *ProductBatch {
 }
 
 // Create godoc
-// @Summary Create/ Save a new product batches
+// @Summary Create/ Save a new product batch
 // @Description Create a new product batches based on the provided JSON payload
-// @Tags ProductBatches
+// @Tags Product Batch
 // @Accept json
 // @Produce json
-// @Param request body CreateProductBatchesRequest true "Product Batches data"
-// @Success 201 {object} domain.ProductBatches "Created product batches"
+// @Param request body CreateProductBatchRequest true "Product Batches data"
+// @Success 201 {object} domain.ProductBatch "Created product batches"
 // @Failure 400 {object} web.ErrorResponse "Bad request"
 // @Failure 404 {object} web.ErrorResponse "Not found"
 // @Failure 422 {object} web.ErrorResponse "Unprocessable Entity"
@@ -77,6 +78,7 @@ func (pb *ProductBatch) Create() gin.HandlerFunc {
 				return
 			}
 		}
+
 		web.Success(c, http.StatusCreated, created)
 	}
 }

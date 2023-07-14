@@ -3,6 +3,7 @@ package handler_test
 import (
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
@@ -22,9 +23,9 @@ var (
 		BatchNumber:        1,
 		CurrentQuantity:    1,
 		CurrentTemperature: 2,
-		DueDate:            "2021-01-01",
+		DueDate:            time.Date(2021, 01, 01, 10, 10, 10, 10, time.UTC),
 		InitialQuantity:    10,
-		ManufacturingDate:  "2021-01-01",
+		ManufacturingDate:  time.Date(2021, 01, 01, 10, 10, 10, 10, time.UTC),
 		ManufacturingHour:  10,
 		MinimumTemperature: 0,
 		ProductID:          1,
@@ -33,18 +34,22 @@ var (
 )
 
 func TestCreateProductBatches(t *testing.T) {
+	dueDate := productBatch.DueDate.Format("2006-01-02 15:04:05")
+	manufacturingDate := productBatch.ManufacturingDate.Format("2006-01-02 15:04:05")
+
 	requestObject := handler.CreateProductBatchRequest{
 		BatchNumber:        &productBatch.BatchNumber,
 		CurrentQuantity:    &productBatch.CurrentQuantity,
 		CurrentTemperature: &productBatch.CurrentTemperature,
-		DueDate:            &productBatch.DueDate,
+		DueDate:            &dueDate,
 		InitialQuantity:    &productBatch.InitialQuantity,
-		ManufacturingDate:  &productBatch.ManufacturingDate,
+		ManufacturingDate:  &manufacturingDate,
 		ManufacturingHour:  &productBatch.ManufacturingHour,
 		MinimumTemperature: &productBatch.MinimumTemperature,
 		ProductID:          &productBatch.ProductID,
 		SectionID:          &productBatch.SectionID,
 	}
+
 	t.Run("Should return conflict error when product batch already exists", func(t *testing.T) {
 		server, service, controller := InitProductBatchesServer(t)
 

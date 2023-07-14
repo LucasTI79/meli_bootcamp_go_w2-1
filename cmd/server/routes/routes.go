@@ -6,6 +6,7 @@ import (
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/handler"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/cmd/server/middleware"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/docs"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/buyer"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/carrier"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/employee"
@@ -24,7 +25,6 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/swag/example/basic/docs"
 )
 
 const (
@@ -128,7 +128,8 @@ func (r *router) buildSectionRoutes() {
 
 func (r *router) buildWarehouseRoutes() {
 	repo := warehouse.NewRepository(r.db)
-	service := warehouse.NewService(repo)
+	localityRepo := locality.NewRepository(r.db)
+	service := warehouse.NewService(repo, localityRepo)
 	controller := handler.NewWarehouse(service)
 	warehouseRoutes := r.rg.Group("/warehouses")
 

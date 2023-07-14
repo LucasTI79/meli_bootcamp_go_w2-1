@@ -1,9 +1,10 @@
 package section_test
 
 import (
+	"testing"
+
 	mocks3 "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/product_type/mocks"
 	mocks2 "github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse/mocks"
-	"testing"
 
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/section"
@@ -146,7 +147,7 @@ func TestServiceUpdate(t *testing.T) {
 
 		id := 1
 		sectionNumber := 123
-		currentTemperature := 2
+		currentTemperature := float32(2)
 		UpdateSection := domain.UpdateSection{
 			ID:                 &id,
 			CurrentTemperature: &currentTemperature,
