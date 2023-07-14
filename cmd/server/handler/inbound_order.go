@@ -44,10 +44,10 @@ func NewInboundOrder(service inbound_order.Service) *InboundOrder {
 // @Tags Inbound Orders
 // @Accept json
 // @Produce json
-// @Param request body CreateInboundOrderRequest true "InboundOrder data"
-// @Success 201 {object} domain.InboundOrder "Created inbound_order"
-// @Failure 422 {object} web.ErrorResponse "Validation error"
+// @Param request body CreateInboundOrderRequest true "Inbound Order data"
+// @Success 201 {object} domain.InboundOrder "Created inbound order"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /inbound-orders [post]
 func (i *InboundOrder) Create() gin.HandlerFunc {

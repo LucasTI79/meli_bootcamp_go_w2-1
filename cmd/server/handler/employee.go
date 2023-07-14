@@ -75,7 +75,7 @@ func (e *Employee) GetAll() gin.HandlerFunc {
 // @Tags Employees
 // @Produce json
 // @Param id path int true "Employee id"
-// @Success 200 {object} domain.Employee "Employee"
+// @Success 200 {object} domain.Employee "Obtained Employee"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
@@ -105,8 +105,8 @@ func (e *Employee) Get() gin.HandlerFunc {
 // @Produce json
 // @Param request body domain.Employee true "Employee data"
 // @Success 201 {object} domain.Employee "Created employee"
-// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /employees [post]
 func (e *Employee) Create() gin.HandlerFunc {
@@ -140,9 +140,9 @@ func (e *Employee) Create() gin.HandlerFunc {
 // @Param request body UpdateEmployeeRequest true "Employee data to update"
 // @Success 200 {object} domain.Employee "Updated employee"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resourse not found error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /employees/{id} [patch]
 func (e *Employee) Update() gin.HandlerFunc {
@@ -177,7 +177,6 @@ func (e *Employee) Update() gin.HandlerFunc {
 // @Summary Delete employee
 // @Description Delete employee based on the provided id
 // @Tags Employees
-// @Produce json
 // @Param id path int true "Employee ID"
 // @Success 204 "No content"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
@@ -201,12 +200,11 @@ func (e *Employee) Delete() gin.HandlerFunc {
 }
 
 // Get godoc
-// @Summary Count inbound_orders by employee
-// @Description InboundOrder count by employee.
+// @Summary Count inbound orders by employee
+// @Description Inbound Order count by employee.
 // @Description If no query param is given, bring the report to all employees.
 // @Description If a employee id is specified, bring the number of inbound orders for this employee.
 // @Tags Employees
-// @Accept json
 // @Produce json
 // @Param id query int false "Employee ID"
 // @Success 200 {object} []domain.InboundOrdersByEmployee "Get of employees"

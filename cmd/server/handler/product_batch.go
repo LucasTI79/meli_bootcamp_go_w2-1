@@ -50,16 +50,15 @@ func NewProductBatches(service product_batch.Service) *ProductBatch {
 }
 
 // Create godoc
-// @Summary Create/ Save a new product batch
-// @Description Create a new product batches based on the provided JSON payload
+// @Summary Create a new product batch
+// @Description Create a new product batch based on the provided JSON payload
 // @Tags Product Batch
 // @Accept json
 // @Produce json
-// @Param request body CreateProductBatchRequest true "Product Batches data"
-// @Success 201 {object} domain.ProductBatch "Created product batches"
-// @Failure 400 {object} web.ErrorResponse "Bad request"
-// @Failure 404 {object} web.ErrorResponse "Not found"
-// @Failure 422 {object} web.ErrorResponse "Unprocessable Entity"
+// @Param request body CreateProductBatchRequest true "Product Batch data"
+// @Success 201 {object} domain.ProductBatch "Created product batch"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /product-batches [post]
 func (pb *ProductBatch) Create() gin.HandlerFunc {

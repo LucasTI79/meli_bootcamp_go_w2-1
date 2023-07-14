@@ -38,6 +38,18 @@ func NewCarrier(c carrier.Service) *Carrier {
 	}
 }
 
+// Create godoc
+// @Summary Create a carrier
+// @Description Create a new carrier based on the provided JSON payload.
+// @Tags Carriers
+// @Accept json
+// @Produce json
+// @Param request body CreateCarrierRequest true "Carrier to be created"
+// @Success 201 {object} domain.Carrier "Created carrier"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
+// @Router /carriers [post]
 func (c *Carrier) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		request := ctx.MustGet(RequestParamContext).(CreateCarrierRequest)

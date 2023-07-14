@@ -71,10 +71,9 @@ func NewSection(s section.Service) *Section {
 }
 
 // Get All Sections godoc
-// @Summary Get all sections
-// @Description Get sections based on the provided JSON payload
+// @Summary List all sections
+// @Description Returns a collection of existing sections.
 // @Tags Sections
-// @Accept json
 // @Produce json
 // @Success 200 {object} []domain.Section "Section"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
@@ -87,11 +86,11 @@ func (s *Section) GetAll() gin.HandlerFunc {
 }
 
 // Get godoc
-// @Summary Get a section
+// @Summary Get a section by ID
 // @Description Get a section based on the provided JSON payload
 // @Tags Sections
-// @Accept json
 // @Produce json
+// @Param id path int true "Section ID"
 // @Success 200 {object} domain.Section "Section"
 // @Failure 400 {object} web.ErrorResponse"Validation error"
 // @Failure 404 {object} web.ErrorResponse "NotFound error"
@@ -119,10 +118,10 @@ func (s *Section) Get() gin.HandlerFunc {
 // @Tags Sections
 // @Accept json
 // @Produce json
-// @Param request body domain.Section true "Section data"
+// @Param request body CreateSectionRequest true "Section data"
 // @Success 201 {object} domain.Section "Created section"
-// @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 422 {object} web.ErrorResponse "Unprocessable error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sections [post]
 func (s *Section) Create() gin.HandlerFunc {
@@ -152,10 +151,13 @@ func (s *Section) Create() gin.HandlerFunc {
 // @Tags Sections
 // @Accept json
 // @Produce json
-// @Param request body domain.Section true "Section data"
+// @Param id path int true "Section ID"
+// @Param request body UpdateSectionRequest true "Section data"
 // @Success 200 {object} domain.Section "Updated section"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "NotFound error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sections/{id} [patch]
 func (s *Section) Update() gin.HandlerFunc {
@@ -188,11 +190,9 @@ func (s *Section) Update() gin.HandlerFunc {
 // @Summary Delete section
 // @Description Delete section based on the provided JSON payload
 // @Tags Sections
-// @Accept json
-// @Produce json
-// @Success 204
+// @Success 204 "No content"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 404 {object} web.ErrorResponse "NotFound error"
+// @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sections/{id} [delete]
 func (s *Section) Delete() gin.HandlerFunc {
@@ -214,13 +214,16 @@ func (s *Section) Delete() gin.HandlerFunc {
 
 // ReportProducts godoc
 // @Summary Return the report of products by section
-// @Description Return the report of products by section based on the provided JSON payload
+// @Description Return the report of products by section
+// @Description If no query param is given, it brings the report of all products by section
+// @Description If a section id is specified, it brings the number of products for this section.
 // @Tags Sections
-// @Accept json
 // @Produce json
-// @Success 200 {object} []domain.ProductsBySectionReport "List of products by section"
+// @Param id query int false "Section ID"
+// @Success 200 {object} []domain.ProductsBySectionReport "Report of products by section"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
+// @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /sections/report-products [get]
 func (s *Section) ReportProducts() gin.HandlerFunc {
 	return func(c *gin.Context) {

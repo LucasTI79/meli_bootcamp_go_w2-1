@@ -84,11 +84,10 @@ func NewProduct(service product.Service) *Product {
 	return &Product{service}
 }
 
-// Create godoc
+// Get All products godoc
 // @Summary List all products
 // @Description Returns a collection of existing products.
 // @Tags Products
-// @Accept json
 // @Produce json
 // @Success 200 {object} []domain.Product "List of all products"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
@@ -104,7 +103,6 @@ func (p *Product) GetAll() gin.HandlerFunc {
 // @Summary Get a product by id
 // @Description Get a product based on the provided id. Returns a not found error if the warehouse does not exist.
 // @Tags Products
-// @Accept json
 // @Produce json
 // @Param id path int true "Product Id"
 // @Success 200 {object} []domain.Product "Created product"
@@ -172,9 +170,9 @@ func (p *Product) Create() gin.HandlerFunc {
 // @Param request body UpdateProductRequest true "Product data"
 // @Success 200 {object} domain.Product "Updated product"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
-// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
+// @Failure 422 {object} web.ErrorResponse "Validation error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /products/{id} [patch]
 func (p *Product) Update() gin.HandlerFunc {
@@ -209,10 +207,8 @@ func (p *Product) Update() gin.HandlerFunc {
 // @Summary Delete a product
 // @Description Delete a product based on the provided id.
 // @Tags Products
-// @Accept json
-// @Produce json
-// @Param id path int true "Product id"
-// @Success 204
+// @Param id path int true "Product ID"
+// @Success 204 "No content"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
@@ -240,9 +236,8 @@ func (p *Product) Delete() gin.HandlerFunc {
 // @Description If no query param is given, it brings the report to all product records.
 // @Description If a product id is specified, it brings the number of records for this product.
 // @Tags Products
-// @Accept json
 // @Produce json
-// @Param id query int false "Product id"
+// @Param id query int false "Product ID"
 // @Success 200 {object} []domain.RecordsByProductReport "Report of records by product"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
