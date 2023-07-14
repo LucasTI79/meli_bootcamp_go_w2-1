@@ -142,7 +142,8 @@ func (r *router) buildWarehouseRoutes() {
 
 func (r *router) buildEmployeeRoutes() {
 	repository := employee.NewRepository(r.db)
-	service := employee.NewService(repository)
+	warehouseRepository := warehouse.NewRepository(r.db)
+	service := employee.NewService(repository, warehouseRepository)
 	controller := handler.NewEmployee(service)
 	employeeRoutes := r.rg.Group("/employees")
 

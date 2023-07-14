@@ -59,6 +59,20 @@ func TestCreateEmployee(t *testing.T) {
 		assert.Equal(t, http.StatusConflict, response.Code)
 	})
 
+	t.Run("Should return conflict error", func(t *testing.T) {
+		server, service, controller := InitEmployeeServer(t)
+
+		server.POST(DefinePath(ResourceEmployeesUri), ValidationMiddleware(requestObject), controller.Create())
+		request, response := MakeRequest("POST", DefinePath(ResourceEmployeesUri), CreateBody(requestObject))
+
+		var serviceReturn *domain.Employee
+		service.On("Create", requestObject.ToEmployee()).Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
 	t.Run("Should return a created employee", func(t *testing.T) {
 		server, service, controller := InitEmployeeServer(t)
 
@@ -153,6 +167,22 @@ func TestUpdateEmployee(t *testing.T) {
 		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceEmployeesUri, id), CreateBody(requestObject))
 
 		service.On("Update", id, requestObject.ToUpdateEmployee()).Return(serviceReturn, apperr.NewResourceAlreadyExists(ResourceAlreadyExists))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
+	t.Run("Should return conflict error", func(t *testing.T) {
+		server, service, controller := InitEmployeeServer(t)
+
+		id := 1
+		var serviceReturn *domain.Employee
+
+		server.PATCH(DefinePath(ResourceEmployeesUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceEmployeesUri, id), CreateBody(requestObject))
+
+		service.On("Update", id, requestObject.ToUpdateEmployee()).Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
 
 		server.ServeHTTP(response, request)
 

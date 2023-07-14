@@ -2,11 +2,13 @@ package employee
 
 import (
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
+	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/pkg/apperr"
 )
 
 const (
 	ResourceNotFound = "empregado não encontrado com o id %d"
+	WarehouseNotFound = "armazém não encontrado com o id '%d'"
 	ResourceAlreadyExists = "um empregado com card number ID '%s' já existe"
 )
 
@@ -22,11 +24,13 @@ type Service interface {
 
 type service struct {
 	repository Repository
+	warehouseRepository warehouse.Repository
 }
 
-func NewService(r Repository) Service {
+func NewService(r Repository, w warehouse.Repository) Service {
 	return &service{
 		repository: r,
+		warehouseRepository: w,
 	}
 }
 
@@ -49,6 +53,12 @@ func (s *service) Create(employee domain.Employee) (*domain.Employee, error) {
 		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, employee.CardNumberID)
 	}
 
+	w := s.warehouseRepository.Get(employee.WarehouseID)
+
+	if w == nil {
+		return nil, apperr.NewDependentResourceNotFound(WarehouseNotFound, employee.WarehouseID)
+	}
+
 	id := s.repository.Save(employee)
 	created := s.repository.Get(id)
 
@@ -61,7 +71,7 @@ func (s *service) Update(id int, employee domain.UpdateEmployee) (*domain.Employ
 	if employeeFound == nil {
 		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
 	}
-
+	
 	if employee.CardNumberID != nil {
 		employeeCardNumber := *employee.CardNumberID 
 		employeeCardNumberExists := s.repository.Exists(employeeCardNumber)
@@ -72,6 +82,13 @@ func (s *service) Update(id int, employee domain.UpdateEmployee) (*domain.Employ
 	}
 
 	employeeFound.Overlap(employee)
+
+	w := s.warehouseRepository.Get(employeeFound.WarehouseID)
+
+	if w == nil {
+		return nil, apperr.NewDependentResourceNotFound(WarehouseNotFound, employeeFound.WarehouseID)
+	}
+
 	s.repository.Update(*employeeFound)
 	return s.repository.Get(id), nil
 

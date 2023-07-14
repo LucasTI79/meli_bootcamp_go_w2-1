@@ -120,6 +120,10 @@ func (e *Employee) Create() gin.HandlerFunc {
 				web.Error(ctx, http.StatusConflict, err.Error())
 				return
 			}
+			if apperr.Is[*apperr.DependentResourceNotFound](err) {
+				web.Error(ctx, http.StatusConflict, err.Error())
+				return
+			}
 		}
 
 		web.Success(ctx, http.StatusCreated, createdEmployee)
@@ -155,6 +159,11 @@ func (e *Employee) Update() gin.HandlerFunc {
 			}
 
 			if apperr.Is[*apperr.ResourceAlreadyExists](err) {
+				web.Error(ctx, http.StatusConflict, err.Error())
+				return
+			}
+
+			if apperr.Is[*apperr.DependentResourceNotFound](err) {
 				web.Error(ctx, http.StatusConflict, err.Error())
 				return
 			}
