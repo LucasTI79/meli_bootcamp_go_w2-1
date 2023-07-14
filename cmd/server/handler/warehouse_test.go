@@ -52,6 +52,20 @@ func TestCreateWarehouse(t *testing.T) {
 		assert.Equal(t, http.StatusConflict, response.Code)
 	})
 
+	t.Run("Should return dependent resource not found error", func(t *testing.T) {
+		server, service, controller := InitWarehouseServer(t)
+
+		server.POST(DefinePath(ResourceWarehouseUri), ValidationMiddleware(requestObject), controller.Create())
+		request, response := MakeRequest("POST", DefinePath(ResourceWarehouseUri), CreateBody(requestObject))
+
+		var serviceReturn *domain.Warehouse
+		service.On("Create", requestObject.ToWarehouse()).Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
 	t.Run("Should return a created warehouse", func(t *testing.T) {
 		server, service, controller := InitWarehouseServer(t)
 
@@ -151,6 +165,24 @@ func TestUpdateWarehouse(t *testing.T) {
 		service.On(
 			"Update", id, requestObject.ToUpdateWarehouse()).
 			Return(serviceReturn, apperr.NewResourceAlreadyExists(ResourceAlreadyExists))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
+	t.Run("Should return dependent resource not found error", func(t *testing.T) {
+		server, service, controller := InitWarehouseServer(t)
+
+		id := 1
+
+		server.PATCH(DefinePath(ResourceWarehouseUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(ResourceWarehouseUri, id), CreateBody(requestObject))
+
+		var serviceReturn *domain.Warehouse
+		service.On(
+			"Update", id, requestObject.ToUpdateWarehouse()).
+			Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
 
 		server.ServeHTTP(response, request)
 

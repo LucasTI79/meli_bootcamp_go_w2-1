@@ -76,6 +76,12 @@ func (s *service) Update(id int, warehouse domain.UpdateWarehouse) (*domain.Ware
 
 	warehouseFound.Overlap(warehouse)
 
+	locality := s.localityRepository.Get(warehouseFound.LocalityID)
+
+	if locality == nil {
+		return nil, apperr.NewDependentResourceNotFound(LocalityNotFound, warehouseFound.LocalityID)
+	}
+
 	s.repository.Update(*warehouseFound)
 
 	updated := s.repository.Get(id)

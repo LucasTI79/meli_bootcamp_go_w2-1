@@ -175,6 +175,10 @@ func (w *Warehouse) Update() gin.HandlerFunc {
 				web.Error(c, http.StatusConflict, err.Error())
 				return
 			}
+			if apperr.Is[*apperr.DependentResourceNotFound](err) {
+				web.Error(c, http.StatusConflict, err.Error())
+				return
+			}
 		}
 
 		web.Success(c, http.StatusOK, updated)

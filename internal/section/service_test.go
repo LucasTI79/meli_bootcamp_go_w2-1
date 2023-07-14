@@ -60,6 +60,35 @@ func TestServiceCreate(t *testing.T) {
 		assert.Nil(t, result)
 		assert.True(t, apperr.Is[*apperr.ResourceAlreadyExists](err))
 	})
+
+	t.Run("Should return a product type dependent resource not found error", func(t *testing.T) {
+		service, repository, _, productTypeRepository := CreateService(t)
+
+		var productTypeResult *domain.ProductType
+
+		repository.On("Exists", mockedSection.SectionNumber).Return(false)
+		productTypeRepository.On("Get", mockedSection.ProductTypeID).Return(productTypeResult)
+		result, err := service.Create(mockedSection)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.DependentResourceNotFound](err))
+	})
+
+	t.Run("Should return a warehouse dependent resource not found error", func(t *testing.T) {
+		service, repository, warehouseRepository, productTypeRepository := CreateService(t)
+
+		var warehouseResult *domain.Warehouse
+
+		repository.On("Exists", mockedSection.SectionNumber).Return(false)
+		productTypeRepository.On("Get", mockedSection.ProductTypeID).Return(&domain.ProductType{})
+		warehouseRepository.On("Get", mockedSection.WarehouseID).Return(warehouseResult)
+		result, err := service.Create(mockedSection)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.DependentResourceNotFound](err))
+	})
 }
 
 func TestServiceGet(t *testing.T) {

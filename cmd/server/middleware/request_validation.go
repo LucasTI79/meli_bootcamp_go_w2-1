@@ -76,7 +76,7 @@ func readableMessageFrom(structValue interface{}, fe validator.FieldError) strin
 	case "datetime":
 		message = fmt.Sprintf("'%s' precisa estar no formato yyyy-mm-dd hh:mm:ss", getFieldNameOfFieldError(structValue, fe))
 	case "gt":
-		message = fmt.Sprintf("'%s' precisa ter mais de %s caracteres", getFieldNameOfFieldError(structValue, fe), getBindingTagValue(structValue, getFieldNameOfFieldError(structValue, fe)))
+		message = fmt.Sprintf("'%s' precisa ter mais de 3 caracteres", getFieldNameOfFieldError(structValue, fe))
 	default:
 		message = "erro desconhecido"
 	}
@@ -92,25 +92,6 @@ func getFieldNameOfFieldError(structValue interface{}, err validator.FieldError)
 	jsonTag := field.Tag.Get("json")
 	jsonTag = strings.Split(jsonTag, ",")[0]
 	return jsonTag
-}
-
-func getBindingTagValue(structValue interface{}, fieldName string) string {
-	structType := reflect.TypeOf(structValue)
-	field, _ := structType.FieldByName(fieldName)
-
-	tag := field.Tag.Get("binding")
-	tagValue := extractTagValue(tag, "gt")
-	return tagValue
-}
-
-func extractTagValue(tag string, tagName string) string {
-	tags := strings.Split(tag, ";")
-	for _, t := range tags {
-		if strings.HasPrefix(t, tagName) {
-			return strings.TrimPrefix(t, tagName+"=")
-		}
-	}
-	return ""
 }
 
 func getFieldNames(structValue interface{}) []string {

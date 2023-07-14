@@ -57,6 +57,20 @@ func TestCreateSection(t *testing.T) {
 		assert.Equal(t, http.StatusConflict, response.Code)
 	})
 
+	t.Run("Should return dependent not found error", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		server.POST(DefinePath(resourceSectionUri), ValidationMiddleware(requestObject), controller.Create())
+		request, response := MakeRequest("POST", DefinePath(resourceSectionUri), CreateBody(requestObject))
+
+		var serviceReturn *domain.Section
+		service.On("Create", requestObject.ToSection()).Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
 	t.Run("Should return a created section", func(t *testing.T) {
 		server, service, controller := initSectionServer(t)
 
@@ -159,6 +173,24 @@ func TestUpdateSection(t *testing.T) {
 		service.On(
 			"Update", id, requestObject.ToUpdateSection()).
 			Return(serviceReturn, apperr.NewResourceAlreadyExists(ResourceAlreadyExists))
+
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusConflict, response.Code)
+	})
+
+	t.Run("Should return dependent resource not found error", func(t *testing.T) {
+		server, service, controller := initSectionServer(t)
+
+		id := 1
+
+		server.PATCH(DefinePath(resourceSectionUri)+"/:id", ValidationMiddleware(requestObject), controller.Update())
+		request, response := MakeRequest("PATCH", DefinePathWithId(resourceSectionUri, id), CreateBody(requestObject))
+
+		var serviceReturn *domain.Section
+		service.On(
+			"Update", id, requestObject.ToUpdateSection()).
+			Return(serviceReturn, apperr.NewDependentResourceNotFound(ResourceNotFound))
 
 		server.ServeHTTP(response, request)
 

@@ -160,8 +160,30 @@ func TestServiceUpdate(t *testing.T) {
 		assert.True(t, apperr.Is[*apperr.ResourceAlreadyExists](err))
 	})
 
+	t.Run("Should return a locality dependent not found error", func(t *testing.T) {
+		service, repository, localityRepository := CreateService(t)
+
+		id := 1
+		warehouseCode := "496"
+		updateWarehouse := domain.UpdateWarehouse{
+			ID:            &id,
+			WarehouseCode: &warehouseCode,
+		}
+		mockedWarehouse := mockedWarehouseTemplate
+		var emptyLocality *domain.Locality
+
+		repository.On("Get", id).Return(&mockedWarehouse)
+		repository.On("Exists", warehouseCode).Return(false)
+		localityRepository.On("Get", mockedWarehouse.LocalityID).Return(emptyLocality)
+		result, err := service.Update(id, updateWarehouse)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.True(t, apperr.Is[*apperr.DependentResourceNotFound](err))
+	})
+
 	t.Run("Should return an updated warehouse", func(t *testing.T) {
-		service, repository, _ := CreateService(t)
+		service, repository, localityRepository := CreateService(t)
 
 		id := 1
 		warehouseCode := "123"
@@ -177,6 +199,7 @@ func TestServiceUpdate(t *testing.T) {
 
 		repository.On("Get", id).Return(&mockedWarehouse)
 		repository.On("Exists", warehouseCode).Return(true)
+		localityRepository.On("Get", mockedWarehouse.LocalityID).Return(&domain.Locality{})
 		repository.On("Update", updatedWarehouse)
 		repository.On("Get", id).Return(&updatedWarehouse)
 		result, err := service.Update(id, updateWarehouse)
