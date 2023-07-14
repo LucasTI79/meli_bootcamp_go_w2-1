@@ -72,37 +72,6 @@ func TestServiceCreate(t *testing.T) {
 	})
 }
 
-func TestServiceGet(t *testing.T) {
-
-	t.Run("Should return a carrier by id", func(t *testing.T) {
-		service, repository, _ := CreateService(t)
-
-		id := 1
-
-		repository.On("Get", id).Return(&c)
-		result, err := service.Get(id)
-
-		assert.NoError(t, err)
-		assert.NotNil(t, result)
-		assert.Equal(t, result.ID, c.ID)
-		assert.Equal(t, *result, c)
-	})
-
-	t.Run("Should return a resource not found error", func(t *testing.T) {
-		service, repository, _ := CreateService(t)
-
-		id := 99
-		var emptyEmployee *domain.Carrier
-
-		repository.On("Get", id).Return(emptyEmployee)
-		result, err := service.Get(id)
-
-		assert.Error(t, err)
-		assert.Nil(t, result)
-		assert.True(t, apperr.Is[*apperr.ResourceNotFound](err))
-	})
-}
-
 func CreateService(t *testing.T) (carrier.Service, *mocks.Repository, *localityMocks.Repository) {
 	t.Helper()
 	repository := new(mocks.Repository)

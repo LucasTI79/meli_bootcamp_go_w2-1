@@ -13,7 +13,6 @@ const (
 )
 
 type Service interface {
-	Get(id int) (*domain.Carrier, error)
 	Create(carrier domain.Carrier) (*domain.Carrier, error)
 }
 
@@ -27,14 +26,6 @@ func NewService(r Repository, localityRepository locality.Repository) Service {
 		repository:         r,
 		localityRepository: localityRepository,
 	}
-}
-
-func (s *service) Get(id int) (*domain.Carrier, error) {
-	carrier := s.repository.Get(id)
-	if carrier == nil {
-		return nil, apperr.NewResourceNotFound(ResourceNotFound, id)
-	}
-	return carrier, nil
 }
 
 func (s *service) Create(carrier domain.Carrier) (*domain.Carrier, error) {
