@@ -106,6 +106,7 @@ func (s *Section) Get() gin.HandlerFunc {
 		if err != nil {
 			if apperr.Is[*apperr.ResourceNotFound](err) {
 				web.Error(ctx, http.StatusNotFound, err.Error())
+				return
 			}
 		}
 		web.Success(ctx, http.StatusOK, section)

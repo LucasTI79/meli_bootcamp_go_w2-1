@@ -72,7 +72,6 @@ func (s *service) Update(id int, warehouse domain.UpdateWarehouse) (*domain.Ware
 		if warehouseExists && warehouseCode != warehouseFound.WarehouseCode {
 			return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, warehouseCode)
 		}
-
 	}
 
 	warehouseFound.Overlap(warehouse)

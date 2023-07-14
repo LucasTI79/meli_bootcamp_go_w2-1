@@ -6,21 +6,8 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/domain"
 	"github.com/extmatperez/meli_bootcamp_go_w2-1/internal/warehouse"
 	"github.com/stretchr/testify/assert"
-)
-
-var (
-	mockedWarehouseTemplate = domain.Warehouse{
-		ID:                 1,
-		Address:            "address",
-		Telephone:          "telephone",
-		WarehouseCode:      "warehouse_code",
-		MinimumCapacity:    1,
-		MinimumTemperature: 1,
-		LocalityID: 1,
-	}
 )
 
 func TestRepositoryGetAll(t *testing.T) {

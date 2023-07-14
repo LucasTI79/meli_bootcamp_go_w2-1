@@ -9,7 +9,7 @@ import (
 
 const (
 	ResourceNotFound      = "seção não encontrada com o id %d"
-	ResourceAlreadyExists = "um produto com o código '%d' já existe"
+	ResourceAlreadyExists = "uma seção com o código '%d' já existe"
 	WarehouseNotFound     = "armazem não encontrado com o id %d"
 	ProductTypeNotFound   = "tipo do produto não encontrado com o id %d"
 )
