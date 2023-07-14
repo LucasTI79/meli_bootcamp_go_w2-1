@@ -76,9 +76,8 @@ func (l *Locality) Create() gin.HandlerFunc {
 // @Description If no query param is given, it brings the report to all localities.
 // @Description If a location id is specified, it brings the number of sellers for this locality.
 // @Tags Localities
-// @Accept json
 // @Produce json
-// @Param id query int false "Locality id"
+// @Param id query int false "Locality ID"
 // @Success 200 {object} []domain.SellersByLocalityReport "Report of sellers by locality"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
@@ -116,11 +115,11 @@ func (l *Locality) ReportSellers() gin.HandlerFunc {
 
 // @Summary Count carriers by locality
 // @Description Carrier count by location.
-// @Description If no query param is given, bring the report to all localities.
-// @Description If a location id is specified, bring the number of carriers for this locality.
+// @Description If no query param is given, it brings the report to all localities.
+// @Description If a location id is specified, it brings the number of carriers for this locality.
 // @Tags Localities
-// @Accept json
 // @Produce json
+// @Param id query int false "Locality ID"
 // @Success 200 {object} []domain.CarriersByLocalityReport "List of localities"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"

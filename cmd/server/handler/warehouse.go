@@ -68,8 +68,7 @@ func NewWarehouse(w warehouse.Service) *Warehouse {
 // @Summary Get a warehouse by id
 // @Tags Warehouses
 // @Description Get a warehouse based on the provided id. Returns a not found error if the warehouse does not exist.
-// @Accept  json
-// @Produce  json
+// @Produce json
 // @Param id path string true "Warehouse id"
 // @Success 200 {object} domain.Warehouse "Obtained warehouse"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
@@ -93,12 +92,11 @@ func (w *Warehouse) Get() gin.HandlerFunc {
 	}
 }
 
-// GetAll godoc
+// Get All godoc
 // @Summary List all warehouses
-// @Tags Warehouses
 // @Description Returns a collection of existing warehouses.
-// @Accept  json
-// @Produce  json
+// @Tags Warehouses
+// @Produce json
 // @Success 200 {array} domain.Warehouse "List of all warehouses"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
 // @Router /warehouses [get]
@@ -111,11 +109,10 @@ func (w *Warehouse) GetAll() gin.HandlerFunc {
 
 // Create godoc
 // @Summary Create a warehouse
-// @Tags Warehouses
 // @Description Create a new warehouse based on the provided JSON payload.
 // @Tags Warehouses
-// @Accept  json
-// @Produce  json
+// @Accept json
+// @Produce json
 // @Param request body CreateWarehouseRequest true "Warehouse to be created"
 // @Success 201 {object} domain.Warehouse "Created warehouse"
 // @Failure 409 {object} web.ErrorResponse "Conflict error"
@@ -145,13 +142,12 @@ func (w *Warehouse) Create() gin.HandlerFunc {
 
 // Update godoc
 // @Summary Update a warehouse
-// @Tags Warehouses
 // @Description Update an existent warehouse based on the provided id and JSON payload.
-// @Accept  json
-// @Produce  json
-// @Param id path string true "Warehouse id"
-// @Param warehouse body domain.UpdateWarehouse true "Warehouse data to be updated"
-// @Param request body UpdateWarehouseRequest true "Warehouse with updated information"
+// @Tags Warehouses
+// @Accept json
+// @Produce json
+// @Param id path int true "Warehouse id"
+// @Param request body UpdateWarehouseRequest true "Warehouse data"
 // @Success 200 {object} domain.Warehouse "Updated warehouse"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
@@ -187,12 +183,10 @@ func (w *Warehouse) Update() gin.HandlerFunc {
 
 // Delete godoc
 // @Summary Delete a warehouse
-// @Tags Warehouses
 // @Description Delete a warehouse based on the provided id.
-// @Accept  json
-// @Produce  json
+// @Tags Warehouses
 // @Param id path string true "Warehouse id"
-// @Success 204
+// @Success 204 "No content"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"

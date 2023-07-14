@@ -48,7 +48,7 @@ func NewPurchaseOrder(service purchase_order.Service) *PurchaseOrder {
 // Create godoc
 // @Summary Create a new purchase order
 // @Description Create a new purchase order based on the provided JSON payload
-// @Tags Localities
+// @Tags Purchase Orders
 // @Accept json
 // @Produce json
 // @Param request body CreatePurchaseOrderRequest true "Purchase order data"

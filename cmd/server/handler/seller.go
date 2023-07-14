@@ -62,7 +62,6 @@ func NewSeller(service seller.Service) *Seller {
 // @Summary List all sellers
 // @Description Returns a collection of existing sellers.
 // @Tags Sellers
-// @Accept json
 // @Produce json
 // @Success 200 {object} []domain.Seller "List of all sellers"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
@@ -78,7 +77,6 @@ func (s *Seller) GetAll() gin.HandlerFunc {
 // @Summary Get a seller by id
 // @Description Get a seller based on the provided id. Returns a not found error if the seller does not exist.
 // @Tags Sellers
-// @Accept json
 // @Produce json
 // @Param id path int true "Seller Id"
 // @Success 200 {object} []domain.Seller "Obtained seller"
@@ -183,10 +181,8 @@ func (s *Seller) Update() gin.HandlerFunc {
 // @Summary Delete a seller
 // @Description Delete a seller based on the provided id.
 // @Tags Sellers
-// @Accept json
-// @Produce json
 // @Param id path int true "Seller id"
-// @Success 204
+// @Success 204 "No content"
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
