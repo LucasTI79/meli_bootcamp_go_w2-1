@@ -35,13 +35,17 @@ func (s *service) Create(pb domain.ProductBatch) (*domain.ProductBatch, error) {
 	if s.repository.Exists(pb.BatchNumber) {
 		return nil, apperr.NewResourceAlreadyExists(ResourceAlreadyExists, pb.BatchNumber)
 	}
+
 	productFound := s.productRepository.Get(pb.ProductID)
+
 	if productFound == nil {
-		return nil, apperr.NewDependentResourceNotFound("Product with id %d does not exist", pb.ProductID)
+		return nil, apperr.NewDependentResourceNotFound(ProductNotFound, pb.ProductID)
 	}
+
 	sectionFound := s.sectionRepository.Get(pb.SectionID)
+
 	if sectionFound == nil {
-		return nil, apperr.NewDependentResourceNotFound("Section with id %d does not exist", pb.SectionID)
+		return nil, apperr.NewDependentResourceNotFound(SectionNotFound, pb.SectionID)
 	}
 	id := s.repository.Save(pb)
 
