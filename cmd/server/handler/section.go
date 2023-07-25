@@ -86,7 +86,7 @@ func (s *Section) GetAll() gin.HandlerFunc {
 }
 
 // Get godoc
-// @Summary Get a section by ID
+// @Summary Get a section by id
 // @Description Get a section based on the provided JSON payload
 // @Tags Sections
 // @Produce json
@@ -213,7 +213,7 @@ func (s *Section) Delete() gin.HandlerFunc {
 }
 
 // ReportProducts godoc
-// @Summary Return the report of products by section
+// @Summary Count products by section
 // @Description Return the report of products by section
 // @Description If no query param is given, it brings the report of all products by section
 // @Description If a section id is specified, it brings the number of products for this section.

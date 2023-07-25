@@ -55,7 +55,7 @@ func NewEmployee(e employee.Service) *Employee {
 }
 
 // GetAll Employee godoc
-// @Summary Get all employees
+// @Summary List all employees
 // @Description Return a collection of employees
 // @Tags Employees
 // @Produce json
@@ -70,7 +70,7 @@ func (e *Employee) GetAll() gin.HandlerFunc {
 }
 
 // Get godoc
-// @Summary Get a employee by ID
+// @Summary Get a employee by id
 // @Description Get a employee based on the ID parameter
 // @Tags Employees
 // @Produce json
@@ -98,7 +98,7 @@ func (e *Employee) Get() gin.HandlerFunc {
 }
 
 // Create godoc
-// @Summary Create a new employee
+// @Summary Create an employee
 // @Description Create a new employee based on the provided JSON payload
 // @Tags Employees
 // @Accept json

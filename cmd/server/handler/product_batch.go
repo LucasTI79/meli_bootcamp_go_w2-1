@@ -52,7 +52,7 @@ func NewProductBatches(service product_batch.Service) *ProductBatch {
 // Create godoc
 // @Summary Create a new product batch
 // @Description Create a new product batch based on the provided JSON payload
-// @Tags Product Batch
+// @Tags Product Batches
 // @Accept json
 // @Produce json
 // @Param request body CreateProductBatchRequest true "Product Batch data"
