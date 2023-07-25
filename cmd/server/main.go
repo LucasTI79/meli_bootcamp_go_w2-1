@@ -11,7 +11,7 @@ import (
 
 // @title MELI Bootcamp API
 // @version 1.0
-// @description This API Handle MELI Fresh Products.
+// @description This API Handles MELI Fresh Products.
 // @termsOfService https://developers.mercadolibre.com.ar/es_ar/terminos-y-condiciones
 
 // @contact.name API Support

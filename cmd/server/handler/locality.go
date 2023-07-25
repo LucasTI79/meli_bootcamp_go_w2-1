@@ -124,7 +124,7 @@ func (l *Locality) ReportSellers() gin.HandlerFunc {
 // @Failure 400 {object} web.ErrorResponse "Validation error"
 // @Failure 404 {object} web.ErrorResponse "Resource not found error"
 // @Failure 500 {object} web.ErrorResponse "Internal server error"
-// @Router /localities [get]
+// @Router /localities/report-carriers [get]
 func (l Locality) ReportCarriers() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		idParam := ctx.Request.URL.Query().Get("id")
